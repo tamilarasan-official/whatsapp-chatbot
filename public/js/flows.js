@@ -9,7 +9,10 @@ const REF_PATTERN = /\bREF-\d{4}-\d{5}\b/i;
 const REF_LOOSE = /\bREF[\s-]*\d/i;
 const PII_PATTERN = /\b\d{4}\s?\d{4}\s?\d{4}\b|\b\d{10,}\b|\b(otp|password|passcode|pin)\b.*\d{4,}/i;
 const OFFICER_PATTERN = /\b(officer|human|real person|agent|customer care)\b|अधिकारी|इंसान|அதிகாரி/i;
-const MENU_PATTERN = /^(hi+|hello|hey|menu|main menu|start over|help|namaste|vanakkam|नमस्ते|मेन्यू|வணக்கம்|மெனு)[\s!.]*$/i;
+const MENU_PATTERN = /^(menu|main menu|start over|मेन्यू|மெனு)[\s!.]*$/i;
+// Greetings are answered by the AI; only offline mode maps them to the menu.
+const GREETING_PATTERN = /^(hi+|hello|hey|help|namaste|vanakkam|नमस्ते|வணக்கம்)[\s!.]*$/i;
+const REF_LIKE = /^[a-z]{0,4}[\s-]*\d[\d\s-]{2,}$/i;
 const LANG_WORDS = { en: /^(english|eng)$/i, hi: /^(hindi|हिन्दी|हिंदी)$/i, ta: /^(tamil|தமிழ்)$/i };
 const FAQ_LIST_IDS = ['faq_eligibility', 'faq_documents_required', 'faq_how_to_apply', 'faq_last_date', 'faq_payment_methods', 'faq_office_timings'];
 const LOW_CONFIDENCE = 0.5;
@@ -53,7 +56,6 @@ export function createFlows({ data, panels, offline, onLangChange }) {
       statusOverrides: {},
       history: [],
       transcript: [],
-      apptPage: 0,
     };
   }
 
@@ -68,7 +70,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     state.transcript.push(entry);
     if (who === 'user') state.history.push({ role: 'user', content: text });
     if (who === 'bot' || who === 'agent') state.history.push({ role: 'assistant', content: text });
-    state.history = state.history.slice(-16);
+    state.history = state.history.slice(-40);
     panels.appendTranscript(entry);
   }
 
@@ -153,12 +155,16 @@ export function createFlows({ data, panels, offline, onLangChange }) {
 
   // ---------- FAQ ----------
 
-  function showFaqList() {
+  function faqList() {
     const rows = FAQ_LIST_IDS.map((id) => data.faqs.find((f) => f.id === id)).filter(Boolean).map((faq) => {
       const { question } = faqText(state.lang, faq);
       return { id: `faq:${faq.id}`, title: question, description: faq.category };
     });
-    say(L('faqIntro'), { list: { button: L('viewOptions'), title: L('faqTitle'), sections: [{ title: L('faqSection'), rows }] } });
+    return { button: L('viewOptions'), title: L('faqTitle'), sections: [{ title: L('faqSection'), rows }] };
+  }
+
+  function showFaqList() {
+    say(L('faqIntro'), { list: faqList() });
   }
 
   function answerFaq(id, query, route = 'scripted') {
@@ -219,14 +225,17 @@ export function createFlows({ data, panels, offline, onLangChange }) {
 
   // ---------- Appointment ----------
 
-  function askDate(page = 0) {
-    state.step = 'appt_date';
-    state.apptPage = page;
+  function dateButtons(page) {
     const dates = data.slots.dates;
     const shown = page === 0 ? dates.slice(0, 2) : dates.slice(2, 4);
     const buttons = shown.map((d) => ({ id: `date:${d.id}`, label: d.label }));
     buttons.push(page === 0 ? { id: 'date:more', label: L('moreDates') } : { id: `date:${dates[4].id}`, label: dates[4].label });
-    say(L('apptDate'), { buttons });
+    return buttons;
+  }
+
+  function askDate(page = 0) {
+    state.step = 'appt_date';
+    say(L('apptDate'), { buttons: dateButtons(page) });
   }
 
   function askTime(dateId, query) {
@@ -259,9 +268,13 @@ export function createFlows({ data, panels, offline, onLangChange }) {
 
   // ---------- Documents ----------
 
-  function showDocuments() {
+  function documentsList() {
     const rows = data.documents.map((d) => ({ id: `doc:${d.id}`, title: d.title, description: d.description }));
-    say(L('docsIntro'), { list: { button: L('viewDocs'), title: L('docsTitle'), sections: [{ title: '', rows }] } });
+    return { button: L('viewDocs'), title: L('docsTitle'), sections: [{ title: '', rows }] };
+  }
+
+  function showDocuments() {
+    say(L('docsIntro'), { list: documentsList() });
   }
 
   function sendDocument(id, query) {
@@ -299,11 +312,11 @@ export function createFlows({ data, panels, offline, onLangChange }) {
 
   // ---------- Human handover ----------
 
-  function startHandover(query, reason = 'User request') {
+  function startHandover(query, reason = 'User request', { silent = false } = {}) {
     if (state.handover) return;
     state.handover = true;
     state.step = null;
-    say(L('handover'));
+    if (!silent) say(L('handover'));
     note(L('handoverNote'), 'handover');
     queue = queue.then(() => {
       panels.openAgent({
@@ -320,8 +333,8 @@ export function createFlows({ data, panels, offline, onLangChange }) {
       chat.addSystemNote(L('officerJoined'), 'handover');
       record('system', L('officerJoined'));
     });
-    logScripted(query, 'handover', [], { label: reason, tags: ['escalated'] });
-    panels.recordQuery({ intent: 'handover', resolved: false, escalated: true });
+    if (!silent) logScripted(query, 'handover', [], { label: reason, tags: ['escalated'] });
+    panels.recordQuery({ intent: 'handover', resolved: false, escalated: true, ai: silent });
   }
 
   function agentSay(text) {
@@ -384,25 +397,55 @@ export function createFlows({ data, panels, offline, onLangChange }) {
 
   // ---------- Live AI ----------
 
+  function aiContext() {
+    const app = state.lastRef && data.applications.find((a) => a.ref === state.lastRef);
+    const statusKey = app && (state.statusOverrides[app.ref] || app.statusKey);
+    return {
+      lastRef: state.lastRef || undefined,
+      lastStatus: statusKey ? t('en', `statusNames.${statusKey}`) : undefined,
+      nextStep: app && !state.statusOverrides[app.ref] ? app.nextStep : undefined,
+      appointment: state.appointment?.time ? `${state.appointment.date}, ${state.appointment.time}` : undefined,
+      ticket: state.lastTicket,
+      optedOut: state.optedOut,
+    };
+  }
+
   async function askAi(text) {
     const guessLang = detectScript(text) || state.lang;
     if (offline) return answerOffline(text, guessLang);
 
-    const history = state.history.slice(0, -1);
-    let res;
+    const entry = state.history[state.history.length - 1];
     queue = queue.then(async () => {
       markRead();
       chat.showTyping();
       panels.setPresence(L('typing'));
+      // History is read when the turn starts, so it includes replies queued before this one.
+      const idx = state.history.indexOf(entry);
+      const history = idx === -1 ? state.history.slice() : state.history.slice(0, idx);
       const started = performance.now();
-      res = await api.postChat(text, history, state.lang);
+      const res = await api.postChat(text, history, state.lang, aiContext());
       const elapsed = performance.now() - started;
-      if (elapsed < 600) await sleep(600 - elapsed);
+      if (elapsed < 700) await sleep(700 - elapsed);
       chat.hideTyping();
       panels.setPresence(L('online'));
       renderAiReply(text, res, guessLang);
     }).catch((err) => console.error(err));
     return queue;
+  }
+
+  // The AI can ask the app to open a built-in step; the UI is attached to its reply.
+  function actionUi(action) {
+    switch (action) {
+      case 'menu': return { list: mainMenuList() };
+      case 'faq_list': return { list: faqList() };
+      case 'documents': return { list: documentsList() };
+      case 'appointment':
+        state.step = 'appt_date';
+        return { buttons: dateButtons(0) };
+      case 'status': state.step = 'ref'; return {};
+      case 'grievance': state.step = 'grievance'; return {};
+      default: return {};
+    }
   }
 
   function renderAiReply(query, res, guessLang) {
@@ -417,25 +460,40 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     }
 
     const r = res.data;
-    const lang = r.language === 'mixed' ? 'hi' : r.language;
+    // Follow the user if they switch script mid-chat (menus and buttons switch too).
+    if (LANGS.includes(r.language) && r.language !== state.lang && detectScript(query) === r.language) {
+      setLang(r.language, { announce: false });
+    }
+    const lang = LANGS.includes(r.language) ? r.language : state.lang;
     state.lastIntent = r.intent;
     state.lastLang = r.language;
     const low = r.confidence < LOW_CONFIDENCE;
-    const offerOfficer = r.escalate || low || r.intent === 'out_of_scope';
+    const action = r.action || 'none';
+    const offerOfficer = action !== 'handover' && (r.escalate || low || r.intent === 'out_of_scope');
 
     const faq = r.sources.map((id) => data.faqs.find((f) => f.id === id)).find(Boolean);
-    const buttons = r.suggested_replies.map((s) => ({ id: `ask:${s}`, label: s }));
-    if (offerOfficer) buttons.splice(2, buttons.length, { id: 'officer', label: t(LANGS.includes(lang) ? lang : 'en', 'talkOfficer') });
+    const ui = action === 'handover' ? {} : actionUi(action);
+    // Suggestions are hidden when the next message is free text the app collects (grievance, reference no.).
+    const collectsText = action === 'grievance' || action === 'status';
+    const suggestions = ui.list || collectsText ? [] : r.suggested_replies
+      .filter((s) => !OFFICER_PATTERN.test(s))
+      .map((s) => ({ id: `ask:${s}`, label: s }));
+    let buttons = ui.buttons || suggestions;
+    if (offerOfficer && !ui.buttons) {
+      buttons = [...buttons.slice(0, 2), { id: 'officer', label: t(lang, 'talkOfficer') }];
+    }
 
     chat.addBotMessage({
       text: r.reply,
       ai: '✦ AI',
-      source: faq && !offerOfficer ? { title: faq.source, description: `${t(lang, 'source')}: ${data.org.orgName}`, url: faq.url } : null,
+      source: faq && !offerOfficer && action === 'none' ? { title: faq.source, description: `${t(lang, 'source')}: ${data.org.orgName}`, url: faq.url } : null,
       buttons: buttons.slice(0, 3),
+      list: ui.list,
     });
     record('bot', r.reply);
 
     const tags = [];
+    if (action !== 'none') tags.push(`action: ${action}`);
     if (low) tags.push('low confidence');
     if (r.escalate) tags.push('escalate');
     if (r.intent === 'out_of_scope') tags.push('guardrail');
@@ -443,9 +501,12 @@ export function createFlows({ data, panels, offline, onLangChange }) {
       route: 'ai', query, language: r.language, intent: r.intent, confidence: r.confidence,
       sources: r.sources, latency: r.latency_ms ?? res.latency, tags,
     });
-    panels.recordQuery({ intent: r.intent, resolved: !offerOfficer, ai: true });
 
-    if (r.intent === 'handover' && r.escalate) startHandover(query, 'AI detected request for a human');
+    if (action === 'handover') {
+      startHandover(query, 'AI detected request for a human', { silent: true });
+      return;
+    }
+    panels.recordQuery({ intent: r.intent, resolved: !offerOfficer, ai: true });
   }
 
   function answerOffline(text, lang) {
@@ -550,7 +611,10 @@ export function createFlows({ data, panels, offline, onLangChange }) {
       if (script) state.lang = script;
     }
 
-    if (MENU_PATTERN.test(text)) { logScripted(text, 'menu', []); return showMenu(); }
+    if (MENU_PATTERN.test(text) || (offline && GREETING_PATTERN.test(text))) {
+      logScripted(text, 'menu', []);
+      return showMenu();
+    }
     if (/^reschedule$/i.test(text)) return askDate(0);
 
     const ref = text.match(REF_PATTERN);
@@ -564,14 +628,15 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     }
 
     if (state.step === 'ref') {
-      if (REF_LOOSE.test(text) || text.length < 20) {
+      if (REF_LOOSE.test(text) || REF_LIKE.test(text)) {
         logScripted(text, 'status', [], { tags: ['invalid format'] });
         return say(L('refInvalid'), { buttons: [officerBtn(), menuBtn()] });
       }
       state.step = null;
     }
 
-    if (OFFICER_PATTERN.test(text) && text.length < 60) return startHandover(text);
+    // Short explicit requests hand over instantly; longer messages go to the AI, which can also hand over.
+    if (OFFICER_PATTERN.test(text) && text.length < 40) return startHandover(text);
 
     return askAi(text);
   }

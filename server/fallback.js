@@ -15,6 +15,7 @@ function fallbackReply(language, reason) {
     confidence: 0,
     sources: [],
     escalate: false,
+    action: 'none',
     suggested_replies: [OFFICER_LABEL[lang]],
     fallback: true,
     reason: reason || 'unknown',

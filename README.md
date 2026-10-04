@@ -1,8 +1,11 @@
 # WhatsApp AI Chatbot Demo
 
 A client-facing demo of a WhatsApp-style AI helpdesk for **Sample Institute** (dummy organisation).
-It is a hybrid: the main journeys are scripted so they never fail, and anything free-typed goes
-to Claude, which answers only from an approved knowledge base.
+It is a hybrid. Buttons and menus run scripted journeys that never fail. Anything typed goes to
+OpenAI (`gpt-4.1-mini`), which chats naturally: greetings, small talk, follow-ups and memory of the
+conversation. Facts come only from an approved knowledge base. From plain chat the AI can also open
+the built-in steps, so "I want to book a visit" shows the date buttons and "I have a complaint" starts
+a grievance.
 
 No WhatsApp, Meta or phone number is needed. Everything runs locally in the browser.
 
@@ -12,7 +15,7 @@ Requires Node.js 20 or newer.
 
 ```bash
 npm install
-cp .env.example .env        # then put your key in ANTHROPIC_API_KEY
+cp .env.example .env        # then put your key in OPENAI_API_KEY
 npm start                   # http://localhost:3000
 ```
 
@@ -26,13 +29,37 @@ Without an API key the app still runs. Free-typed questions get the scripted fal
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | none | Claude API key. Stays on the server and is never sent to the browser. |
-| `CLAUDE_MODEL` | `claude-haiku-4-5-20251001` | Model used for live answers |
+| `OPENAI_API_KEY` | none | OpenAI API key. Stays on the server and is never sent to the browser. |
+| `OPENAI_MODEL` | `gpt-4.1-mini` | Model used for live answers |
 | `PORT` | `3000` | HTTP port |
 | `LLM_TIMEOUT_MS` | `8000` | Server-side LLM timeout |
+| `TRUST_PROXY` | `1` | Number of reverse proxies in front of the app (Dokploy/Traefik = 1) |
 | `RATE_LIMIT_PER_MIN` | `30` | Requests per minute per IP on `/api/chat` |
 
-Set a spending limit on the key in the Anthropic console before the demo. Rotate the key afterwards if it was shown on screen.
+Set a usage limit on the key in the OpenAI dashboard before the demo. Rotate the key afterwards if it was shown on screen.
+
+## Deploy on Dokploy
+
+The repo has a production `Dockerfile` (Node 20 Alpine, non-root, with a health check on `/api/health`).
+
+1. Push this repo to GitHub/GitLab. `.env` is git-ignored, so the key is never pushed.
+2. In Dokploy, choose **Create Application**, set the source to your repo and branch, and set **Build Type** to **Dockerfile** (path `./Dockerfile`).
+3. In the **Environment** tab, add:
+   ```
+   OPENAI_API_KEY=sk-...
+   OPENAI_MODEL=gpt-4.1-mini
+   ```
+4. In **Domains**, add your domain (or the generated one), set the **container port to 3000**, and enable HTTPS.
+5. Click **Deploy**, then open `https://<your-domain>/api/health`. It should show `"aiConfigured": true`.
+
+A `docker-compose.yml` is also included if you prefer Dokploy's Compose type.
+
+Test the image locally:
+
+```bash
+docker build -t whatsapp-ai-demo .
+docker run --rm -p 3000:3000 --env-file .env whatsapp-ai-demo
+```
 
 ## Pre-demo check
 
@@ -65,6 +92,9 @@ Set a spending limit on the key in the Anthropic console before the demo. Rotate
 | Tamil | விண்ணப்பிக்க என்ன ஆவணங்கள் தேவை? | Answer in Tamil |
 | Hinglish | mujhe scholarship ke baare mein batao | Reply in Hinglish, language = mixed |
 | Hinglish | last date kya hai apply karne ki? | Reply in Hinglish |
+| Tanglish | enaku certificate eppadi download pannanum? | Reply in Tanglish |
+| Small talk | hi, how are you? / my name is Asha … what is my name? | Natural reply, remembers the name |
+| Action | I want to book an appointment / I have a complaint | Date buttons / grievance step open |
 | Any | My Aadhaar is 1234 5678 9012 | PII warning (scripted, never sent to the AI) |
 | Any | REF-2026-10453 / REF-2026-10454 / REF-2026-99999 | Approved / Documents pending / Not found |
 | Any | STOP, then Simulate notification, then START | Notification is suppressed until START |
@@ -75,10 +105,11 @@ Set a spending limit on the key in the Anthropic console before the demo. Rotate
 Browser (vanilla JS, no build step)
   flows.js  scripted state machine: greeting, menu, FAQ, status, appointment,
             documents, grievance, feedback, handover, STOP/START, notifications
-  api.js    POST /api/chat with an 8 s timeout. Any error shows the scripted fallback.
+  api.js    POST /api/chat with a 9 s timeout. Any error shows the scripted fallback.
   panels.js Behind the scenes log, live dashboard, Agent view
 Express server
-  /api/chat              system prompt + KB + last 8 turns -> Claude -> validated JSON
+  /api/chat              system prompt + KB + chat context + last 30 messages -> OpenAI (JSON mode)
+                         -> validated JSON { reply, language, intent, confidence, sources, escalate, action, ... }
   /api/application/:ref  mock status lookup (404 if unknown)
   /api/health            { ok, model, kbItems, aiConfigured }
 ```

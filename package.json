@@ -14,10 +14,10 @@
     "test:ai": "node scripts/test-ai.js"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.131.0",
     "cors": "^2.8.6",
     "dotenv": "^18.0.5",
     "express": "^5.2.1",
-    "express-rate-limit": "^8.7.0"
+    "express-rate-limit": "^8.7.0",
+    "openai": "^6.49.0"
   }
 }

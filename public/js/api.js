@@ -1,7 +1,7 @@
 // Fetch wrapper for the backend. Any non-200, timeout or network error resolves to
 // { ok: false } so the caller can show the scripted fallback.
 
-const CHAT_TIMEOUT_MS = 8000;
+const CHAT_TIMEOUT_MS = 9000; // server LLM timeout is 8 s; allow a little network overhead
 
 async function fetchJson(url, options = {}, timeoutMs = CHAT_TIMEOUT_MS) {
   const controller = new AbortController();
@@ -25,11 +25,11 @@ async function fetchJson(url, options = {}, timeoutMs = CHAT_TIMEOUT_MS) {
   }
 }
 
-export function postChat(message, history, language) {
+export function postChat(message, history, language, context) {
   return fetchJson('/api/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, history, language }),
+    body: JSON.stringify({ message, history, language, context }),
   });
 }
 

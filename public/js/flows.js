@@ -637,6 +637,9 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     const ref = text.match(REF_PATTERN);
     if (ref) return lookupStatus(ref[0], text);
 
+    // Short explicit requests hand over instantly (even mid-step); longer messages go to the AI, which can also hand over.
+    if (OFFICER_PATTERN.test(text) && text.length < 40) return startHandover(text);
+
     if (state.step === 'grievance') return registerGrievance(text);
 
     if (PII_PATTERN.test(text)) {
@@ -652,8 +655,6 @@ export function createFlows({ data, panels, offline, onLangChange }) {
       state.step = null;
     }
 
-    // Short explicit requests hand over instantly; longer messages go to the AI, which can also hand over.
-    if (OFFICER_PATTERN.test(text) && text.length < 40) return startHandover(text);
 
     return askAi(text);
   }

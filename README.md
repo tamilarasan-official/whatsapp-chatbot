@@ -38,27 +38,21 @@ Without an API key the app still runs. Free-typed questions get the scripted fal
 
 Set a usage limit on the key in the OpenAI dashboard before the demo. Rotate the key afterwards if it was shown on screen.
 
-## Deploy on Dokploy
+## Deploy on Dokploy (Docker Compose)
 
-The repo has a production `Dockerfile` (Node 20 Alpine, non-root, with a health check on `/api/health`).
+Deploy it as a single **Compose** service. The full plan and checklist are in **[docs/DEPLOY.md](docs/DEPLOY.md)**.
 
-1. Push this repo to GitHub/GitLab. `.env` is git-ignored, so the key is never pushed.
-2. In Dokploy, choose **Create Application**, set the source to your repo and branch, and set **Build Type** to **Dockerfile** (path `./Dockerfile`).
-3. In the **Environment** tab, add:
-   ```
-   OPENAI_API_KEY=sk-...
-   OPENAI_MODEL=gpt-4.1-mini
-   ```
-4. In **Domains**, add your domain (or the generated one), set the **container port to 3000**, and enable HTTPS.
-5. Click **Deploy**, then open `https://<your-domain>/api/health`. It should show `"aiConfigured": true`.
+1. Push this repo. `.env` is git-ignored.
+2. In Dokploy, choose **Create Service**, then **Compose**, then **Docker Compose**. Point it at the repo and set Compose Path to `./docker-compose.yml`.
+3. In **Environment**, set `OPENAI_API_KEY=...` (and optionally `OPENAI_MODEL=gpt-4.1-mini`).
+4. In **Domains**, add your domain: service `app`, container port **3000**, HTTPS on.
+5. **Deploy**, then open `https://<domain>/api/health` and check for `"aiConfigured": true`.
 
-A `docker-compose.yml` is also included if you prefer Dokploy's Compose type.
-
-Test the image locally:
+Test the same compose stack locally on http://localhost:3080:
 
 ```bash
-docker build -t whatsapp-ai-demo .
-docker run --rm -p 3000:3000 --env-file .env whatsapp-ai-demo
+docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
+docker compose -f docker-compose.yml -f docker-compose.local.yml down
 ```
 
 ## Pre-demo check

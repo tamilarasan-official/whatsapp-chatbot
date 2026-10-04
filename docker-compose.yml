@@ -1,14 +1,47 @@
-# Optional: use with Dokploy "Docker Compose" deployments or locally with `docker compose up --build`.
-# Set OPENAI_API_KEY in Dokploy's Environment tab (or a local .env file); never commit it.
+# Dokploy "Docker Compose" deployment (single service: Express serves the UI and the /api routes).
+#
+# - Secrets: set OPENAI_API_KEY in Dokploy > Environment. Dokploy writes it to a .env file next to
+#   this compose file, and the ${...} references below pass it into the container. Never commit it.
+# - Routing: add the domain in Dokploy > Domains (service "app", container port 3000). Dokploy adds
+#   the Traefik labels and network at deploy time, so none are hard-coded here.
+# - Local test: docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+
 services:
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     restart: unless-stopped
+    init: true
     environment:
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:?Set OPENAI_API_KEY in Dokploy > Environment}
       OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4.1-mini}
       LLM_TIMEOUT_MS: ${LLM_TIMEOUT_MS:-8000}
       RATE_LIMIT_PER_MIN: ${RATE_LIMIT_PER_MIN:-30}
+      TRUST_PROXY: ${TRUST_PROXY:-1}
       PORT: 3000
-    ports:
+      NODE_ENV: production
+    # Internal only; Traefik reaches it over the Docker network. No host port is published.
+    expose:
       - "3000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+    # The app never writes to disk, so the filesystem can be read-only.
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

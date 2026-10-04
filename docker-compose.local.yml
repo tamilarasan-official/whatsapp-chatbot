@@ -1,0 +1,6 @@
+# Local-only override: publishes the app on http://localhost:3080 (Dokploy does not use this file).
+# Usage: docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+services:
+  app:
+    ports:
+      - "3080:3000"

@@ -1,0 +1,14 @@
+{
+  "dates": [
+    { "id": "d1", "date": "2026-10-05", "label": "Mon, 05 Oct" },
+    { "id": "d2", "date": "2026-10-06", "label": "Tue, 06 Oct" },
+    { "id": "d3", "date": "2026-10-07", "label": "Wed, 07 Oct" },
+    { "id": "d4", "date": "2026-10-08", "label": "Thu, 08 Oct" },
+    { "id": "d5", "date": "2026-10-09", "label": "Fri, 09 Oct" }
+  ],
+  "times": [
+    { "id": "t1", "label": "10:00 AM", "period": "morning" },
+    { "id": "t2", "label": "11:30 AM", "period": "morning" },
+    { "id": "t3", "label": "3:00 PM", "period": "afternoon" }
+  ]
+}

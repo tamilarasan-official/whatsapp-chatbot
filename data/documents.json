@@ -1,0 +1,5 @@
+[
+  { "id": "doc_form", "title": "Application Form", "description": "Blank form to fill and upload", "file": "application-form.pdf", "size": "2 KB", "pages": 2 },
+  { "id": "doc_guidelines", "title": "Application Guidelines", "description": "Eligibility, documents, process", "file": "sample.pdf", "size": "3 KB", "pages": 3 },
+  { "id": "doc_fees", "title": "Fee Structure", "description": "Fees and payment methods", "file": "fee-structure.pdf", "size": "1 KB", "pages": 1 }
+]

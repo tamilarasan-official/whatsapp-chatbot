@@ -1,0 +1,23 @@
+{
+  "name": "whatsapp-ai-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Client-facing demo of a WhatsApp-style AI helpdesk (scripted flows + live AI).",
+  "main": "server/index.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test:ai": "node scripts/test-ai.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.131.0",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.5",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0"
+  }
+}

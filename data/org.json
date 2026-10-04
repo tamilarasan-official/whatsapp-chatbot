@@ -1,0 +1,11 @@
+{
+  "orgName": "Sample Institute",
+  "botName": "Sample AI Helpdesk",
+  "workingHours": "Monday to Friday, 9:30 AM to 5:30 PM",
+  "supportPhone": "+91 00000 00000",
+  "supportEmail": "help@sample-institute.example",
+  "website": "sample-institute.example",
+  "defaultLanguage": "en",
+  "languages": ["en", "hi", "ta"],
+  "colors": { "primary": "#075E54", "accent": "#128C7E" }
+}

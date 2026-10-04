@@ -1,0 +1,5 @@
+[
+  { "ref": "REF-2026-10452", "applicant": "A. Kumar (dummy)", "status": "Under review", "statusKey": "review", "updated": "03 Oct 2026", "nextStep": "We will notify you here when updated" },
+  { "ref": "REF-2026-10453", "applicant": "P. Sharma (dummy)", "status": "Approved", "statusKey": "approved", "updated": "01 Oct 2026", "nextStep": "Download your certificate" },
+  { "ref": "REF-2026-10454", "applicant": "R. Iyer (dummy)", "status": "Documents pending", "statusKey": "pending", "updated": "28 Sep 2026", "nextStep": "Upload address proof" }
+]

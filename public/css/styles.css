@@ -512,3 +512,84 @@ button, input, select { font: inherit; color: inherit; }
   .chat-header { padding-top: 8px; }
   .inputbar { padding-bottom: max(8px, env(safe-area-inset-bottom)); }
 }
+
+/* ---------- Home screen (chat list) ---------- */
+.avatar img { width: 32px; height: 32px; object-fit: contain; }
+.home-view {
+  position: absolute; left: 0; right: 0; top: 44px; bottom: 0; z-index: 8;
+  display: flex; flex-direction: column;
+  background: #fff; color: var(--wa-text);
+  animation: fade .18s ease-out;
+}
+.home-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px 6px; background: #fff;
+}
+.home-header h2 { margin: 0; font-size: 24px; font-weight: 700; color: var(--wa-green); }
+.home-actions { display: flex; gap: 18px; }
+.home-actions svg { fill: #54656f; }
+.home-search {
+  margin: 6px 14px 4px; padding: 9px 14px; border-radius: 22px; background: #f0f2f5;
+  display: flex; align-items: center; gap: 10px; color: #8696a0; font-size: 15px;
+}
+.home-search svg { fill: #8696a0; }
+.home-filters { display: flex; gap: 6px; padding: 6px 14px 8px; overflow-x: auto; scrollbar-width: none; }
+.home-filters span { flex: none; padding: 5px 12px; border-radius: 16px; background: #f0f2f5; color: #54656f; font-size: 13px; }
+.home-filters span.active { background: #d9fdd3; color: #0b6b5f; font-weight: 600; }
+.chat-list { list-style: none; margin: 0; padding: 0; flex: 1; overflow-y: auto; }
+.cl-row {
+  width: 100%; display: flex; align-items: center; gap: 12px;
+  border: 0; background: none; text-align: left; cursor: pointer;
+  padding: 9px 14px; font: inherit; color: inherit;
+}
+.cl-row:hover { background: #f5f6f6; }
+.cl-row.eci { background: #f3fbf6; }
+.cl-row.eci:hover { background: #e9f7ee; }
+.cl-avatar {
+  flex: none; width: 48px; height: 48px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 600; font-size: 16px;
+}
+.cl-avatar.logo { background: #fff; border: 1px solid #e3e6e8; }
+.cl-avatar.logo img { width: 38px; height: 38px; object-fit: contain; }
+.cl-body { flex: 1; min-width: 0; border-bottom: 1px solid #f0f2f5; padding-bottom: 10px; margin-bottom: -10px; }
+.cl-top, .cl-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.cl-name { display: flex; align-items: center; gap: 4px; min-width: 0; font-size: 16px; font-weight: 500; }
+.cl-name > span, .cl-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cl-verified { width: 16px; height: 16px; flex: none; }
+.cl-time { flex: none; font-size: 12px; color: #667781; }
+.cl-time.unread { color: #1fa855; font-weight: 600; }
+.cl-bottom { margin-top: 2px; }
+.cl-msg { display: flex; align-items: center; gap: 3px; min-width: 0; font-size: 14px; color: #667781; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cl-msg.typing { color: #1fa855; font-weight: 500; }
+.cl-ticks { width: 16px; height: 11px; flex: none; fill: #8696a0; }
+.cl-ticks.read { fill: var(--wa-tick-read); }
+.cl-right { flex: none; display: flex; align-items: center; }
+.cl-badge {
+  min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px;
+  background: #25d366; color: #fff; font-size: 12px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.cl-pin { width: 16px; height: 16px; fill: #8696a0; }
+.home-nav {
+  flex: none; display: flex; justify-content: space-around;
+  padding: 8px 6px 26px; border-top: 1px solid #e9edef; background: #fff;
+}
+.home-nav span { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 12px; color: #54656f; }
+.home-nav span svg { fill: #54656f; padding: 3px 16px; box-sizing: content-box; border-radius: 16px; }
+.home-nav span.active { color: var(--wa-text); font-weight: 600; }
+.home-nav span.active svg { fill: #0b6b5f; background: #d9fdd3; }
+.home-nav b {
+  position: absolute; top: -4px; right: 6px; min-width: 18px; height: 18px; padding: 0 5px;
+  border-radius: 9px; background: #25d366; color: #fff; font-size: 11px;
+  display: flex; align-items: center; justify-content: center;
+}
+.phone.on-home .statusbar { background: #fff; color: var(--wa-text); }
+@media (max-width: 600px) {
+  .home-view { top: 0; }
+  .home-nav { padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+}
+/* Fit the full "Election Commission of India" name in the chat header */
+.header-actions svg:not(:last-child) { display: none; }
+.header-actions { gap: 12px; }
+.who .name { font-size: 15px; }

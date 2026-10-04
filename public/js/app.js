@@ -4,6 +4,7 @@ import * as chat from './chat.js';
 import * as panels from './panels.js';
 import { loadData, getHealth } from './api.js';
 import { createFlows } from './flows.js';
+import { initHome } from './home.js';
 import { t } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
@@ -105,6 +106,18 @@ async function main() {
     actionHandler: (id, label) => flows.handleAction(id, label),
   });
 
+  // Home screen (chat list): Back opens it, tapping the ECI chat returns to the conversation.
+  const home = initHome({
+    phone: $('phone'),
+    homeView: $('homeView'),
+    chatList: $('chatList'),
+    chatEl: $('chat'),
+    navBadge: $('navBadge'),
+    orgName: data.org.botName,
+    onOtherChat: (name) => toast(`Demo: only the ${data.org.botName} chat is live (${name} is a sample chat)`),
+  });
+  $('btnBack').addEventListener('click', () => { chat.closeSheet(); home.showHome(); });
+
   // Phone input
   const input = $('msgInput');
   const bar = $('inputBar');
@@ -126,7 +139,7 @@ async function main() {
   $('btnAttach').addEventListener('click', () => toast('Attachments are disabled in this demo'));
 
   // Chatbot type: Static (scripted flows) or AI (every reply from the model)
-  const restart = () => { panels.reset(); flows.start($('langSelect').value, mode); };
+  const restart = () => { panels.reset(); flows.start($('langSelect').value, mode); home.reset(); home.openChat(); };
   const renderChips = () => {
     $('promptChips').replaceChildren(...PROMPT_CHIPS[mode].map((c) => chat.el('button', {
       class: 'chip', type: 'button', title: `Send: ${c.text}`,

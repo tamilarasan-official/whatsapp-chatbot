@@ -127,7 +127,7 @@ All rendering goes through `textContent`. User and AI text is never inserted as 
 
 All content lives in `/data`:
 
-- `org.json` holds the organisation (Election Commission of India), the bot name (ECI Voter Helpdesk), hours and the helpline.
+- `org.json` holds the organisation (Election Commission of India), the bot name (Election Commission of India), hours and the helpline.
 - `faqs.json` is the ECI knowledge base (16 entries). It is injected into the system prompt, and the AI may answer only from it.
 - `applications.json`, `slots.json` and `documents.json` hold the mock status records, appointment slots and downloadable PDFs.
 

@@ -45,13 +45,13 @@ Set a usage limit on the key in the OpenAI dashboard before the demo. Rotate the
 | https://valardemo.welocalhost.com | `frontend`: nginx serving the chat UI |
 | https://apivalardemo.welocalhost.com | `backend`: Express API + OpenAI |
 
-Both domains are set up in `docker-compose.yml` through Traefik labels, with HTTPS from Let's Encrypt.
+Both services listen on container port 3000. The domains are added in Dokploy's **Domains** tab, with HTTPS from Let's Encrypt.
 The full plan and checklist are in **[docs/DEPLOY.md](docs/DEPLOY.md)**.
 
 1. Add DNS A records for both domains pointing to the Dokploy server.
 2. In Dokploy, choose **Create Service**, then **Compose**, then **Docker Compose**. Pick this repo and set Compose Path to `./docker-compose.yml`.
 3. In **Environment**, set `OPENAI_API_KEY=...` (and optionally `OPENAI_MODEL=gpt-4.1-mini`).
-4. Leave the **Domains** tab empty, because the labels already define both domains. Then click **Deploy**.
+4. In **Domains**, add `frontend` → `valardemo.welocalhost.com` (port 3000) and `backend` → `apivalardemo.welocalhost.com` (port 3000), with HTTPS on. Then click **Deploy**.
 5. Check `https://apivalardemo.welocalhost.com/api/health`, then open `https://valardemo.welocalhost.com`.
 
 Test the same two-service stack locally (frontend at http://localhost:3080, API at http://localhost:3081):

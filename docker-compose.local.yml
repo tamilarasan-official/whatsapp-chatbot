@@ -6,14 +6,9 @@ services:
     environment:
       API_BASE_URL: http://localhost:3081
     ports:
-      - "3080:80"
+      - "3080:3000"
   backend:
     environment:
       CORS_ORIGIN: http://localhost:3080
     ports:
       - "3081:3000"
-
-networks:
-  dokploy-network:
-    external: false
-    name: valardemo-local

@@ -4,11 +4,11 @@ One repo and one compose file with two services:
 
 | Domain | Service | What it serves |
 |---|---|---|
-| `https://valardemo.welocalhost.com` | `frontend` (nginx) | Chat UI, `/data/*.json`, `/assets/*.pdf` |
-| `https://apivalardemo.welocalhost.com` | `backend` (Node 20, Express) | `/api/chat`, `/api/application/:ref`, `/api/health` |
+| `https://valardemo.welocalhost.com` | `frontend` (nginx, port 3000) | Chat UI, `/data/*.json`, `/assets/*.pdf` |
+| `https://apivalardemo.welocalhost.com` | `backend` (Node 20, Express, port 3000) | `/api/chat`, `/api/application/:ref`, `/api/health` |
 
 ```
-Browser ──HTTPS──> Traefik (Dokploy) ──┬──> frontend :80   valardemo.welocalhost.com
+Browser ──HTTPS──> Traefik (Dokploy) ──┬──> frontend :3000 valardemo.welocalhost.com
                                        └──> backend  :3000 apivalardemo.welocalhost.com ──> OpenAI
 ```
 
@@ -21,7 +21,7 @@ The browser loads the UI from the frontend domain and calls the API on the backe
 
 | File | Purpose |
 |---|---|
-| `docker-compose.yml` | What Dokploy deploys. Two services with Traefik labels for both domains, HTTPS via Let's Encrypt and an HTTP→HTTPS redirect, on the external `dokploy-network`. |
+| `docker-compose.yml` | What Dokploy deploys. Two services, both listening on port 3000 internally, with no host ports. The domains are added in Dokploy's Domains tab. |
 | `Dockerfile` | Backend image: Node 20 Alpine, production dependencies only, non-root, health check. |
 | `docker/frontend.Dockerfile` | Frontend image: nginx Alpine with the static UI. |
 | `docker/40-app-config.sh` | Runs when the frontend starts. Writes `config.js` from `API_BASE_URL`. |
@@ -45,14 +45,18 @@ The browser loads the UI from the frontend domain and calls the API on the backe
    OPENAI_API_KEY=sk-...your-new-key...
    OPENAI_MODEL=gpt-4.1-mini
    ```
-   The domain settings are already the defaults in the compose file. Override them here only if the domains change:
+   The API URL and CORS origin already default to the two domains. Override them here only if the domains change:
    ```
-   FRONTEND_DOMAIN=valardemo.welocalhost.com
-   API_DOMAIN=apivalardemo.welocalhost.com
    API_BASE_URL=https://apivalardemo.welocalhost.com
    CORS_ORIGIN=https://valardemo.welocalhost.com
    ```
-4. **Domains tab: leave it empty.** The domains are already defined by labels in the compose file, and adding them in the UI as well would create duplicate routers.
+4. **Domains → Add Domain** twice:
+
+   | Service | Host | Path | Container port | HTTPS | Certificate |
+   |---|---|---|---|---|---|
+   | `frontend` | `valardemo.welocalhost.com` | `/` | **3000** | on | Let's Encrypt |
+   | `backend` | `apivalardemo.welocalhost.com` | `/` | **3000** | on | Let's Encrypt |
+
 5. **Deploy**. Both services build. The first build takes about 1–2 minutes.
 
 ### 3. Verify after deploying
@@ -74,11 +78,12 @@ The browser loads the UI from the frontend domain and calls the API on the backe
 | Symptom | Fix |
 |---|---|
 | Deploy fails with "required variable OPENAI_API_KEY is missing" | Add it in **Environment**, save and redeploy. |
-| `404 page not found` (Traefik) on a domain | DNS is not pointing to the server yet, or the host in the labels doesn't match. Check the routers in the Traefik dashboard. |
+| `404 page not found` (Traefik) on a domain | DNS is not pointing to the server yet, or the domain is not added in the Domains tab. Use **Preview Compose** to check the generated labels. |
+| `Bad Gateway` on a domain | The container port in the Domains tab must be **3000** for both services. |
 | Certificate warning / no HTTPS | The DNS A record must resolve to the server and port 80 must be open. Let's Encrypt retries automatically. |
 | UI loads but the bot always says "connect you to an officer" | Open DevTools. A **CORS error** means `CORS_ORIGIN` must exactly equal the frontend URL (`https://`, no trailing slash). A **401/429** in the backend logs means a bad key or the OpenAI quota is used up. |
 | Yellow "AI not configured" badge | The frontend can't reach `/api/health`. Check `config.js` and the API domain. |
-| A domain shows the wrong app | The domains were also added in the Dokploy Domains tab. Remove them there. |
+| A domain shows the wrong app | Check that each domain in the Domains tab points to the right service (`frontend` or `backend`). |
 
 ## Security notes
 - The key is only in Dokploy's Environment tab and is passed to the **backend only**. It is not in Git, not in either image, and never sent to the browser.

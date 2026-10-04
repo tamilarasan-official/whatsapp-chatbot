@@ -1,6 +1,10 @@
 // Fetch wrapper for the backend. Any non-200, timeout or network error resolves to
 // { ok: false } so the caller can show the scripted fallback.
 
+// Backend origin. Empty = same origin (local `npm start`). In Docker the frontend container
+// writes config.js with the API domain, e.g. https://apivalardemo.welocalhost.com.
+const API_BASE = String(window.APP_CONFIG?.apiBase || '').replace(/\/+$/, '');
+
 const CHAT_TIMEOUT_MS = 9000; // server LLM timeout is 8 s; allow a little network overhead
 
 async function fetchJson(url, options = {}, timeoutMs = CHAT_TIMEOUT_MS) {
@@ -26,7 +30,7 @@ async function fetchJson(url, options = {}, timeoutMs = CHAT_TIMEOUT_MS) {
 }
 
 export function postChat(message, history, language, context) {
-  return fetchJson('/api/chat', {
+  return fetchJson(`${API_BASE}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message, history, language, context }),
@@ -34,11 +38,11 @@ export function postChat(message, history, language, context) {
 }
 
 export function getApplication(ref) {
-  return fetchJson(`/api/application/${encodeURIComponent(ref)}`, {}, 4000);
+  return fetchJson(`${API_BASE}/api/application/${encodeURIComponent(ref)}`, {}, 4000);
 }
 
 export function getHealth() {
-  return fetchJson('/api/health', {}, 3000);
+  return fetchJson(`${API_BASE}/api/health`, {}, 3000);
 }
 
 export async function loadData() {

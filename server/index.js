@@ -16,7 +16,10 @@ const app = express();
 app.disable('x-powered-by');
 // Behind Dokploy/Traefik (or any reverse proxy) so rate limiting sees the real client IP.
 app.set('trust proxy', Number(process.env.TRUST_PROXY ?? 1));
-app.use(cors());
+// CORS_ORIGIN: comma-separated list of allowed frontend origins (e.g. https://valardemo.welocalhost.com).
+// Unset = allow any origin (local development).
+const corsOrigins = (process.env.CORS_ORIGIN || '').split(',').map((s) => s.trim()).filter(Boolean);
+app.use(cors({ origin: corsOrigins.length ? corsOrigins : true, methods: ['GET', 'POST'] }));
 app.use(express.json({ limit: '50kb' }));
 
 const chatLimiter = rateLimit({
@@ -75,9 +78,14 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
 
 app.use('/api', (req, res) => res.status(404).json({ error: 'not_found' }));
 
-// Dummy JSON data is read-only and safe to serve; the browser flow engine uses it.
-app.use('/data', express.static(DATA_DIR));
-app.use(express.static(path.join(__dirname, '..', 'public')));
+// SERVE_STATIC=false when the UI is served by the separate frontend container (API-only backend).
+if (process.env.SERVE_STATIC !== 'false') {
+  // Dummy JSON data is read-only and safe to serve; the browser flow engine uses it.
+  app.use('/data', express.static(DATA_DIR));
+  app.use(express.static(path.join(__dirname, '..', 'public')));
+} else {
+  app.get('/', (req, res) => res.json({ service: 'whatsapp-ai-demo-api', health: '/api/health' }));
+}
 
 app.listen(PORT, (err) => {
   if (err) {

@@ -1,13 +1,56 @@
-# Dokploy "Docker Compose" deployment (single service: Express serves the UI and the /api routes).
+# Dokploy "Docker Compose" deployment: two services, two domains.
 #
+#   https://valardemo.welocalhost.com     -> frontend (nginx, chat UI)
+#   https://apivalardemo.welocalhost.com  -> backend  (Express API + OpenAI)
+#
+# - Domains are configured with the Traefik labels below. Do NOT also add them in Dokploy > Domains.
 # - Secrets: set OPENAI_API_KEY in Dokploy > Environment. Dokploy writes it to a .env file next to
-#   this compose file, and the ${...} references below pass it into the container. Never commit it.
-# - Routing: add the domain in Dokploy > Domains (service "app", container port 3000). Dokploy adds
-#   the Traefik labels and network at deploy time, so none are hard-coded here.
-# - Local test: docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+#   this compose file, and the ${...} references below pass it in. Never commit it.
+# - DNS: both hostnames need an A record pointing to the Dokploy server.
+# - Local test: docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 
 services:
-  app:
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      API_BASE_URL: ${API_BASE_URL:-https://apivalardemo.welocalhost.com}
+    expose:
+      - "80"
+    networks:
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      # HTTP -> HTTPS redirect
+      - traefik.http.routers.valardemo-web-http.rule=Host(`${FRONTEND_DOMAIN:-valardemo.welocalhost.com}`)
+      - traefik.http.routers.valardemo-web-http.entrypoints=web
+      - traefik.http.routers.valardemo-web-http.middlewares=valardemo-https-redirect
+      - traefik.http.middlewares.valardemo-https-redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.valardemo-https-redirect.redirectscheme.permanent=true
+      # HTTPS
+      - traefik.http.routers.valardemo-web.rule=Host(`${FRONTEND_DOMAIN:-valardemo.welocalhost.com}`)
+      - traefik.http.routers.valardemo-web.entrypoints=websecure
+      - traefik.http.routers.valardemo-web.tls.certresolver=letsencrypt
+      - traefik.http.routers.valardemo-web.service=valardemo-web
+      - traefik.http.services.valardemo-web.loadbalancer.server.port=80
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  backend:
     build:
       context: .
       dockerfile: Dockerfile
@@ -19,18 +62,35 @@ services:
       LLM_TIMEOUT_MS: ${LLM_TIMEOUT_MS:-8000}
       RATE_LIMIT_PER_MIN: ${RATE_LIMIT_PER_MIN:-30}
       TRUST_PROXY: ${TRUST_PROXY:-1}
+      # Only the frontend domain may call the API from a browser.
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://valardemo.welocalhost.com}
+      SERVE_STATIC: "false"
       PORT: 3000
       NODE_ENV: production
-    # Internal only; Traefik reaches it over the Docker network. No host port is published.
     expose:
       - "3000"
+    networks:
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      # HTTP -> HTTPS redirect
+      - traefik.http.routers.valardemo-api-http.rule=Host(`${API_DOMAIN:-apivalardemo.welocalhost.com}`)
+      - traefik.http.routers.valardemo-api-http.entrypoints=web
+      - traefik.http.routers.valardemo-api-http.middlewares=valardemo-https-redirect
+      # HTTPS
+      - traefik.http.routers.valardemo-api.rule=Host(`${API_DOMAIN:-apivalardemo.welocalhost.com}`)
+      - traefik.http.routers.valardemo-api.entrypoints=websecure
+      - traefik.http.routers.valardemo-api.tls.certresolver=letsencrypt
+      - traefik.http.routers.valardemo-api.service=valardemo-api
+      - traefik.http.services.valardemo-api.loadbalancer.server.port=3000
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
       interval: 30s
       timeout: 5s
       start_period: 15s
       retries: 3
-    # The app never writes to disk, so the filesystem can be read-only.
+    # The API never writes to disk, so the filesystem can be read-only.
     read_only: true
     tmpfs:
       - /tmp
@@ -45,3 +105,7 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+networks:
+  dokploy-network:
+    external: true

@@ -38,22 +38,30 @@ Without an API key the app still runs. Free-typed questions get the scripted fal
 
 Set a usage limit on the key in the OpenAI dashboard before the demo. Rotate the key afterwards if it was shown on screen.
 
-## Deploy on Dokploy (Docker Compose)
+## Deploy on Dokploy (Docker Compose, two domains)
 
-Deploy it as a single **Compose** service. The full plan and checklist are in **[docs/DEPLOY.md](docs/DEPLOY.md)**.
+| Domain | Service |
+|---|---|
+| https://valardemo.welocalhost.com | `frontend`: nginx serving the chat UI |
+| https://apivalardemo.welocalhost.com | `backend`: Express API + OpenAI |
 
-1. Push this repo. `.env` is git-ignored.
-2. In Dokploy, choose **Create Service**, then **Compose**, then **Docker Compose**. Point it at the repo and set Compose Path to `./docker-compose.yml`.
+Both domains are set up in `docker-compose.yml` through Traefik labels, with HTTPS from Let's Encrypt.
+The full plan and checklist are in **[docs/DEPLOY.md](docs/DEPLOY.md)**.
+
+1. Add DNS A records for both domains pointing to the Dokploy server.
+2. In Dokploy, choose **Create Service**, then **Compose**, then **Docker Compose**. Pick this repo and set Compose Path to `./docker-compose.yml`.
 3. In **Environment**, set `OPENAI_API_KEY=...` (and optionally `OPENAI_MODEL=gpt-4.1-mini`).
-4. In **Domains**, add your domain: service `app`, container port **3000**, HTTPS on.
-5. **Deploy**, then open `https://<domain>/api/health` and check for `"aiConfigured": true`.
+4. Leave the **Domains** tab empty, because the labels already define both domains. Then click **Deploy**.
+5. Check `https://apivalardemo.welocalhost.com/api/health`, then open `https://valardemo.welocalhost.com`.
 
-Test the same compose stack locally on http://localhost:3080:
+Test the same two-service stack locally (frontend at http://localhost:3080, API at http://localhost:3081):
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 docker compose -f docker-compose.yml -f docker-compose.local.yml down
 ```
+
+For development without Docker, `npm start` still serves the UI and the API together on :3000.
 
 ## Pre-demo check
 

@@ -1,6 +1,19 @@
-# Local-only override: publishes the app on http://localhost:3080 (Dokploy does not use this file).
-# Usage: docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+# Local-only override (Dokploy does not use this file). Simulates the two domains on two ports:
+#   frontend http://localhost:3080  ->  backend http://localhost:3081
+# Usage: docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
 services:
-  app:
+  frontend:
+    environment:
+      API_BASE_URL: http://localhost:3081
     ports:
-      - "3080:3000"
+      - "3080:80"
+  backend:
+    environment:
+      CORS_ORIGIN: http://localhost:3080
+    ports:
+      - "3081:3000"
+
+networks:
+  dokploy-network:
+    external: false
+    name: valardemo-local

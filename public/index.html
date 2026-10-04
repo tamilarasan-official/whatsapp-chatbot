@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Sample AI Helpdesk Demo</title>
-  <meta name="description" content="WhatsApp-style AI helpdesk demo: scripted flows plus live AI answers.">
+  <title>ECI Voter Helpdesk Demo</title>
+  <meta name="description" content="Election Commission of India: WhatsApp-style voter helpdesk demo with a static chatbot and an AI chatbot.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%2216%22 fill=%22%23128C7E%22/%3E%3Cpath d=%22M9 22V10h6.5a4.2 4.2 0 0 1 0 8.4H12.5V22zm3.5-6.5h2.8a1.4 1.4 0 1 0 0-2.8h-2.8z%22 fill=%22%23fff%22/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,9 +15,13 @@
   <header class="topbar">
     <div class="brand">
       <span class="brand-dot"></span>
-      <strong>AI Conversational Platform</strong>
-      <span class="muted">WhatsApp AI Bot · live demo</span>
+      <strong>Election Commission of India</strong>
+      <span class="muted">WhatsApp Voter Helpdesk · demo</span>
       <span class="mode-badge" id="modeBadge" hidden></span>
+    </div>
+    <div class="mode-switch" id="modeSwitch" role="tablist" aria-label="Chatbot type">
+      <button type="button" role="tab" data-mode="static" aria-selected="true">Static Chatbot</button>
+      <button type="button" role="tab" data-mode="ai" aria-selected="false">✦ AI Chatbot</button>
     </div>
     <div class="controls" id="controls">
       <button class="ctl" id="btnReset" type="button" title="Clear chat, state and counters">↺ Reset</button>
@@ -76,10 +80,10 @@
             <svg viewBox="0 0 24 24" width="22" height="22"><path d="M20 11H7.8l5.6-5.6L12 4l-8 8 8 8 1.4-1.4L7.8 13H20z"/></svg>
           </button>
           <div class="avatar" aria-hidden="true">
-            <span class="avatar-text">SI</span>
+            <span class="avatar-text">ECI</span>
           </div>
           <div class="who">
-            <div class="name"><span id="botName">Sample AI Helpdesk</span>
+            <div class="name"><span id="botName">ECI Voter Helpdesk</span>
               <svg class="verified" viewBox="0 0 24 24" width="16" height="16" aria-label="Verified business"><path fill="#25D366" d="m12 1 2.6 2 3.3-.2.9 3.2 2.8 1.8-1.2 3.2 1.2 3.2-2.8 1.8-.9 3.2-3.3-.2L12 23l-2.6-2-3.3.2-.9-3.2-2.8-1.8 1.2-3.2L2.4 9.8l2.8-1.8.9-3.2 3.3.2z"/><path fill="#fff" d="m10.6 15.6-3.2-3.2 1.4-1.4 1.8 1.8 4.6-4.6 1.4 1.4z"/></svg>
             </div>
             <div class="presence" id="presence">online</div>

@@ -1,19 +1,21 @@
-// Sends sample questions to /api/chat and prints intent, language, confidence and latency.
+// Sends sample questions (static and AI mode) to /api/chat and prints intent, language, confidence and latency.
 // Usage: npm run test:ai   (server must be running; BASE_URL defaults to http://localhost:3000)
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
 const QUESTIONS = [
-  { message: 'Which documents do I need to apply?', language: 'en', expect: 'faq' },
+  { message: 'Which documents do I need for Form 6?', language: 'en', expect: 'faq, grounded' },
   { message: 'hi, how are you?', language: 'en', expect: 'smalltalk, natural reply' },
-  { message: 'What is the application fee amount?', language: 'en', expect: 'no invented fee amount' },
-  { message: 'What is the weather in Paris?', language: 'en', expect: 'out_of_scope' },
-  { message: 'Who will win the match today?', language: 'en', expect: 'out_of_scope' },
-  { message: 'आवेदन की अंतिम तिथि क्या है?', language: 'hi', expect: 'faq / hi' },
-  { message: 'அலுவலக நேரம் என்ன?', language: 'ta', expect: 'faq / ta' },
-  { message: 'mujhe scholarship ke baare mein batao', language: 'en', expect: 'faq / mixed' },
+  { message: 'When is the next election in Tamil Nadu?', language: 'en', expect: 'no invented date' },
+  { message: 'Which party should I vote for?', language: 'en', expect: 'out_of_scope, neutral' },
+  { message: 'What is the weather in Delhi?', language: 'en', expect: 'out_of_scope' },
+  { message: 'मतदाता सूची में अपना नाम कैसे देखें?', language: 'hi', expect: 'faq / hi' },
+  { message: 'வாக்குச்சாவடியில் எந்த அடையாள அட்டை காட்டலாம்?', language: 'ta', expect: 'faq / ta' },
+  { message: 'voter id kaise download kare?', language: 'en', expect: 'faq / mixed' },
   { message: 'This is useless, I want to speak to a real person now!', language: 'en', expect: 'handover, escalate' },
-  { message: 'I want to book an appointment to visit the office', language: 'en', expect: 'appointment, action=appointment' },
+  { message: 'I want to book a visit to the voter office', language: 'en', expect: 'action=appointment' },
+  { message: 'I moved from Delhi to Chennai, what about my voter ID?', language: 'en', mode: 'ai', expect: 'AI mode: Form 8, action=none' },
+  { message: 'My application is REF-2026-10454, what is pending?', language: 'en', mode: 'ai', expect: 'AI mode: uses record (address proof)' },
 ];
 
 async function ask(q) {
@@ -22,7 +24,7 @@ async function ask(q) {
     const res = await fetch(`${BASE_URL}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: q.message, history: [], language: q.language }),
+      body: JSON.stringify({ message: q.message, history: [], language: q.language, mode: q.mode || 'static' }),
     });
     const data = await res.json();
     return { status: res.status, data, ms: Date.now() - started };
@@ -43,7 +45,7 @@ async function main() {
   for (const [i, q] of QUESTIONS.entries()) {
     const { status, data, ms } = await ask(q);
     if (status !== 200) failures += 1;
-    console.log(`${String(i + 1).padStart(2)}. ${q.message}`);
+    console.log(`${String(i + 1).padStart(2)}. [${q.mode || 'static'}] ${q.message}`);
     console.log(`    expect: ${q.expect}`);
     console.log(`    got:    HTTP ${status} | intent=${data.intent} lang=${data.language} conf=${data.confidence} escalate=${data.escalate} action=${data.action} sources=${JSON.stringify(data.sources)} | ${data.latency_ms ?? ms} ms${data.fallback ? ' | FALLBACK' : ''}`);
     console.log(`    reply:  ${String(data.reply).replace(/\s+/g, ' ')}\n`);

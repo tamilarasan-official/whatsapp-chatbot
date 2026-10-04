@@ -10,7 +10,7 @@ function escapePdf(s) {
 
 function pageStream(title, lines, pageNo, pageCount) {
   const ops = ['BT', '/F2 20 Tf', '56 770 Td', `(${escapePdf(title)}) Tj`, 'ET'];
-  ops.push('BT', '/F1 9 Tf', '56 750 Td', '(Sample Institute - DUMMY DOCUMENT FOR DEMO PURPOSES ONLY) Tj', 'ET');
+  ops.push('BT', '/F1 9 Tf', '56 750 Td', '(DEMO SAMPLE - NOT AN OFFICIAL ECI DOCUMENT. Official forms: voters.eci.gov.in) Tj', 'ET');
   let y = 710;
   for (const line of lines) {
     const bold = line.startsWith('# ');
@@ -52,22 +52,22 @@ function buildPdf(title, pages) {
 }
 
 const docs = {
-  'sample.pdf': ['Application Guidelines', [
-    ['# 1. Eligibility', 'Applicants must be 18 years or older and have completed Class 12', 'or equivalent from a recognised board.', '',
-      '# 2. Documents required', '- Identity proof', '- Address proof', '- A recent passport-size photograph'],
-    ['# 3. How to apply', '1. Fill in the online application form on the portal.', '2. Upload your documents.', '3. Pay the fee online (UPI, card or net banking).',
-      '4. Note your reference number, e.g. REF-2026-XXXXX.', '', '# 4. Last date', 'Applications close on 31 October 2026.'],
-    ['# 5. Tracking and support', 'Send your reference number to the WhatsApp helpdesk to see your status.', 'Help desk: Monday to Friday, 9:30 AM to 5:30 PM.',
-      'Grievances are answered within 3 working days.'],
+  'voter-guide.pdf': ['Voter Guide (demo)', [
+    ['# 1. Who can register', 'Indian citizens aged 18 or above on a qualifying date', '(1 January, 1 April, 1 July or 1 October), ordinarily resident', 'in the constituency.', '',
+      '# 2. Documents for Form 6', '- Recent passport-size photograph', '- Proof of age (birth certificate, Class 10 marksheet, passport)', '- Proof of address (Aadhaar, passport, bank passbook, utility bill)'],
+    ['# 3. Forms', 'Form 6  - New voter registration', 'Form 6A - Overseas (NRI) elector', 'Form 7  - Objection / deletion of a name',
+      'Form 8  - Correction, shifting, replacement EPIC, PwD marking', '', '# 4. Apply and track', 'voters.eci.gov.in or the Voter Helpline App. Helpline: 1950.'],
+    ['# 5. On polling day', 'Carry your EPIC or an ECI-approved alternative photo ID', '(Aadhaar, passport, driving licence, PAN card, MGNREGA job card, ...).',
+      'Find your polling station on electoralsearch.eci.gov.in.', 'NOTA (None of the Above) is available on the EVM.'],
   ]],
-  'application-form.pdf': ['Application Form', [
-    ['# Section A - Applicant details', 'Full name: ______________________________', 'Date of birth: ___________________________',
-      'Mobile: _________________________________', 'Email: __________________________________'],
-    ['# Section B - Declaration', 'I confirm the information above is correct.', '', 'Signature: ______________   Date: __________'],
+  'form-6-sample.pdf': ['Form 6 - New Voter Registration (demo sample)', [
+    ['# Part A - Applicant details', 'Name: ______________________________', 'Date of birth: _____________________',
+      'Mobile: ____________________________', 'Ordinary residence address: __________________________'],
+    ['# Part B - Declaration', 'I am a citizen of India and the information given is true.', '', 'Signature: ______________   Date: __________'],
   ]],
-  'fee-structure.pdf': ['Fee Structure', [
-    ['# Payment methods', 'UPI, debit card, credit card and net banking. Cash is not accepted.', '',
-      '# Fee table', 'This is a dummy document. Fee amounts are intentionally not listed', 'in this demo.'],
+  'form-8-sample.pdf': ['Form 8 - Correction or Shifting (demo sample)', [
+    ['# Select one', '[ ] Shifting of residence', '[ ] Correction of entries in the electoral roll', '[ ] Issue of replacement EPIC',
+      '[ ] Marking as person with disability', '', 'EPIC number: ____________________', 'Details to change: __________________________'],
   ]],
 };
 

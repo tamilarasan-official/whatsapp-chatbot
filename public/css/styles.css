@@ -48,6 +48,17 @@ button, input, select { font: inherit; color: inherit; }
 .brand { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .brand .muted { color: rgba(255,255,255,.7); font-size: 13px; }
 .brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--wa-bright); box-shadow: 0 0 0 4px rgba(37,211,102,.25); }
+.mode-switch {
+  display: inline-flex; padding: 3px; gap: 2px;
+  background: rgba(0,0,0,.22); border-radius: 99px;
+}
+.mode-switch button {
+  border: 0; background: transparent; color: rgba(255,255,255,.8);
+  padding: 7px 16px; border-radius: 99px; font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.mode-switch button:hover { color: #fff; }
+.mode-switch button[aria-selected="true"] { background: #fff; color: var(--wa-teal-dark); box-shadow: 0 1px 3px rgba(0,0,0,.2); }
 .mode-badge { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 99px; background: #ffd27a; color: #4a3500; }
 .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .ctl {
@@ -154,7 +165,7 @@ button, input, select { font: inherit; color: inherit; }
 }
 .icon-btn svg { fill: currentColor; }
 .avatar { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; flex: none; background: #fff; display: flex; align-items: center; justify-content: center; }
-.avatar-text { font-weight: 700; font-size: 14px; color: var(--wa-green); letter-spacing: .02em; }
+.avatar-text { font-weight: 700; font-size: 12px; color: var(--wa-green); letter-spacing: .02em; }
 .who { flex: 1; min-width: 0; padding-left: 4px; }
 .who .name { display: flex; align-items: center; gap: 4px; font-weight: 600; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .verified { flex: none; }
@@ -481,6 +492,8 @@ button, input, select { font: inherit; color: inherit; }
   body { display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
   .topbar { padding: 8px 16px; gap: 6px; flex: none; }
   .brand strong, .brand .muted { display: none; }
+  .mode-switch { width: 100%; }
+  .mode-switch button { flex: 1; padding: 6px 8px; }
   .brand:has(.mode-badge[hidden]) { display: none; }
   .controls { flex-wrap: nowrap; overflow-x: auto; width: 100%; scrollbar-width: none; }
   .ctl { padding: 5px 10px; font-size: 12px; white-space: nowrap; flex: none; }

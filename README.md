@@ -1,13 +1,18 @@
-# WhatsApp AI Chatbot Demo
+# ECI Voter Helpdesk: WhatsApp AI Chatbot Demo
 
-A client-facing demo of a WhatsApp-style AI helpdesk for **Sample Institute** (dummy organisation).
-It is a hybrid. Buttons and menus run scripted journeys that never fail. Anything typed goes to
-OpenAI (`gpt-4.1-mini`), which chats naturally: greetings, small talk, follow-ups and memory of the
-conversation. Facts come only from an approved knowledge base. From plain chat the AI can also open
-the built-in steps, so "I want to book a visit" shows the date buttons and "I have a complaint" starts
-a grievance.
+A client demo of a WhatsApp-style voter helpdesk for the **Election Commission of India**.
+The voter-service facts are publicly documented ECI information (Form 6/6A/7/8, Voter Helpline
+1950, voters.eci.gov.in, cVIGIL, Saksham, ID at the booth). Application records, contacts and
+PDFs are **dummy demo data**. This is not an official ECI service.
 
-No WhatsApp, Meta or phone number is needed. Everything runs locally in the browser.
+A switch in the top bar selects one of two chatbot types:
+
+| Mode | How it behaves |
+|---|---|
+| **Static Chatbot** | Guided WhatsApp journeys: consent, language buttons, menus, FAQ lists, status cards, visit booking, form PDFs, complaints, notifications and officer handover. Free-typed text still goes to the AI, which can open these screens. |
+| **✦ AI Chatbot** | The user drives the conversation and **every reply comes from the OpenAI model**. There are no scripted menus. The AI remembers the chat, follows the user's language (English, Hindi, Tamil, Hinglish, Tanglish), answers from the ECI knowledge base, reads the application record when a `REF-…` number is mentioned, stays politically neutral, and hands over to an officer when asked. |
+
+The mode is kept in the URL (`?mode=static` / `?mode=ai`) so you can open the demo straight into either one.
 
 ## Run it
 
@@ -83,23 +88,23 @@ For development without Docker, `npm start` still serves the UI and the API toge
 
 ## Test prompts
 
-| Language | Prompt | Expected |
+The prompt chips under the top bar change with the mode. `npm run test:ai` covers both modes.
+
+| Mode | Prompt | Expected |
 |---|---|---|
-| English | What documents do I need? | Grounded answer + "Application Guidelines (PDF)" source |
-| English | What is the application fee amount? | Says it does not have the amount and offers an officer. No invented number. |
-| English | What is the weather in Paris? / Who will win the match? | Polite decline + officer button (guardrail) |
-| Hindi | आवेदन की अंतिम तिथि क्या है? | Answer in Hindi (31 Oct 2026) |
-| Hindi | छात्रवृत्ति के बारे में बताइए | Answer in Hindi |
-| Tamil | அலுவலக நேரம் என்ன? | Answer in Tamil (Mon–Fri, 9:30–5:30) |
-| Tamil | விண்ணப்பிக்க என்ன ஆவணங்கள் தேவை? | Answer in Tamil |
-| Hinglish | mujhe scholarship ke baare mein batao | Reply in Hinglish, language = mixed |
-| Hinglish | last date kya hai apply karne ki? | Reply in Hinglish |
-| Tanglish | enaku certificate eppadi download pannanum? | Reply in Tanglish |
-| Small talk | hi, how are you? / my name is Asha … what is my name? | Natural reply, remembers the name |
-| Action | I want to book an appointment / I have a complaint | Date buttons / grievance step open |
-| Any | My Aadhaar is 1234 5678 9012 | PII warning (scripted, never sent to the AI) |
-| Any | REF-2026-10453 / REF-2026-10454 / REF-2026-99999 | Approved / Documents pending / Not found |
-| Any | STOP, then Simulate notification, then START | Notification is suppressed until START |
+| Static | How do I register as a new voter? | Form 6 answer + "Voters' Service Portal" source link |
+| Static | REF-2026-10452 / 10453 / 10454 / 99999 | Status card: BLO verification / Accepted / Documents pending / not found |
+| Static | I want to book a visit | Date buttons (AI opens the booking flow) |
+| Both | Which party should I vote for? / Who will win? | Polite, neutral decline (no party or candidate talk) |
+| Both | When is the next election in my area? | Does **not** invent a date; points to eci.gov.in / 1950 |
+| Both | मतदाता सूची में अपना नाम कैसे देखें? | Hindi answer (electoralsearch.eci.gov.in) |
+| Both | வாக்குச்சாவடியில் எந்த அடையாள அட்டை காட்டலாம்? | Tamil answer (EPIC or alternative photo IDs) |
+| Both | voter id kaise download kare? / naan NRI, enaku vote panna mudiyuma? | Hinglish / Tanglish reply |
+| AI | I moved from Delhi to Chennai, what about my voter ID? | Conversational Form 8 guidance |
+| AI | My application is REF-2026-10454, what is pending? | Uses the record: address proof pending |
+| AI | Hi, I'm Ravi … (later) what is my name? | Remembers "Ravi" |
+| Static | My Aadhaar is 1234 5678 9012 | PII warning |
+| Static | STOP, then Simulate notification, then START | Notification suppressed until START |
 
 ## How it works
 
@@ -120,10 +125,10 @@ All rendering goes through `textContent`. User and AI text is never inserted as 
 
 ## Changing the client content
 
-All content is dummy and lives in `/data`:
+All content lives in `/data`:
 
-- `org.json` holds the organisation name, bot name, hours and contact details.
-- `faqs.json` is the knowledge base (15 entries). It is injected into the system prompt, and the AI may answer only from it.
+- `org.json` holds the organisation (Election Commission of India), the bot name (ECI Voter Helpdesk), hours and the helpline.
+- `faqs.json` is the ECI knowledge base (16 entries). It is injected into the system prompt, and the AI may answer only from it.
 - `applications.json`, `slots.json` and `documents.json` hold the mock status records, appointment slots and downloadable PDFs.
 
 UI strings for English, Hindi and Tamil are in `public/js/i18n.js`. To add a language, add a block there and list it in `org.json`.

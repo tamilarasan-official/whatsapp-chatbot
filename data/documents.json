@@ -1,5 +1,5 @@
 [
-  { "id": "doc_form", "title": "Application Form", "description": "Blank form to fill and upload", "file": "application-form.pdf", "size": "2 KB", "pages": 2 },
-  { "id": "doc_guidelines", "title": "Application Guidelines", "description": "Eligibility, documents, process", "file": "sample.pdf", "size": "3 KB", "pages": 3 },
-  { "id": "doc_fees", "title": "Fee Structure", "description": "Fees and payment methods", "file": "fee-structure.pdf", "size": "1 KB", "pages": 1 }
+  { "id": "doc_form6", "title": "Form 6 - New Voter Registration", "description": "Register as a new voter", "file": "form-6-sample.pdf", "size": "2 KB", "pages": 2 },
+  { "id": "doc_form8", "title": "Form 8 - Correction or Shifting", "description": "Correct details, change address", "file": "form-8-sample.pdf", "size": "2 KB", "pages": 1 },
+  { "id": "doc_guide", "title": "Voter Guide", "description": "Registration, ID at booth, voting day", "file": "voter-guide.pdf", "size": "3 KB", "pages": 3 }
 ]

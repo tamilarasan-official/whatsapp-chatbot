@@ -29,11 +29,11 @@ async function fetchJson(url, options = {}, timeoutMs = CHAT_TIMEOUT_MS) {
   }
 }
 
-export function postChat(message, history, language, context) {
+export function postChat(message, history, language, context, mode = 'static') {
   return fetchJson(`${API_BASE}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, history, language, context }),
+    body: JSON.stringify({ message, history, language, context, mode }),
   });
 }
 

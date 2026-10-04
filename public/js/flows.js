@@ -14,35 +14,39 @@ const MENU_PATTERN = /^(menu|main menu|start over|मेन्यू|மென�
 const GREETING_PATTERN = /^(hi+|hello|hey|help|namaste|vanakkam|नमस्ते|வணக்கம்)[\s!.]*$/i;
 const REF_LIKE = /^[a-z]{0,4}[\s-]*\d[\d\s-]{2,}$/i;
 const LANG_WORDS = { en: /^(english|eng)$/i, hi: /^(hindi|हिन्दी|हिंदी)$/i, ta: /^(tamil|தமிழ்)$/i };
-const FAQ_LIST_IDS = ['faq_eligibility', 'faq_documents_required', 'faq_how_to_apply', 'faq_last_date', 'faq_payment_methods', 'faq_office_timings'];
+const FAQ_LIST_IDS = ['faq_eligibility', 'faq_new_registration', 'faq_documents_required', 'faq_check_name', 'faq_epic_download', 'faq_id_at_booth'];
 const LOW_CONFIDENCE = 0.5;
 const DEMO_NOTIFY_REF = 'REF-2026-10452';
 
 // Keyword map used only in ?offline=1 mode (no AI).
 const OFFLINE_KEYWORDS = [
   [/document|papers|proof|दस्तावेज़|ஆவண/i, 'faq_documents_required'],
-  [/eligib|who can apply|पात्र|தகுதி/i, 'faq_eligibility'],
-  [/how (do|to|can) i apply|apply online|आवेदन कैसे|விண்ணப்பிப்ப/i, 'faq_how_to_apply'],
-  [/last date|deadline|closing|अंतिम तिथि|கடைசி தேதி/i, 'faq_last_date'],
-  [/fee|pay|upi|शुल्क|கட்டண/i, 'faq_payment_methods'],
-  [/timing|hours|open|office time|समय|நேரம்/i, 'faq_office_timings'],
-  [/holiday|sunday|saturday|छुट्टी|விடுமுறை/i, 'faq_holidays'],
-  [/contact|phone|email|call/i, 'faq_contact'],
-  [/track/i, 'faq_track_application'],
-  [/mistake|correct|edit|गलती|தவறு/i, 'faq_correct_mistake'],
-  [/certificate|प्रमाण पत्र|சான்றிதழ்/i, 'faq_download_certificate'],
-  [/scholarship|छात्रवृत्ति|உதவித்தொகை/i, 'faq_scholarships'],
-  [/privacy|my data|डेटा/i, 'faq_data_privacy'],
+  [/eligib|who can (vote|register)|पात्र|தகுதி/i, 'faq_eligibility'],
+  [/register|registration|form 6|new voter|पंजीकरण|பதிவு/i, 'faq_new_registration'],
+  [/correct|change address|shift|form 8|सुधार|திருத்த/i, 'faq_correction'],
+  [/delet|form 7|objection/i, 'faq_deletion'],
+  [/nri|overseas|abroad|form 6a/i, 'faq_overseas'],
+  [/my name|electoral roll|voter list|मतदाता सूची|வாக்காளர் பட்டியல்/i, 'faq_check_name'],
+  [/polling (station|booth)|where.*vote|मतदान केंद्र|வாக்குச்சாவடி/i, 'faq_polling_station'],
+  [/e-?epic|download.*(voter id|card)|voter id.*download/i, 'faq_epic_download'],
+  [/id|identity|aadhaar|पहचान|அடையாள/i, 'faq_id_at_booth'],
+  [/helpline|1950|contact|call/i, 'faq_helpline'],
+  [/cvigil|model code|violation|bribe/i, 'faq_cvigil'],
+  [/disab|senior|wheelchair|home voting|saksham/i, 'faq_pwd_senior'],
+  [/nota/i, 'faq_nota'],
+  [/election date|next election|schedule|चुनाव कब|தேர்தல் எப்போது/i, 'faq_election_schedule'],
 ];
 
+// mode: 'static' = scripted flows + AI for free text; 'ai' = every reply comes from the AI.
 export function createFlows({ data, panels, offline, onLangChange }) {
   let state;
   let queue = Promise.resolve();
   let pendingTicks = [];
   let grievanceSeq = 41;
 
-  function freshState(lang = data.org.defaultLanguage) {
+  function freshState(lang = data.org.defaultLanguage, mode = 'static') {
     return {
+      mode,
       lang,
       step: null,
       optedOut: false,
@@ -120,13 +124,19 @@ export function createFlows({ data, panels, offline, onLangChange }) {
 
   // ---------- Greeting, consent, menu ----------
 
-  function start(lang) {
-    state = freshState(lang || data.org.defaultLanguage);
+  function start(lang, mode = 'static') {
+    state = freshState(lang || data.org.defaultLanguage, mode);
     queue = Promise.resolve();
     pendingTicks = [];
     chat.clearChat();
     chat.addDateChip('Today');
     chat.addSystemNote(L('bizNote'), 'biz');
+    if (mode === 'ai') {
+      // AI mode: no menus or language buttons; the user drives the conversation.
+      say(L('aiWelcome', { bot: data.org.botName, org: data.org.orgName }), { delay: 500 });
+      panels.log({ route: 'ai', query: '(AI chatbot mode)', language: state.lang, intent: 'greeting', confidence: null, sources: [], latency: null, label: 'Every reply below comes from the AI model' });
+      return;
+    }
     state.step = 'lang';
     say(`${L('consent', { bot: data.org.botName, org: data.org.orgName })}\n\n${L('chooseLang')}`, {
       buttons: LANGS.map((code) => ({ id: `lang:${code}`, label: t(code, 'langName') })),
@@ -150,7 +160,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
   function setLang(lang, { announce = true } = {}) {
     state.lang = lang;
     onLangChange?.(lang);
-    if (announce) showMenu();
+    if (announce && state.mode !== 'ai') showMenu();
   }
 
   // ---------- FAQ ----------
@@ -213,7 +223,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
       statusKey,
       statusLabel: L(`statusNames.${statusKey}`),
       updated: state.statusOverrides[app.ref] ? 'Today' : app.updated,
-      nextStep: state.statusOverrides[app.ref] ? 'Download your certificate' : app.nextStep,
+      nextStep: state.statusOverrides[app.ref] ? L('approvedNextStep') : app.nextStep,
     };
     const text = withFollowUp && statusKey !== 'approved' ? L('statusFollow') : '';
     const buttons = withFollowUp
@@ -258,7 +268,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     const { date } = state.appointment;
     say(L('apptConfirmed', { date, time: time.label }));
     botTurn(() => {
-      chat.addBotMessage({ cardNode: chat.imageCard('/assets/campus-map.svg', 'Campus map'), text: L('apptMap') });
+      chat.addBotMessage({ cardNode: chat.imageCard('/assets/office-map.svg', 'Location map'), text: L('apptMap') });
       record('bot', `[Image] ${L('apptMap')}`);
     }, { delay: 700 });
     askFeedback();
@@ -423,7 +433,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
       const idx = state.history.indexOf(entry);
       const history = idx === -1 ? state.history.slice() : state.history.slice(0, idx);
       const started = performance.now();
-      const res = await api.postChat(text, history, state.lang, aiContext());
+      const res = await api.postChat(text, history, state.lang, aiContext(), state.mode);
       const elapsed = performance.now() - started;
       if (elapsed < 700) await sleep(700 - elapsed);
       chat.hideTyping();
@@ -472,9 +482,10 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     const offerOfficer = action !== 'handover' && (r.escalate || low || r.intent === 'out_of_scope');
 
     const faq = r.sources.map((id) => data.faqs.find((f) => f.id === id)).find(Boolean);
-    const ui = action === 'handover' ? {} : actionUi(action);
+    // In AI mode the reply stands on its own; only a handover can change the screen.
+    const ui = action === 'handover' || state.mode === 'ai' ? {} : actionUi(action);
     // Suggestions are hidden when the next message is free text the app collects (grievance, reference no.).
-    const collectsText = action === 'grievance' || action === 'status';
+    const collectsText = state.mode !== 'ai' && (action === 'grievance' || action === 'status');
     const suggestions = ui.list || collectsText ? [] : r.suggested_replies
       .filter((s) => !OFFICER_PATTERN.test(s))
       .map((s) => ({ id: `ask:${s}`, label: s }));
@@ -588,6 +599,12 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     if (script) state.lastLang = script;
 
     if (state.handover) return;
+
+    if (state.mode === 'ai') {
+      const ref = text.match(REF_PATTERN);
+      if (ref) state.lastRef = ref[0].toUpperCase();
+      return askAi(text);
+    }
 
     if (/^stop$/i.test(text) || text === 'रोकें' || text === 'நிறுத்து') {
       state.optedOut = true;

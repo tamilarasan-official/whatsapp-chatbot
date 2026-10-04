@@ -7,20 +7,40 @@ import { createFlows } from './flows.js';
 import { t } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
-const OFFLINE = new URLSearchParams(location.search).get('offline') === '1';
+const params = new URLSearchParams(location.search);
+const OFFLINE = params.get('offline') === '1';
 
-const PROMPT_CHIPS = [
-  { text: 'What documents do I need?', tag: 'FAQ' },
-  { text: 'REF-2026-10452', tag: 'status' },
-  { text: 'What is the weather in Paris?', tag: 'guardrail' },
-  { text: 'What is the application fee amount?', tag: 'no invention' },
-  { text: 'आवेदन की अंतिम तिथि क्या है?', tag: 'Hindi' },
-  { text: 'அலுவலக நேரம் என்ன?', tag: 'Tamil' },
-  { text: 'mujhe scholarship ke baare mein batao', tag: 'Hinglish' },
-  { text: 'My Aadhaar is 1234 5678 9012', tag: 'PII' },
-  { text: 'I want to talk to an officer', tag: 'handover' },
-  { text: 'STOP', tag: 'opt-out' },
-];
+function initialMode() {
+  if (params.get('mode') === 'ai' || params.get('mode') === 'static') return params.get('mode');
+  try { return localStorage.getItem('chatMode') === 'ai' ? 'ai' : 'static'; } catch { return 'static'; }
+}
+let mode = initialMode();
+
+// Sample prompts per mode. Static mode shows the scripted features; AI mode shows open conversation.
+const PROMPT_CHIPS = {
+  static: [
+    { text: 'How do I register as a new voter?', tag: 'FAQ' },
+    { text: 'REF-2026-10452', tag: 'status' },
+    { text: 'Which party should I vote for?', tag: 'neutrality' },
+    { text: 'When is the next election in my area?', tag: 'no invention' },
+    { text: 'मतदाता सूची में अपना नाम कैसे देखें?', tag: 'Hindi' },
+    { text: 'வாக்குச்சாவடியில் எந்த அடையாள அட்டை காட்டலாம்?', tag: 'Tamil' },
+    { text: 'voter id kaise download kare?', tag: 'Hinglish' },
+    { text: 'My Aadhaar is 1234 5678 9012', tag: 'PII' },
+    { text: 'I want to talk to an officer', tag: 'handover' },
+    { text: 'STOP', tag: 'opt-out' },
+  ],
+  ai: [
+    { text: 'Hi! I just turned 18, how do I become a voter?', tag: 'new voter' },
+    { text: 'I moved to Chennai from Delhi. What should I do about my voter ID?', tag: 'shifting' },
+    { text: 'My application is REF-2026-10454, what is pending?', tag: 'status' },
+    { text: 'I lost my voter ID card, can I still vote?', tag: 'ID at booth' },
+    { text: 'Who will win the election?', tag: 'neutrality' },
+    { text: 'मेरे दादाजी 87 साल के हैं, क्या वो घर से वोट दे सकते हैं?', tag: 'Hindi' },
+    { text: 'naan NRI, enaku vote panna mudiyuma?', tag: 'Tanglish' },
+    { text: 'Someone is distributing cash in my area', tag: 'cVIGIL' },
+  ],
+};
 
 let toastTimer;
 function toast(message) {
@@ -105,10 +125,35 @@ async function main() {
   });
   $('btnAttach').addEventListener('click', () => toast('Attachments are disabled in this demo'));
 
+  // Chatbot type: Static (scripted flows) or AI (every reply from the model)
+  const restart = () => { panels.reset(); flows.start($('langSelect').value, mode); };
+  const renderChips = () => {
+    $('promptChips').replaceChildren(...PROMPT_CHIPS[mode].map((c) => chat.el('button', {
+      class: 'chip', type: 'button', title: `Send: ${c.text}`,
+      onclick: () => { flows.handleText(c.text); setTab('phone'); },
+    }, c.text, chat.el('span', { class: 'chip-tag', text: c.tag }))));
+  };
+  const setMode = (next, { announce = true } = {}) => {
+    mode = next;
+    document.querySelectorAll('#modeSwitch button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.mode === mode)));
+    document.body.dataset.mode = mode;
+    try { localStorage.setItem('chatMode', mode); } catch { /* storage unavailable */ }
+    const url = new URL(location.href);
+    url.searchParams.set('mode', mode);
+    history.replaceState(null, '', url);
+    renderChips();
+    if (announce) {
+      restart();
+      toast(mode === 'ai' ? 'AI Chatbot: every reply comes from the AI model' : 'Static Chatbot: guided menus and buttons');
+    }
+  };
+  document.querySelectorAll('#modeSwitch button').forEach((b) => b.addEventListener('click', () => {
+    if (b.dataset.mode !== mode) setMode(b.dataset.mode);
+  }));
+
   // Control bar
   $('btnReset').addEventListener('click', () => {
-    panels.reset();
-    flows.start($('langSelect').value);
+    restart();
     toast('Chat, state and counters cleared');
   });
   $('langSelect').addEventListener('change', (e) => {
@@ -130,11 +175,6 @@ async function main() {
   toggle('btnToggleBts', 'hide-bts');
   toggle('btnToggleRight', 'hide-right');
 
-  // Prompt chips
-  $('promptChips').replaceChildren(...PROMPT_CHIPS.map((c) => chat.el('button', {
-    class: 'chip', type: 'button', title: `Send: ${c.text}`,
-    onclick: () => { flows.handleText(c.text); setTab('phone'); },
-  }, c.text, chat.el('span', { class: 'chip-tag', text: c.tag }))));
 
   // Agent view
   $('agentReply').addEventListener('submit', (e) => {
@@ -153,6 +193,9 @@ async function main() {
   // Mode badge
   const badge = $('modeBadge');
   if (OFFLINE) {
+    const aiBtn = document.querySelector('#modeSwitch [data-mode="ai"]');
+    aiBtn.disabled = true;
+    aiBtn.title = 'AI Chatbot needs the AI service (offline mode is on)';
     badge.textContent = 'OFFLINE MODE · scripted only';
     badge.hidden = false;
   } else {
@@ -165,7 +208,8 @@ async function main() {
   }
 
   applyLangToUi(data.org.defaultLanguage);
-  flows.start(data.org.defaultLanguage);
+  setMode(OFFLINE ? 'static' : mode, { announce: false });
+  flows.start(data.org.defaultLanguage, mode);
 }
 
 main().catch((err) => {

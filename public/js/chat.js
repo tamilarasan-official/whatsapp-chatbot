@@ -220,7 +220,7 @@ export function closeSheet() {
 // ---------- Cards ----------
 
 export function linkPreview({ title, description, url }) {
-  const domain = url.startsWith('/') ? 'sample-institute.example' : new URL(url).hostname;
+  const domain = url.startsWith('/') ? location.hostname : new URL(url).hostname;
   return el('a', { class: 'card-link', href: url, target: '_blank', rel: 'noopener noreferrer' },
     el('div', { class: 'link-title', text: title }),
     description ? el('div', { class: 'link-desc', text: description }) : null,

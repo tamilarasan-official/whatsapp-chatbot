@@ -65,9 +65,13 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
   }
 
   try {
+    const mode = req.body?.mode === 'ai' ? 'ai' : 'static';
     const context = sanitiseContext(req.body.context);
-    const result = await chat({ message, history: req.body.history, language, context });
-    console.log(`[chat] ${result.intent}/${result.action} ${result.language} conf=${result.confidence} ${result.latency_ms}ms`);
+    // Give the AI the (dummy) application record when the user mentions or already checked a reference.
+    const ref = (message.match(/\bREF-\d{4}-\d{5}\b/i) || [])[0] || context.lastRef;
+    if (ref) context.application = findApplication(ref) || { ref: ref.toUpperCase(), notFound: true };
+    const result = await chat({ message, history: req.body.history, language, context, mode });
+    console.log(`[chat] ${mode} ${result.intent}/${result.action} ${result.language} conf=${result.confidence} ${result.latency_ms}ms`);
     res.json(result);
   } catch (err) {
     const status = err.status || 502;

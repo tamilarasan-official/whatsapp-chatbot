@@ -11,3 +11,11 @@ sentencepiece
 sacremoses
 IndicTransToolkit
 huggingface_hub
+sentence-transformers>=3
+scikit-learn
+indic-transliteration
+datasets>=3.0,<4
+accelerate>=0.26
+optimum[onnxruntime]>=1.23
+onnx
+# IndicTrans2 (translate_hi_en.py) needs transformers==4.46.3; run it in a separate venv if this one has a newer version

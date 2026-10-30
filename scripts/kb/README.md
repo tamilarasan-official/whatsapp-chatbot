@@ -41,3 +41,19 @@ Every entry in `sections.json` has `source` and `reliability`:
 
 Reviewed fixes to source text (e.g. OCR digit errors) go in `data/kb/corrections.json` with a reason;
 `extract_sections.py` re-applies them on every run.
+
+## Phase 2: search engine
+
+| Step | Command | Output |
+|---|---|---|
+| Evaluation set (310 questions EN/HI/Hinglish) | `python eval_set.py` | `data/kb/eval/questions.json` |
+| Compare methods/models | `python eval_retrieval.py e5-small e5-base minilm` | `kb-work/phase2/results.json` |
+| Fine-tune (dev split only) | `python finetune.py e5-small 3` | `kb-work/models/e5-small-secbihar` |
+| Score the fine-tuned model | `python eval_retrieval.py e5-small-ft` | |
+| Tune the FAQ matcher | `python tune_matcher.py dense:e5-small-ft e5-small-ft` | `kb-work/phase2/matcher.json` |
+| Re-ranker check (held-out split) | `python rerank_eval.py dense:e5-small-ft e5-small-ft test` | `kb-work/phase2/rerank.json` |
+| Build the server index (int8 ONNX) | `python build_index.py e5-small-ft dense:e5-small-ft` | `data/kb/index/` |
+| Verify the index as the server uses it | `python verify_index.py` | `data/kb/eval/index_verification.json` |
+| Report | `python phase2_report.py` | `kb-work/report/phase2.html` |
+
+The ONNX model (`data/kb/index/model/onnx/`, 118 MB) is git-ignored (GitHub 100 MB limit) and fetched at build time.

@@ -1,0 +1,86 @@
+{
+ "model": "e5-small-ft",
+ "source_model": "C:\\Users\\thami\\whatsapp-ai-demo\\kb-work\\models\\e5-small-secbihar",
+ "onnx_file": "model/onnx/model_quantized.onnx",
+ "query_prefix": "query: ",
+ "passage_prefix": "passage: ",
+ "dims": 384,
+ "pooling": "mean",
+ "normalize": true,
+ "n_chunks": 2617,
+ "n_faq_units": 297,
+ "fusion": "dense:e5-small-ft",
+ "bm25": {
+  "k1": 1.2,
+  "b": 0.75
+ },
+ "low_reliability_weight": 0.85,
+ "matcher": {
+  "winner": "threshold",
+  "threshold_rule": {
+   "tau": 0.5675,
+   "delta": 0.0,
+   "dev": {
+    "accepted": 146,
+    "precision": 0.952,
+    "recall": 0.88,
+    "oos_false_accept": 0.0,
+    "act_case_accept": 0.156
+   },
+   "test": {
+    "accepted": 50,
+    "precision": 0.94,
+    "recall": 0.81,
+    "oos_false_accept": 0.0,
+    "act_case_accept": 0.2
+   }
+  },
+  "logistic": {
+   "p": 0.4,
+   "dev": {
+    "accepted": 149,
+    "precision": 0.953,
+    "recall": 0.899,
+    "oos_false_accept": 0.0,
+    "act_case_accept": 0.156
+   },
+   "test": {
+    "accepted": 53,
+    "precision": 0.887,
+    "recall": 0.81,
+    "oos_false_accept": 0.0,
+    "act_case_accept": 0.333
+   },
+   "features": [
+    "cosine",
+    "margin",
+    "log1p_bm25",
+    "char_tfidf",
+    "query_words"
+   ],
+   "coef": [
+    3.0304,
+    0.2822,
+    0.6102,
+    -0.0844,
+    -0.3815
+   ],
+   "intercept": 1.235,
+   "mean": [
+    0.62909,
+    0.13329,
+    1.93886,
+    0.34179,
+    6.9292
+   ],
+   "std": [
+    0.15399,
+    0.1326,
+    1.01506,
+    0.22334,
+    2.22503
+   ]
+  },
+  "target_precision": 0.95
+ }
+}

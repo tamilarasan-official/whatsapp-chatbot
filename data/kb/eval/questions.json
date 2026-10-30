@@ -1,0 +1,3073 @@
+[
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "Are EVMs used in municipal elections?",
+  "gold_faq": [
+   "municipal_01"
+  ],
+  "id": "q001",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "can one person contest for more than one post in nagar nikay election",
+  "gold_faq": [
+   "municipal_01"
+  ],
+  "id": "q002",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "नगरपालिका चुनाव में ईवीएम का इस्तेमाल होता है क्या?",
+  "gold_faq": [
+   "municipal_01"
+  ],
+  "id": "q003",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "क्या एक व्यक्ति एक से ज्यादा पद के लिए नामांकन कर सकता है?",
+  "gold_faq": [
+   "municipal_01"
+  ],
+  "id": "q004",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "nagar nigam chunav me EVM se voting hoti hai kya",
+  "gold_faq": [
+   "municipal_01"
+  ],
+  "id": "q005",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "who is allowed inside the counting hall",
+  "gold_faq": [
+   "municipal_02"
+  ],
+  "id": "q006",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "is mobile phone allowed in counting room",
+  "gold_faq": [
+   "municipal_02"
+  ],
+  "id": "q007",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "मतगणना कक्ष में कौन जा सकता है?",
+  "gold_faq": [
+   "municipal_02"
+  ],
+  "id": "q008",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "क्या मतगणना केंद्र में मोबाइल ले जा सकते हैं?",
+  "gold_faq": [
+   "municipal_02"
+  ],
+  "id": "q009",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "counting room me kaun kaun ja sakta hai",
+  "gold_faq": [
+   "municipal_02"
+  ],
+  "id": "q010",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how is the result taken out from the EVM",
+  "gold_faq": [
+   "municipal_03"
+  ],
+  "id": "q011",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "EVM result button counting procedure",
+  "gold_faq": [
+   "municipal_03"
+  ],
+  "id": "q012",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "ईवीएम से रिजल्ट कैसे निकाला जाता है?",
+  "gold_faq": [
+   "municipal_03"
+  ],
+  "id": "q013",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "EVM se result kaise pata chalta hai",
+  "gold_faq": [
+   "municipal_03"
+  ],
+  "id": "q014",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "can a blind voter take a helper to vote",
+  "gold_faq": [
+   "municipal_04"
+  ],
+  "id": "q015",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "oath taking of newly elected councillors",
+  "gold_faq": [
+   "municipal_04"
+  ],
+  "id": "q016",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "दृष्टिहीन मतदाता को वोट डालने में कौन मदद कर सकता है?",
+  "gold_faq": [
+   "municipal_04"
+  ],
+  "id": "q017",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "नवनिर्वाचित पार्षद शपथ कैसे लेते हैं?",
+  "gold_faq": [
+   "municipal_04"
+  ],
+  "id": "q018",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "andhe voter ke saath sahayak ja sakta hai kya",
+  "gold_faq": [
+   "municipal_04"
+  ],
+  "id": "q019",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "who can contest the municipal election",
+  "gold_faq": [
+   "municipal_05"
+  ],
+  "id": "q020",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how to file nomination for ward councillor",
+  "gold_faq": [
+   "municipal_05"
+  ],
+  "id": "q021",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "नगरपालिका चुनाव में नामांकन कौन कर सकता है?",
+  "gold_faq": [
+   "municipal_05"
+  ],
+  "id": "q022",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "नामांकन पत्र कैसे दाखिल करें?",
+  "gold_faq": [
+   "municipal_05"
+  ],
+  "id": "q023",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "ward parshad ke liye nomination kaise file kare",
+  "gold_faq": [
+   "municipal_05"
+  ],
+  "id": "q024",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "what documents are needed with the nomination paper",
+  "gold_faq": [
+   "municipal_06"
+  ],
+  "id": "q025",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "what is an affidavit in nomination",
+  "gold_faq": [
+   "municipal_06"
+  ],
+  "id": "q026",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "नामांकन के समय कौन से कागजात चाहिए?",
+  "gold_faq": [
+   "municipal_06"
+  ],
+  "id": "q027",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "शपथ पत्र क्या होता है?",
+  "gold_faq": [
+   "municipal_06"
+  ],
+  "id": "q028",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "nomination ke time kaun se documents lagte hai",
+  "gold_faq": [
+   "municipal_06"
+  ],
+  "id": "q029",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "when is scrutiny of nomination papers done",
+  "gold_faq": [
+   "municipal_07"
+  ],
+  "id": "q030",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "can I withdraw my nomination",
+  "gold_faq": [
+   "municipal_07"
+  ],
+  "id": "q031",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "नाम वापसी की प्रक्रिया क्या है?",
+  "gold_faq": [
+   "municipal_07"
+  ],
+  "id": "q032",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "नामांकन पत्रों की जांच कब होती है?",
+  "gold_faq": [
+   "municipal_07"
+  ],
+  "id": "q033",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "nomination wapas kaise le",
+  "gold_faq": [
+   "municipal_07"
+  ],
+  "id": "q034",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how are election symbols given to candidates",
+  "gold_faq": [
+   "municipal_08"
+  ],
+  "id": "q035",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "free symbol allotment guidelines",
+  "gold_faq": [
+   "municipal_08"
+  ],
+  "id": "q036",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "चुनाव चिन्ह कैसे आवंटित होते हैं?",
+  "gold_faq": [
+   "municipal_08"
+  ],
+  "id": "q037",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "chunav chinh kaise milta hai",
+  "gold_faq": [
+   "municipal_08"
+  ],
+  "id": "q038",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "what is candidate suvidha portal",
+  "gold_faq": [
+   "municipal_09"
+  ],
+  "id": "q039",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "benefits of the online portal for candidates",
+  "gold_faq": [
+   "municipal_09"
+  ],
+  "id": "q040",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "कैंडिडेट सुविधा पोर्टल क्या है?",
+  "gold_faq": [
+   "municipal_09"
+  ],
+  "id": "q041",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "candidate suvidha portal ka kya fayda hai",
+  "gold_faq": [
+   "municipal_09"
+  ],
+  "id": "q042",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "can candidates paste posters on government buildings",
+  "gold_faq": [
+   "municipal_10"
+  ],
+  "id": "q043",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "rules on wall writing during election",
+  "gold_faq": [
+   "municipal_10"
+  ],
+  "id": "q044",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "चुनाव में दीवार लेखन और पोस्टर लगाने के नियम क्या हैं?",
+  "gold_faq": [
+   "municipal_10"
+  ],
+  "id": "q045",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "sarkari building par poster laga sakte hai kya",
+  "gold_faq": [
+   "municipal_10"
+  ],
+  "id": "q046",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "what is the model code of conduct",
+  "gold_faq": [
+   "municipal_11"
+  ],
+  "id": "q047",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "when does the code of conduct start",
+  "gold_faq": [
+   "municipal_11"
+  ],
+  "id": "q048",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "आदर्श आचार संहिता क्या है?",
+  "gold_faq": [
+   "municipal_11"
+  ],
+  "id": "q049",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "आचार संहिता कब से लागू होती है?",
+  "gold_faq": [
+   "municipal_11"
+  ],
+  "id": "q050",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "aachar sanhita kab lagu hoti hai",
+  "gold_faq": [
+   "municipal_11"
+  ],
+  "id": "q051",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "who is the returning officer",
+  "gold_faq": [
+   "municipal_12",
+   "panchayat_08"
+  ],
+  "id": "q052",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "role of assistant returning officer",
+  "gold_faq": [
+   "municipal_12",
+   "panchayat_08"
+  ],
+  "id": "q053",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "निर्वाची पदाधिकारी कौन होता है?",
+  "gold_faq": [
+   "municipal_12",
+   "panchayat_08"
+  ],
+  "id": "q054",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "RO aur ARO kaun hote hai",
+  "gold_faq": [
+   "municipal_12",
+   "panchayat_08"
+  ],
+  "id": "q055",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "what does an election observer do",
+  "gold_faq": [
+   "municipal_13",
+   "panchayat_09"
+  ],
+  "id": "q056",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "observer duties in election",
+  "gold_faq": [
+   "municipal_13",
+   "panchayat_09"
+  ],
+  "id": "q057",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "चुनाव प्रेक्षक की क्या भूमिका होती है?",
+  "gold_faq": [
+   "municipal_13",
+   "panchayat_09"
+  ],
+  "id": "q058",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "chunav observer ka kaam kya hai",
+  "gold_faq": [
+   "municipal_13",
+   "panchayat_09"
+  ],
+  "id": "q059",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "where can I see election notifications",
+  "gold_faq": [
+   "municipal_14",
+   "panchayat_10"
+  ],
+  "id": "q060",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "where are SEC election notices published",
+  "gold_faq": [
+   "municipal_14",
+   "panchayat_10"
+  ],
+  "id": "q061",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "चुनाव से जुड़ी अधिसूचनाएं कहाँ देखें?",
+  "gold_faq": [
+   "municipal_14",
+   "panchayat_10"
+  ],
+  "id": "q062",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "election notification kaha milega",
+  "gold_faq": [
+   "municipal_14",
+   "panchayat_10"
+  ],
+  "id": "q063",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how to check my name in the voter list",
+  "gold_faq": [
+   "municipal_15",
+   "panchayat_11"
+  ],
+  "id": "q064",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "find my polling station",
+  "gold_faq": [
+   "municipal_15",
+   "panchayat_11"
+  ],
+  "id": "q065",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "मतदाता सूची में अपना नाम कैसे देखें?",
+  "gold_faq": [
+   "municipal_15",
+   "panchayat_11"
+  ],
+  "id": "q066",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "मेरा मतदान केंद्र कहाँ है कैसे पता करूं?",
+  "gold_faq": [
+   "municipal_15",
+   "panchayat_11"
+  ],
+  "id": "q067",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "voter list me naam kaise check kare",
+  "gold_faq": [
+   "municipal_15",
+   "panchayat_11"
+  ],
+  "id": "q068",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how to use the matdata suvidha app",
+  "gold_faq": [
+   "municipal_16",
+   "panchayat_12"
+  ],
+  "id": "q069",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "voter facilitation app features",
+  "gold_faq": [
+   "municipal_16",
+   "panchayat_12"
+  ],
+  "id": "q070",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "मतदाता सुविधा ऐप का उपयोग कैसे करें?",
+  "gold_faq": [
+   "municipal_16",
+   "panchayat_12"
+  ],
+  "id": "q071",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "matdata suvidha app kaise use kare",
+  "gold_faq": [
+   "municipal_16",
+   "panchayat_12"
+  ],
+  "id": "q072",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "what is the voter helpline number",
+  "gold_faq": [
+   "municipal_17",
+   "panchayat_13"
+  ],
+  "id": "q073",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how to contact the election helpline",
+  "gold_faq": [
+   "municipal_17",
+   "panchayat_13"
+  ],
+  "id": "q074",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "मतदाता हेल्पलाइन नंबर क्या है?",
+  "gold_faq": [
+   "municipal_17",
+   "panchayat_13"
+  ],
+  "id": "q075",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "helpline number kya hai",
+  "gold_faq": [
+   "municipal_17",
+   "panchayat_13"
+  ],
+  "id": "q076",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how to file an objection to the voter list",
+  "gold_faq": [
+   "municipal_18",
+   "panchayat_14"
+  ],
+  "id": "q077",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "what are claims and objections",
+  "gold_faq": [
+   "municipal_18",
+   "panchayat_14"
+  ],
+  "id": "q078",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "दावा और आपत्ति कहाँ दर्ज करें?",
+  "gold_faq": [
+   "municipal_18",
+   "panchayat_14"
+  ],
+  "id": "q079",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "voter list par aapatti kaise kare",
+  "gold_faq": [
+   "municipal_18",
+   "panchayat_14"
+  ],
+  "id": "q080",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "what is ward delimitation",
+  "gold_faq": [
+   "municipal_19",
+   "panchayat_15"
+  ],
+  "id": "q081",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how are wards formed",
+  "gold_faq": [
+   "municipal_19",
+   "panchayat_15"
+  ],
+  "id": "q082",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "वार्ड गठन और परिसीमन क्या है?",
+  "gold_faq": [
+   "municipal_19",
+   "panchayat_15"
+  ],
+  "id": "q083",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "ward parisiman kya hota hai",
+  "gold_faq": [
+   "municipal_19",
+   "panchayat_15"
+  ],
+  "id": "q084",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "where to see the list of contesting candidates",
+  "gold_faq": [
+   "municipal_20",
+   "panchayat_16"
+  ],
+  "id": "q085",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "who won in my ward",
+  "gold_faq": [
+   "municipal_20",
+   "panchayat_16"
+  ],
+  "id": "q086",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "जीते हुए प्रत्याशियों की जानकारी कहाँ मिलेगी?",
+  "gold_faq": [
+   "municipal_20",
+   "panchayat_16"
+  ],
+  "id": "q087",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "winning candidate ki list kaha dekhe",
+  "gold_faq": [
+   "municipal_20",
+   "panchayat_16"
+  ],
+  "id": "q088",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how do I file an election complaint",
+  "gold_faq": [
+   "municipal_21",
+   "panchayat_17"
+  ],
+  "id": "q089",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "check status of my complaint",
+  "gold_faq": [
+   "municipal_21",
+   "panchayat_17"
+  ],
+  "id": "q090",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "चुनाव से जुड़ी शिकायत कैसे करें?",
+  "gold_faq": [
+   "municipal_21",
+   "panchayat_17"
+  ],
+  "id": "q091",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "complaint ka status kaise check kare",
+  "gold_faq": [
+   "municipal_21",
+   "panchayat_17"
+  ],
+  "id": "q092",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "permission for LED van campaign",
+  "gold_faq": [
+   "municipal_22",
+   "panchayat_18"
+  ],
+  "id": "q093",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "can I use an LED bike for campaigning",
+  "gold_faq": [
+   "municipal_22",
+   "panchayat_18"
+  ],
+  "id": "q094",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "एलईडी वैन से प्रचार की अनुमति कैसे लें?",
+  "gold_faq": [
+   "municipal_22",
+   "panchayat_18"
+  ],
+  "id": "q095",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "LED van prachar permission kaise milega",
+  "gold_faq": [
+   "municipal_22",
+   "panchayat_18"
+  ],
+  "id": "q096",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "what is e-voting",
+  "gold_faq": [
+   "municipal_23"
+  ],
+  "id": "q097",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "meaning of online voting from mobile",
+  "gold_faq": [
+   "municipal_23"
+  ],
+  "id": "q098",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "ई-वोटिंग क्या है?",
+  "gold_faq": [
+   "municipal_23"
+  ],
+  "id": "q099",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "e voting kya hai",
+  "gold_faq": [
+   "municipal_23"
+  ],
+  "id": "q100",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "who is eligible for e-voting",
+  "gold_faq": [
+   "municipal_24"
+  ],
+  "id": "q101",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "can migrant workers use e-voting",
+  "gold_faq": [
+   "municipal_24"
+  ],
+  "id": "q102",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "ई-वोटिंग सुविधा का लाभ कौन ले सकता है?",
+  "gold_faq": [
+   "municipal_24"
+  ],
+  "id": "q103",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "e voting kaun kar sakta hai",
+  "gold_faq": [
+   "municipal_24"
+  ],
+  "id": "q104",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "online election service website not working what to do",
+  "gold_faq": [
+   "municipal_25"
+  ],
+  "id": "q105",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "technical issue with online election service",
+  "gold_faq": [
+   "municipal_25"
+  ],
+  "id": "q106",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "ऑनलाइन चुनाव सेवा में तकनीकी समस्या हो तो क्या करें?",
+  "gold_faq": [
+   "municipal_25"
+  ],
+  "id": "q107",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "online service me problem aa rahi hai kya kare",
+  "gold_faq": [
+   "municipal_25"
+  ],
+  "id": "q108",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "which posts are directly elected in the panchayat election",
+  "gold_faq": [
+   "panchayat_01"
+  ],
+  "id": "q109",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how is the pramukh elected, directly or indirectly",
+  "gold_faq": [
+   "panchayat_01"
+  ],
+  "id": "q110",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "पंचायत चुनाव में किन पदों पर सीधा चुनाव होता है?",
+  "gold_faq": [
+   "panchayat_01"
+  ],
+  "id": "q111",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "mukhiya ka chunav seedha hota hai kya",
+  "gold_faq": [
+   "panchayat_01"
+  ],
+  "id": "q112",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "what is the reservation limit in panchayat elections",
+  "gold_faq": [
+   "panchayat_02"
+  ],
+  "id": "q113",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "rotation of reserved seats in panchayat",
+  "gold_faq": [
+   "panchayat_02"
+  ],
+  "id": "q114",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "पंचायत चुनाव में आरक्षण की सीमा कितनी है?",
+  "gold_faq": [
+   "panchayat_02"
+  ],
+  "id": "q115",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "panchayat me aarakshan rotation kya hai",
+  "gold_faq": [
+   "panchayat_02"
+  ],
+  "id": "q116",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how is the panchayat voter list prepared",
+  "gold_faq": [
+   "panchayat_03"
+  ],
+  "id": "q117",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how to remove a name from the panchayat voter list",
+  "gold_faq": [
+   "panchayat_03"
+  ],
+  "id": "q118",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "पंचायत मतदाता सूची में नाम कैसे जोड़ें?",
+  "gold_faq": [
+   "panchayat_03"
+  ],
+  "id": "q119",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "panchayat voter list me naam kaise jode",
+  "gold_faq": [
+   "panchayat_03"
+  ],
+  "id": "q120",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "minimum age to contest a panchayat election",
+  "gold_faq": [
+   "panchayat_04"
+  ],
+  "id": "q121",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "nomination fee for mukhiya",
+  "gold_faq": [
+   "panchayat_04"
+  ],
+  "id": "q122",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "पंचायत चुनाव लड़ने की न्यूनतम आयु क्या है?",
+  "gold_faq": [
+   "panchayat_04"
+  ],
+  "id": "q123",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "मुखिया पद का नामांकन शुल्क कितना है?",
+  "gold_faq": [
+   "panchayat_04"
+  ],
+  "id": "q124",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "mukhiya chunav ladne ki umar kitni honi chahiye",
+  "gold_faq": [
+   "panchayat_04"
+  ],
+  "id": "q125",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how is voting done in panchayat elections",
+  "gold_faq": [
+   "panchayat_05"
+  ],
+  "id": "q126",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "campaign rules for panchayat election",
+  "gold_faq": [
+   "panchayat_05"
+  ],
+  "id": "q127",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "पंचायत चुनाव में मतदान की प्रक्रिया क्या है?",
+  "gold_faq": [
+   "panchayat_05"
+  ],
+  "id": "q128",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "panchayat chunav me prachar ke niyam",
+  "gold_faq": [
+   "panchayat_05"
+  ],
+  "id": "q129",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "key statistics of panchayat election 2021",
+  "gold_faq": [
+   "panchayat_06"
+  ],
+  "id": "q130",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "digital innovations in panchayat general election 2021",
+  "gold_faq": [
+   "panchayat_06"
+  ],
+  "id": "q131",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "पंचायत आम निर्वाचन 2021 के मुख्य आंकड़े क्या थे?",
+  "gold_faq": [
+   "panchayat_06"
+  ],
+  "id": "q132",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "2021 panchayat chunav me kitne voter the",
+  "gold_faq": [
+   "panchayat_06"
+  ],
+  "id": "q133",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "what is a tendered ballot",
+  "gold_faq": [
+   "panchayat_07"
+  ],
+  "id": "q134",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "what is a challenged vote",
+  "gold_faq": [
+   "panchayat_07"
+  ],
+  "id": "q135",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "निविदत्त मतपत्र क्या है?",
+  "gold_faq": [
+   "panchayat_07"
+  ],
+  "id": "q136",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "challenged vote kya hota hai",
+  "gold_faq": [
+   "panchayat_07"
+  ],
+  "id": "q137",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "what is the purpose of the evoting secbhr app",
+  "gold_faq": [
+   "evoting_01"
+  ],
+  "id": "q138",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "why was the evoting app made",
+  "gold_faq": [
+   "evoting_01"
+  ],
+  "id": "q139",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "eVoting SECBHR ऐप का उद्देश्य क्या है?",
+  "gold_faq": [
+   "evoting_01"
+  ],
+  "id": "q140",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "evoting app kis liye hai",
+  "gold_faq": [
+   "evoting_01"
+  ],
+  "id": "q141",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "is the evoting app safe",
+  "gold_faq": [
+   "evoting_02"
+  ],
+  "id": "q142",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "do I have to give data consent in the app",
+  "gold_faq": [
+   "evoting_02"
+  ],
+  "id": "q143",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "क्या ई-वोटिंग ऐप सुरक्षित है?",
+  "gold_faq": [
+   "evoting_02"
+  ],
+  "id": "q144",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "evoting app safe hai kya",
+  "gold_faq": [
+   "evoting_02"
+  ],
+  "id": "q145",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "what languages is the evoting app available in",
+  "gold_faq": [
+   "evoting_03"
+  ],
+  "id": "q146",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "can I use the app in english",
+  "gold_faq": [
+   "evoting_03"
+  ],
+  "id": "q147",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "ई-वोटिंग ऐप किन भाषाओं में है?",
+  "gold_faq": [
+   "evoting_03"
+  ],
+  "id": "q148",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "app hindi me hai kya",
+  "gold_faq": [
+   "evoting_03"
+  ],
+  "id": "q149",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "minimum phone requirements for the evoting app",
+  "gold_faq": [
+   "evoting_04"
+  ],
+  "id": "q150",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how much RAM is needed for the evoting app",
+  "gold_faq": [
+   "evoting_04"
+  ],
+  "id": "q151",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "ई-वोटिंग ऐप के लिए फोन में क्या होना चाहिए?",
+  "gold_faq": [
+   "evoting_04"
+  ],
+  "id": "q152",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "kitna RAM chahiye evoting app ke liye",
+  "gold_faq": [
+   "evoting_04"
+  ],
+  "id": "q153",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "can my whole family vote from one phone",
+  "gold_faq": [
+   "evoting_05"
+  ],
+  "id": "q154",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how many voters per device",
+  "gold_faq": [
+   "evoting_05"
+  ],
+  "id": "q155",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "क्या पूरा परिवार एक ही मोबाइल से वोट कर सकता है?",
+  "gold_faq": [
+   "evoting_05"
+  ],
+  "id": "q156",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "ek phone se kitne log vote kar sakte hai",
+  "gold_faq": [
+   "evoting_05"
+  ],
+  "id": "q157",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "I lost my registered phone, can I still vote",
+  "gold_faq": [
+   "evoting_06"
+  ],
+  "id": "q158",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "phone damaged before election day",
+  "gold_faq": [
+   "evoting_06"
+  ],
+  "id": "q159",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "पंजीकृत मोबाइल खो जाए तो क्या करें?",
+  "gold_faq": [
+   "evoting_06"
+  ],
+  "id": "q160",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "phone kho gaya to vote kaise karu",
+  "gold_faq": [
+   "evoting_06"
+  ],
+  "id": "q161",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "what do I need before registering on the evoting app",
+  "gold_faq": [
+   "evoting_07"
+  ],
+  "id": "q162",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "what to keep ready for evoting registration",
+  "gold_faq": [
+   "evoting_07"
+  ],
+  "id": "q163",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "ई-वोटिंग पंजीकरण से पहले क्या तैयार रखें?",
+  "gold_faq": [
+   "evoting_07"
+  ],
+  "id": "q164",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "registration se pehle kya chahiye",
+  "gold_faq": [
+   "evoting_07"
+  ],
+  "id": "q165",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "why does the app need camera permission",
+  "gold_faq": [
+   "evoting_08"
+  ],
+  "id": "q166",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "why is a selfie needed in evoting registration",
+  "gold_faq": [
+   "evoting_08"
+  ],
+  "id": "q167",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "पंजीकरण में सेल्फी क्यों जरूरी है?",
+  "gold_faq": [
+   "evoting_08"
+  ],
+  "id": "q168",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "selfie kyu lena padta hai app me",
+  "gold_faq": [
+   "evoting_08"
+  ],
+  "id": "q169",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "steps to register on the evoting app",
+  "gold_faq": [
+   "evoting_09"
+  ],
+  "id": "q170",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how to register for evoting",
+  "gold_faq": [
+   "evoting_09"
+  ],
+  "id": "q171",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "ई-वोटिंग ऐप पर पंजीकरण कैसे करें?",
+  "gold_faq": [
+   "evoting_09"
+  ],
+  "id": "q172",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "evoting app par registration kaise kare",
+  "gold_faq": [
+   "evoting_09"
+  ],
+  "id": "q173",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how to vote on election day using the app",
+  "gold_faq": [
+   "evoting_10"
+  ],
+  "id": "q174",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "procedure to cast vote through evoting",
+  "gold_faq": [
+   "evoting_10"
+  ],
+  "id": "q175",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "मतदान के दिन ऐप से वोट कैसे डालें?",
+  "gold_faq": [
+   "evoting_10"
+  ],
+  "id": "q176",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "voting day par app se vote kaise de",
+  "gold_faq": [
+   "evoting_10"
+  ],
+  "id": "q177",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how do I select a candidate on the digital ballot",
+  "gold_faq": [
+   "evoting_11"
+  ],
+  "id": "q178",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how to mark my vote on the ballot sheet in the app",
+  "gold_faq": [
+   "evoting_11"
+  ],
+  "id": "q179",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "डिजिटल बैलेट शीट पर वोट कैसे करें?",
+  "gold_faq": [
+   "evoting_11"
+  ],
+  "id": "q180",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "ballot sheet me candidate kaise select kare",
+  "gold_faq": [
+   "evoting_11"
+  ],
+  "id": "q181",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "is there a time limit to vote in the app",
+  "gold_faq": [
+   "evoting_12"
+  ],
+  "id": "q182",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how many minutes do I get to vote",
+  "gold_faq": [
+   "evoting_12"
+  ],
+  "id": "q183",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "वोट डालने की समय सीमा कितनी है?",
+  "gold_faq": [
+   "evoting_12"
+  ],
+  "id": "q184",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "vote dalne ka time limit hai kya",
+  "gold_faq": [
+   "evoting_12"
+  ],
+  "id": "q185",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "can I skip voting for one post",
+  "gold_faq": [
+   "evoting_13"
+  ],
+  "id": "q186",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "do I have to vote for all posts",
+  "gold_faq": [
+   "evoting_13"
+  ],
+  "id": "q187",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "क्या किसी पद के लिए वोट छोड़ सकते हैं?",
+  "gold_faq": [
+   "evoting_13"
+  ],
+  "id": "q188",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "kisi post ko skip kar sakte hai kya",
+  "gold_faq": [
+   "evoting_13"
+  ],
+  "id": "q189",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how do I know my vote was counted correctly",
+  "gold_faq": [
+   "evoting_14"
+  ],
+  "id": "q190",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "vote verification in evoting",
+  "gold_faq": [
+   "evoting_14"
+  ],
+  "id": "q191",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "कैसे पता करें कि मेरा वोट सही पड़ा?",
+  "gold_faq": [
+   "evoting_14"
+  ],
+  "id": "q192",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "mera vote sahi gaya kaise check kare",
+  "gold_faq": [
+   "evoting_14"
+  ],
+  "id": "q193",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "OTP not received in the evoting app",
+  "gold_faq": [
+   "evoting_15"
+  ],
+  "id": "q194",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "not getting OTP what should I do",
+  "gold_faq": [
+   "evoting_15"
+  ],
+  "id": "q195",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "ओटीपी नहीं आ रहा है क्या करें?",
+  "gold_faq": [
+   "evoting_15"
+  ],
+  "id": "q196",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "OTP nahi aa raha",
+  "gold_faq": [
+   "evoting_15"
+  ],
+  "id": "q197",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "where to get help if the evoting app has a problem",
+  "gold_faq": [
+   "evoting_16"
+  ],
+  "id": "q198",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "evoting app support contact",
+  "gold_faq": [
+   "evoting_16"
+  ],
+  "id": "q199",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "ऐप में तकनीकी दिक्कत हो तो मदद कहाँ मिलेगी?",
+  "gold_faq": [
+   "evoting_16"
+  ],
+  "id": "q200",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "app me problem ho to kisse contact kare",
+  "gold_faq": [
+   "evoting_16"
+  ],
+  "id": "q201",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "where to enter a panchayat merged into a nagar panchayat in the software",
+  "gold_faq": [
+   "evoting_17"
+  ],
+  "id": "q202",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "नगर पंचायत में शामिल पंचायत की प्रविष्टि सॉफ्टवेयर में कहाँ करें?",
+  "gold_faq": [
+   "evoting_17"
+  ],
+  "id": "q203",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "entry rules for affected and unaffected parts of a panchayat shifted to nagar panchayat",
+  "gold_faq": [
+   "evoting_18"
+  ],
+  "id": "q204",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "prabhavit aur aprabhavit bhag ki entry kaise kare",
+  "gold_faq": [
+   "evoting_18"
+  ],
+  "id": "q205",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "will the ward serial number change if a panchayat becomes an urban local body",
+  "gold_faq": [
+   "evoting_19"
+  ],
+  "id": "q206",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "पंचायत के नगर निकाय में जाने पर क्या वार्ड का क्रमांक बदलेगा?",
+  "gold_faq": [
+   "evoting_19"
+  ],
+  "id": "q207",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "rule for correcting the boundary chauhaddi",
+  "gold_faq": [
+   "evoting_20"
+  ],
+  "id": "q208",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "चौहद्दी मिलान कर सुधार का नियम क्या है?",
+  "gold_faq": [
+   "evoting_20"
+  ],
+  "id": "q209",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how to record chauhaddi for a panchayat moved into nagar panchayat",
+  "gold_faq": [
+   "evoting_21"
+  ],
+  "id": "q210",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "do I need to enter panchayat samiti population separately if ward population is entered",
+  "gold_faq": [
+   "evoting_22"
+  ],
+  "id": "q211",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "how to delete an abolished ward from the software",
+  "gold_faq": [
+   "evoting_23"
+  ],
+  "id": "q212",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "hi",
+  "text": "समाप्त वार्ड को सॉफ्टवेयर से कैसे हटाएं?",
+  "gold_faq": [
+   "evoting_23"
+  ],
+  "id": "q213",
+  "split": "test"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "will the panchayat samiti continue if most wards move to the municipality",
+  "gold_faq": [
+   "evoting_24"
+  ],
+  "id": "q214",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "en",
+  "text": "can one user log in on two computers at the same time",
+  "gold_faq": [
+   "evoting_25"
+  ],
+  "id": "q215",
+  "split": "dev"
+ },
+ {
+  "type": "faq",
+  "lang": "hl",
+  "text": "ek user do computer par login kar sakta hai kya",
+  "gold_faq": [
+   "evoting_25"
+  ],
+  "id": "q216",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "how long is the term of a gram panchayat",
+  "gold_sections": [
+   "panchayat_act:14"
+  ],
+  "id": "q217",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "hi",
+  "text": "ग्राम पंचायत का कार्यकाल कितना होता है?",
+  "gold_sections": [
+   "panchayat_act:14"
+  ],
+  "id": "q218",
+  "split": "test"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "how is the mukhiya elected",
+  "gold_sections": [
+   "panchayat_act:15"
+  ],
+  "id": "q219",
+  "split": "test"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "how can a mukhiya be removed from office",
+  "gold_sections": [
+   "panchayat_act:18"
+  ],
+  "id": "q220",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "hi",
+  "text": "मुखिया को पद से कैसे हटाया जा सकता है?",
+  "gold_sections": [
+   "panchayat_act:18"
+  ],
+  "id": "q221",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "what is the quorum for a gram sabha meeting",
+  "gold_sections": [
+   "panchayat_act:5"
+  ],
+  "id": "q222",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "how often must the gram sabha meet",
+  "gold_sections": [
+   "panchayat_act:3"
+  ],
+  "id": "q223",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "hi",
+  "text": "ग्राम सभा की बैठक कितने समय में होनी चाहिए?",
+  "gold_sections": [
+   "panchayat_act:3"
+  ],
+  "id": "q224",
+  "split": "test"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "who conducts panchayat elections in bihar",
+  "gold_sections": [
+   "panchayat_act:123"
+  ],
+  "id": "q225",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "who provides staff for conducting panchayat elections",
+  "gold_sections": [
+   "panchayat_act:125"
+  ],
+  "id": "q226",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "can liquor be sold on polling day",
+  "gold_sections": [
+   "panchayat_act:132",
+   "municipal_act:472"
+  ],
+  "id": "q227",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "hi",
+  "text": "मतदान के दिन शराब की बिक्री पर क्या नियम है?",
+  "gold_sections": [
+   "panchayat_act:132",
+   "municipal_act:472"
+  ],
+  "id": "q228",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "is there a paid holiday for employees on polling day",
+  "gold_sections": [
+   "panchayat_act:131",
+   "municipal_act:471"
+  ],
+  "id": "q229",
+  "split": "test"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "what is the maximum election expense a candidate can spend",
+  "gold_sections": [
+   "panchayat_act:133",
+   "municipal_act:473"
+  ],
+  "id": "q230",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "who is disqualified from being a member of a panchayat",
+  "gold_sections": [
+   "panchayat_act:136"
+  ],
+  "id": "q231",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "how to file an election petition",
+  "gold_sections": [
+   "panchayat_act:137",
+   "municipal_act:476",
+   "municipal_act:477"
+  ],
+  "id": "q232",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "what are corrupt practices in elections",
+  "gold_sections": [
+   "panchayat_act:141",
+   "municipal_act:481"
+  ],
+  "id": "q233",
+  "split": "test"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "what is the duration of a zila parishad",
+  "gold_sections": [
+   "panchayat_act:66"
+  ],
+  "id": "q234",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "how is the pramukh of panchayat samiti elected",
+  "gold_sections": [
+   "panchayat_act:40"
+  ],
+  "id": "q235",
+  "split": "test"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "reservation of seats in gram panchayat",
+  "gold_sections": [
+   "panchayat_act:13"
+  ],
+  "id": "q236",
+  "split": "test"
+ },
+ {
+  "type": "act",
+  "lang": "hi",
+  "text": "ग्राम पंचायत के कार्य क्या हैं?",
+  "gold_sections": [
+   "panchayat_act:22"
+  ],
+  "id": "q237",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "who is a public servant under the panchayat act",
+  "gold_sections": [
+   "panchayat_act:170"
+  ],
+  "id": "q238",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "what happens if the gram panchayat election cannot be held before its term ends",
+  "gold_sections": [
+   "amend2021:2",
+   "panchayat_act:14"
+  ],
+  "id": "q239",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "hi",
+  "text": "चुनाव न हो पाने पर ग्राम पंचायत का क्या होगा?",
+  "gold_sections": [
+   "amend2021:2",
+   "panchayat_act:14"
+  ],
+  "id": "q240",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "criminal powers of the gram katchahry bench",
+  "gold_sections": [
+   "panchayat_act:106",
+   "panchayat_act:107"
+  ],
+  "id": "q241",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "how many years is the term of a municipal councillor",
+  "gold_sections": [
+   "municipal_act:16"
+  ],
+  "id": "q242",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "can voters recall a councillor",
+  "gold_sections": [
+   "municipal_act:17"
+  ],
+  "id": "q243",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "hi",
+  "text": "क्या पार्षद को वापस बुलाया जा सकता है?",
+  "gold_sections": [
+   "municipal_act:17"
+  ],
+  "id": "q244",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "who is disqualified from being a councillor",
+  "gold_sections": [
+   "municipal_act:18"
+  ],
+  "id": "q245",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "how is the chief councillor elected",
+  "gold_sections": [
+   "municipal_act:23"
+  ],
+  "id": "q246",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "how can the chief councillor be removed",
+  "gold_sections": [
+   "municipal_act:25"
+  ],
+  "id": "q247",
+  "split": "test"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "penalty for a candidate filing a false affidavit",
+  "gold_sections": [
+   "municipal_act:447"
+  ],
+  "id": "q248",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "what is the offence of booth capturing",
+  "gold_sections": [
+   "municipal_act:469"
+  ],
+  "id": "q249",
+  "split": "test"
+ },
+ {
+  "type": "act",
+  "lang": "hi",
+  "text": "मतदान केन्द्र पर कब्जा करने का अपराध क्या है?",
+  "gold_sections": [
+   "municipal_act:469"
+  ],
+  "id": "q250",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "is canvassing allowed near a polling station",
+  "gold_sections": [
+   "municipal_act:460"
+  ],
+  "id": "q251",
+  "split": "test"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "can someone go armed to a polling station",
+  "gold_sections": [
+   "municipal_act:467"
+  ],
+  "id": "q252",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "who is the district election officer for municipal elections",
+  "gold_sections": [
+   "municipal_act:453"
+  ],
+  "id": "q253",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "who has the right to vote in municipal elections",
+  "gold_sections": [
+   "municipal_act:449",
+   "municipal_act:451"
+  ],
+  "id": "q254",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "how are municipal areas classified",
+  "gold_sections": [
+   "municipal_act:7"
+  ],
+  "id": "q255",
+  "split": "test"
+ },
+ {
+  "type": "act",
+  "lang": "hi",
+  "text": "नगरपालिका क्षेत्रों का वर्गीकरण कैसे होता है?",
+  "gold_sections": [
+   "municipal_act:7"
+  ],
+  "id": "q256",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "what population is needed to declare a nagar panchayat",
+  "gold_sections": [
+   "municipal_act:3"
+  ],
+  "id": "q257",
+  "split": "dev"
+ },
+ {
+  "type": "act",
+  "lang": "en",
+  "text": "are public meetings allowed just before polling",
+  "gold_sections": [
+   "municipal_act:455"
+  ],
+  "id": "q258",
+  "split": "test"
+ },
+ {
+  "type": "case",
+  "lang": "en",
+  "text": "how are votes protected with end to end encryption in evoting",
+  "gold_sections": [
+   "case:addressing-data-security-privacy-aspects"
+  ],
+  "id": "q259",
+  "split": "dev"
+ },
+ {
+  "type": "case",
+  "lang": "en",
+  "text": "what challenges did bihar face in implementing evoting",
+  "gold_sections": [
+   "case:challenges"
+  ],
+  "id": "q260",
+  "split": "dev"
+ },
+ {
+  "type": "case",
+  "lang": "en",
+  "text": "why did bihar introduce evoting in the 2025 urban local body elections",
+  "gold_sections": [
+   "case:rationale-for-evoting-in-bihar-ulb-elections-2025",
+   "case:introduction",
+   "case:objectives"
+  ],
+  "id": "q261",
+  "split": "test"
+ },
+ {
+  "type": "case",
+  "lang": "en",
+  "text": "who developed the evoting application",
+  "gold_sections": [
+   "case:development-implementation",
+   "case:annexure-1-e-voting-application-developed-by-the-c-dac",
+   "case:annexure-2-e-voting-application-developed-by-the-in-house-te"
+  ],
+  "id": "q262",
+  "split": "dev"
+ },
+ {
+  "type": "case",
+  "lang": "en",
+  "text": "what was the impact of evoting in bihar",
+  "gold_sections": [
+   "case:impact-created"
+  ],
+  "id": "q263",
+  "split": "dev"
+ },
+ {
+  "type": "case",
+  "lang": "en",
+  "text": "what are the benefits of evoting",
+  "gold_sections": [
+   "case:benefits-of-evoting"
+  ],
+  "id": "q264",
+  "split": "dev"
+ },
+ {
+  "type": "case",
+  "lang": "en",
+  "text": "was blockchain used in the evoting system",
+  "gold_sections": [
+   "case:foreword",
+   "case:development-implementation",
+   "case:addressing-data-security-privacy-aspects",
+   "case:introduction"
+  ],
+  "id": "q265",
+  "split": "dev"
+ },
+ {
+  "type": "case",
+  "lang": "en",
+  "text": "how does face recognition verify the voter in the evoting app",
+  "gold_sections": [
+   "case:annexure-2-e-voting-application-developed-by-the-in-house-te",
+   "case:addressing-data-security-privacy-aspects",
+   "case:img-p30-1"
+  ],
+  "id": "q266",
+  "split": "dev"
+ },
+ {
+  "type": "case",
+  "lang": "en",
+  "text": "selfie guidelines for evoting registration",
+  "gold_sections": [
+   "case:img-p36-4"
+  ],
+  "id": "q267",
+  "split": "dev"
+ },
+ {
+  "type": "case",
+  "lang": "hi",
+  "text": "सेल्फी लेते समय किन बातों का ध्यान रखें?",
+  "gold_sections": [
+   "case:img-p36-4"
+  ],
+  "id": "q268",
+  "split": "test"
+ },
+ {
+  "type": "case",
+  "lang": "en",
+  "text": "what is the future plan for evoting",
+  "gold_sections": [
+   "case:future-vision-and-conclusion"
+  ],
+  "id": "q269",
+  "split": "dev"
+ },
+ {
+  "type": "case",
+  "lang": "en",
+  "text": "what were the objectives of the evoting initiative",
+  "gold_sections": [
+   "case:objectives"
+  ],
+  "id": "q270",
+  "split": "test"
+ },
+ {
+  "type": "case",
+  "lang": "en",
+  "text": "steps in the C-DAC evoting app",
+  "gold_sections": [
+   "case:annexure-1-e-voting-application-developed-by-the-c-dac",
+   "case:img-p23-1",
+   "case:img-p23-2",
+   "case:img-p23-3",
+   "case:img-p24-1",
+   "case:img-p24-2"
+  ],
+  "id": "q271",
+  "split": "dev"
+ },
+ {
+  "type": "case",
+  "lang": "en",
+  "text": "poll day option in the in-house evoting app",
+  "gold_sections": [
+   "case:annexure-2-e-voting-application-developed-by-the-in-house-te",
+   "case:img-p31-1"
+  ],
+  "id": "q272",
+  "split": "dev"
+ },
+ {
+  "type": "case",
+  "lang": "en",
+  "text": "how was evoting implemented step by step",
+  "gold_sections": [
+   "case:structured-implementation-process",
+   "case:development-implementation"
+  ],
+  "id": "q273",
+  "split": "dev"
+ },
+ {
+  "type": "case",
+  "lang": "en",
+  "text": "what inspired bihar to start evoting",
+  "gold_sections": [
+   "case:inspiration"
+  ],
+  "id": "q274",
+  "split": "dev"
+ },
+ {
+  "type": "case",
+  "lang": "hi",
+  "text": "ई-वोटिंग से क्या लाभ हुआ?",
+  "gold_sections": [
+   "case:impact-created",
+   "case:benefits-of-evoting"
+  ],
+  "id": "q275",
+  "split": "dev"
+ },
+ {
+  "type": "case",
+  "lang": "hl",
+  "text": "evoting me data kaise surakshit rakha gaya",
+  "gold_sections": [
+   "case:addressing-data-security-privacy-aspects"
+  ],
+  "id": "q276",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "en",
+  "text": "who will win the bihar assembly election",
+  "id": "q277",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "en",
+  "text": "which party should I vote for",
+  "id": "q278",
+  "split": "test"
+ },
+ {
+  "type": "oos",
+  "lang": "en",
+  "text": "what is the weather in patna today",
+  "id": "q279",
+  "split": "test"
+ },
+ {
+  "type": "oos",
+  "lang": "en",
+  "text": "tell me a joke",
+  "id": "q280",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "en",
+  "text": "how do I apply for a passport",
+  "id": "q281",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "en",
+  "text": "what is the capital of france",
+  "id": "q282",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "en",
+  "text": "best biryani in patna",
+  "id": "q283",
+  "split": "test"
+ },
+ {
+  "type": "oos",
+  "lang": "en",
+  "text": "my laptop is not starting",
+  "id": "q284",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "en",
+  "text": "price of petrol today",
+  "id": "q285",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "en",
+  "text": "who is the chief minister of bihar",
+  "id": "q286",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "en",
+  "text": "write python code to sort a list",
+  "id": "q287",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "en",
+  "text": "IPL score",
+  "id": "q288",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "en",
+  "text": "how to get a ration card",
+  "id": "q289",
+  "split": "test"
+ },
+ {
+  "type": "oos",
+  "lang": "en",
+  "text": "how to apply for PM kisan",
+  "id": "q290",
+  "split": "test"
+ },
+ {
+  "type": "oos",
+  "lang": "en",
+  "text": "book a train ticket",
+  "id": "q291",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "en",
+  "text": "bank loan interest rate",
+  "id": "q292",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "en",
+  "text": "how to lose weight",
+  "id": "q293",
+  "split": "test"
+ },
+ {
+  "type": "oos",
+  "lang": "en",
+  "text": "date of the next lok sabha election",
+  "id": "q294",
+  "split": "test"
+ },
+ {
+  "type": "oos",
+  "lang": "hi",
+  "text": "बिहार विधानसभा चुनाव कौन जीतेगा?",
+  "id": "q295",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "hi",
+  "text": "आज पटना का मौसम कैसा है?",
+  "id": "q296",
+  "split": "test"
+ },
+ {
+  "type": "oos",
+  "lang": "hi",
+  "text": "राशन कार्ड कैसे बनवाएं?",
+  "id": "q297",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "hi",
+  "text": "मुझे एक चुटकुला सुनाओ",
+  "id": "q298",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "hi",
+  "text": "किस पार्टी को वोट दूं?",
+  "id": "q299",
+  "split": "test"
+ },
+ {
+  "type": "oos",
+  "lang": "hi",
+  "text": "पासपोर्ट कैसे बनवाएं?",
+  "id": "q300",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "hi",
+  "text": "प्रधानमंत्री कौन है?",
+  "id": "q301",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "hi",
+  "text": "पेट्रोल का दाम क्या है?",
+  "id": "q302",
+  "split": "test"
+ },
+ {
+  "type": "oos",
+  "lang": "hl",
+  "text": "kaun party jeetegi",
+  "id": "q303",
+  "split": "test"
+ },
+ {
+  "type": "oos",
+  "lang": "hl",
+  "text": "aaj mausam kaisa hai",
+  "id": "q304",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "hl",
+  "text": "ration card kaise banaye",
+  "id": "q305",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "hl",
+  "text": "joke sunao",
+  "id": "q306",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "hl",
+  "text": "cricket score batao",
+  "id": "q307",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "hl",
+  "text": "mera phone hang ho raha hai",
+  "id": "q308",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "hl",
+  "text": "hello kaise ho",
+  "id": "q309",
+  "split": "dev"
+ },
+ {
+  "type": "oos",
+  "lang": "en",
+  "text": "hi, how are you?",
+  "id": "q310",
+  "split": "dev"
+ }
+]

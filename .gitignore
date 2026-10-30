@@ -8,3 +8,6 @@ kb-source/
 kb-work/
 scripts/kb/.venv/
 __pycache__/
+
+# ONNX model binaries (>100 MB, GitHub limit); fetched at Docker build time
+data/kb/index/model/onnx/

@@ -2,3 +2,9 @@ node_modules/
 .env
 *.log
 .playwright-mcp/
+
+# Knowledge-base processing (raw client files, OCR cache, Python venv)
+kb-source/
+kb-work/
+scripts/kb/.venv/
+__pycache__/

@@ -1,0 +1,13 @@
+pymupdf
+openpyxl
+numpy
+opencv-python-headless
+pytesseract
+easyocr
+rapidfuzz
+torch
+transformers>=4.44,<5
+sentencepiece
+sacremoses
+IndicTransToolkit
+huggingface_hub

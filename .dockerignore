@@ -7,3 +7,6 @@ node_modules
 docs
 *.log
 docker-compose.local.yml
+kb-source
+kb-work
+scripts/kb/.venv

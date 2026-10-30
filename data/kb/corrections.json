@@ -1,0 +1,18 @@
+[
+  {
+    "doc": "panchayat_amendment_2021_hi",
+    "section": "2",
+    "find": "धारा 4",
+    "replace": "धारा 14",
+    "whole_number": true,
+    "reason": "OCR dropped the leading 1. Section 2 amends the term of the Gram Panchayat (five-year period, dissolution if no election), which is section 14 'Duration of Gram Panchayat' of the 2006 Act; sections 3/5/7 amend the matching Duration sections 39/66/92."
+  },
+  {
+    "doc": "panchayat_amendment_2021_hi",
+    "section": "2",
+    "find": "धारा 44",
+    "replace": "धारा 14",
+    "whole_number": true,
+    "reason": "OCR read 1 as 4 (known confusion in this font); same reference as above."
+  }
+]

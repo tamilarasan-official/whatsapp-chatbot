@@ -20,6 +20,7 @@ SAMPLES = {
     'panchayat_amendment_2021_hi': [1, 2],
     'panchayat_act_en': [6, 120],
     'municipal_act_en': [7, 112],
+    'evoting_case_study_en': [18],
 }
 
 
@@ -28,7 +29,7 @@ def esc(s):
 
 
 def load_pages(key, meta):
-    if meta['method'] == 'text':
+    if meta['method'] in ('text', 'chapters'):
         doc = fitz.open(SOURCE / meta['file'])
         return {i + 1: p.get_text() for i, p in enumerate(doc)}, {}
     folder = 'text' if meta['method'] == 'devlys' else 'ocr'
@@ -49,11 +50,13 @@ def page_image(key, meta, page_no):
 
 def doc_stats(key, meta, pages, data, sections):
     secs = [s for s in sections if s['doc'] == key]
-    nums = sorted({int(re.match(r'\d+', s['section']).group()) for s in secs}) if secs else []
+    nums = sorted({int(re.match(r'\d+', s['section']).group()) for s in secs
+                   if re.match(r'\d+', s['section'])}) if secs else []
     missing = [n for n in range(1, nums[-1] + 1) if n not in nums] if nums else []
     row = {
         'pages': len(pages), 'method': {'text': 'PDF text layer', 'ocr': 'OCR: Tesseract + EasyOCR',
-                                        'devlys': 'DevLys → Unicode conversion'}[meta['method']],
+                                        'devlys': 'DevLys → Unicode conversion',
+                                        'chapters': 'Text layer (chapters) + image OCR (Tesseract + EasyOCR)'}[meta['method']],
         'chars': sum(len(t) for t in pages.values()), 'sections': len(secs),
         'max_section': nums[-1] if nums else '-', 'missing': missing,
     }
@@ -90,6 +93,14 @@ def main():
             quality = f'Corrupted in source PDF on pages {st["corrupt_pages"]}'
             review.append(f'{esc(meta["title"])}: text corrupted in the client PDF on pages {st["corrupt_pages"]} '
                           f'(request a clean copy; English Act covers these sections)')
+        if meta['method'] == 'chapters':
+            images = [x for x in sections if x['doc'] == key and x.get('source') == 'image OCR']
+            low = [x['page'] for x in images if x.get('reliability') == 'low']
+            quality = (f"{st['sections'] - len(images)} chapters; {len(images)} images with text "
+                       f"({len(low)} low reliability: multi-column clippings / low confidence)")
+            review.append(f'{esc(meta["title"])}: {len(low)} image-OCR entries are low reliability (newspaper clippings, '
+                          f'pages {sorted(set(low))}); used as background only, never as the source of a number')
+            st['missing'] = []
         if st['missing']:
             review.append(f'{esc(meta["title"])}: {len(st["missing"])} section headings not detected '
                           f'(text kept inside the previous section): {st["missing"][:25]}{" …" if len(st["missing"]) > 25 else ""}')
@@ -105,6 +116,13 @@ def main():
             samples.append(f'<div class="pair"><div><h4>Source page {n}</h4><img src="{page_image(key, meta, n)}"></div>'
                            f'<div><h4>Extracted text</h4><pre>{esc(pages[n][:2500])}</pre></div></div>')
         extra = ''
+        if meta['method'] == 'chapters':
+            imgs = [x for x in sections if x['doc'] == key and x.get('source') == 'image OCR'][:0] or                 [x for x in sections if x['doc'] == key and x['id'].endswith(('img-p36-4', 'img-p24-1', 'img-p53-1'))]
+            for x in imgs:
+                pg = x['page']
+                samples.append(f'<div class="pair"><div><h4>Source page {pg} ({esc(x["section"])}, reliability: '
+                               f'{x.get("reliability")})</h4><img src="{page_image(key, meta, pg)}"></div>'
+                               f'<div><h4>Text read from the image</h4><pre>{esc(x["text"][:2000])}</pre></div></div>')
         if meta['method'] == 'ocr' and data.get('decisions'):
             rows = ''.join(f'<tr><td>{d["page"]}</td><td>{esc(d["tesseract"])}</td><td>{esc(d["easyocr"])}</td>'
                            f'<td><b>{esc(d["used"])}</b></td><td>{d["why"]}</td></tr>' for d in data['decisions'][:40])

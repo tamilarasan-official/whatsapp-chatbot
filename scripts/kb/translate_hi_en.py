@@ -79,9 +79,32 @@ def translate(sentences):
     return out
 
 
+def translate_sections(key):
+    """Add an English twin of every Hindi section of <key> to data/kb/sections.json (machine translation)."""
+    from common import OUT
+    path = OUT / 'sections.json'
+    sections = json.loads(path.read_text(encoding='utf-8'))
+    source = [s for s in sections if s['doc'] == key and s['lang'] == 'hi']
+    en_key = key.replace('_hi', '_en_mt')
+    twins = []
+    for s in source:
+        title = translate([s['title']])[0]
+        body = ' '.join(translate(split_sentences(s['text'])))
+        twins.append(dict(s, id=f"{en_key}:s{s['section']}", doc=en_key, lang='en', title=title, text=body,
+                          act=f"{s['act']} (English machine translation, pending review)",
+                          source='machine translation (IndicTrans2)', reliability='medium', translated_from=s['id']))
+        print(f"  s{s['section']}: {title[:70]}", flush=True)
+    merged = [x for x in sections if x['doc'] != en_key] + twins
+    path.write_text(json.dumps(merged, ensure_ascii=False, indent=1), encoding='utf-8')
+    print(f'{en_key}: {len(twins)} English sections added (total {len(merged)})')
+
+
 def main():
     if hasattr(sys.stdout, 'reconfigure'):
         sys.stdout.reconfigure(encoding='utf-8')
+    if sys.argv[1] == '--sections':
+        translate_sections(sys.argv[2])
+        return
     if sys.argv[1] == '--test':
         for s, t in zip(split_sentences(sys.argv[2]), translate(split_sentences(sys.argv[2]))):
             print(f'HI: {s}\nEN: {t}\n')

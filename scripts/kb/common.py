@@ -17,6 +17,10 @@ DOCS = {
     'municipal_act_en': {'file': 'The Bihar Municipal Act-2007( English).pdf', 'title': 'Bihar Municipal Act, 2007', 'lang': 'en', 'method': 'text'},
     'municipal_act_hi': {'file': 'AR-02-29-03-2007.pdf', 'title': 'बिहार नगरपालिका अधिनियम, 2007', 'lang': 'hi', 'method': 'devlys'},
     'panchayat_amendment_2021_hi': {'file': 'Gazette_674_9_8_2021.pdf', 'title': 'बिहार पंचायत राज (संशोधन) अधिनियम, 2021', 'lang': 'hi', 'method': 'ocr'},
+    # Chapters (not numbered sections) + awareness posters/app screenshots read from images
+    'evoting_case_study_en': {'file': 'Case Study - eVoting v0.2.pdf',
+                              'title': "Digital Democracy in Action: Bihar's eVoting Success Story @ ULB Elections 2025",
+                              'lang': 'en', 'method': 'chapters'},
 }
 
 os.environ['TESSDATA_PREFIX'] = TESSDATA

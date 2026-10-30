@@ -45,8 +45,9 @@ def render(page):
     return cv2.cvtColor(img, cv2.COLOR_RGB2GRAY if pix.n == 3 else cv2.COLOR_RGBA2GRAY)
 
 
-def tesseract_words(gray):
-    data = pytesseract.image_to_data(gray, lang='hin+eng', config=TESS_CONFIG, output_type=pytesseract.Output.DICT)
+def tesseract_words(gray, psm=6):
+    data = pytesseract.image_to_data(gray, lang='hin+eng', config=f'--oem 1 --psm {psm}',
+                                     output_type=pytesseract.Output.DICT)
     words = []
     for i, text in enumerate(data['text']):
         if not text.strip():
@@ -82,8 +83,12 @@ def reread_with_easyocr(reader, gray, words):
 
 
 def ocr_page(reader, page, pno):
-    gray = render(page)
-    words = tesseract_words(gray)
+    return dict(ocr_gray(reader, render(page)), page=pno + 1)
+
+
+def ocr_gray(reader, gray, psm=6):
+    """Pass 1 on any grayscale image (a rendered PDF page or an embedded poster/screenshot)."""
+    words = tesseract_words(gray, psm)
     lines = {}
     for wd in words:
         lines.setdefault(wd['line'], []).append(wd)
@@ -105,7 +110,6 @@ def ocr_page(reader, page, pno):
     keep = ('text', 'conf', 'easy', 'easy_conf', 'hindi_line', 'after_chapter')
     confs = [wd['conf'] for wd in words if wd['conf'] >= 0]
     return {
-        'page': pno + 1,
         'lines': [[{k: v for k, v in wd.items() if k in keep} for wd in lw] for lw in lines.values()],
         'words': len(words),
         'mean_conf': round(sum(confs) / len(confs), 1) if confs else 0,

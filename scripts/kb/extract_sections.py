@@ -125,7 +125,23 @@ def split_sections(key, meta):
         if len(text) >= 40:
             sections.append({'id': f"{key}:s{h['section']}", 'doc': key, 'act': meta['title'], 'lang': meta['lang'],
                              'chapter': h['chapter'], 'section': h['section'], 'title': h['title'],
-                             'page': h['page'], 'text': text})
+                             'page': h['page'], 'text': text,
+                             'source': {'text': 'text', 'devlys': 'font conversion', 'ocr': 'OCR'}[meta['method']],
+                             'reliability': 'medium' if meta['method'] == 'ocr' else 'high'})
+    return apply_corrections(key, sections)
+
+
+def apply_corrections(key, sections):
+    """Apply reviewed, documented fixes from data/kb/corrections.json (e.g. OCR digit errors)."""
+    path = OUT / 'corrections.json'
+    fixes = [f for f in json.loads(path.read_text(encoding='utf-8')) if f['doc'] == key] if path.exists() else []
+    for f in fixes:
+        pattern = re.escape(f['find']) + (r'(?!\d)' if f.get('whole_number') else '')
+        for sec in sections:
+            if sec['section'] == f['section']:
+                sec['title'] = re.sub(pattern, f['replace'], sec['title'])
+                sec['text'] = re.sub(pattern, f['replace'], sec['text'])
+                sec.setdefault('corrections', []).append(f'{f["find"]} -> {f["replace"]}: {f["reason"]}')
     return sections
 
 
@@ -135,6 +151,8 @@ def main():
     only = sys.argv[1:] or list(DOCS)
     path = OUT / 'sections.json'
     existing = json.loads(path.read_text(encoding='utf-8')) if path.exists() else []
+    keep = [s for s in existing if s['doc'] not in only]
+    only = [k for k in only if DOCS[k]['method'] != 'chapters']  # chapters: extract_case_study.py
     keep = [s for s in existing if s['doc'] not in only]
     for key in only:
         meta = DOCS[key]

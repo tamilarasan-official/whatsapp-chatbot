@@ -10,6 +10,7 @@ const search = require('./search');
 const llm = require('./llm');
 const { ORG_FACTS } = require('./prompt');
 const { fallbackReply } = require('./fallback');
+const { politicalReply } = require('./guard');
 
 // Score floors (cosine) from scripts/verify-node-search.js with the Phase 5 model: out-of-scope questions
 // score below these (p90: FAQ 0.44, section 0.36); case-study questions score above (p10 0.43).
@@ -245,6 +246,9 @@ async function respond({ message, history = [], language = 'hi', context = {}, m
   // context.replyLanguage: set by the app when it sends an FAQ's English question for a Tamil user
   const started = performance.now();
   const lang = replyLanguage(message, language, context.replyLanguage);
+  // Vote advice / predictions never reach retrieval or the model: fixed neutral reply (server/guard.js).
+  const guarded = politicalReply(message, lang);
+  if (guarded) return { ...guarded, latency_ms: Math.round(performance.now() - started) };
   const { registry, confidentFaq, route, debug } = await retrieve(message, history, context.audience === 'officials', lang);
 
   const finish = (result, citationIds = []) => {

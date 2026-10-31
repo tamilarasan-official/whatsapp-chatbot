@@ -105,8 +105,20 @@ async function rewriteQuery(message, history) {
   }
 }
 
+// The model sometimes writes Markdown bold (**x**) or appends 'Citations: ["F1"]' to the reply text.
+// WhatsApp and the web UI render both literally, so they are cleaned here; citation ids live in the JSON field.
+function cleanReply(text) {
+  return String(text || '')
+    .replace(/\s*\(citations?\s*:\s*\[[^\]]*\]\)/gi, '')
+    .replace(/\s*citations?\s*:\s*\[[^\]]*\]\.?/gi, '')
+    .replace(/\*\*(.+?)\*\*/g, '*$1*')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/[ \t]+\n/g, '\n')
+    .trim();
+}
+
 function normalise(raw, fallbackLang, validIds) {
-  const reply = String(raw.reply || '').trim();
+  const reply = cleanReply(raw.reply);
   if (!reply) throw new LlmError('Empty reply', 502);
   const confidence = Math.max(0, Math.min(1, Number(raw.confidence)));
   return {
@@ -145,4 +157,4 @@ async function answer({ message, history, language, context, mode, sources, vali
   throw lastError;
 }
 
-module.exports = { MODEL, LlmError, getClient, rewriteQuery, answer };
+module.exports = { MODEL, LlmError, getClient, rewriteQuery, answer, cleanReply };

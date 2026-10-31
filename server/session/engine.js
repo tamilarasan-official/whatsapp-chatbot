@@ -18,7 +18,10 @@ const REF_LIKE = /^[a-z]{0,4}[\s-]*\d[\d\s-]{2,}$/i;
 const LANG_WORDS = { en: /^(english|eng|अंग्रेज़ी|अंग्रेजी)$/i, hi: /^(hindi|हिन्दी|हिंदी)$/i };
 const STOP_WORDS = /^(stop|unsubscribe|रोकें|बंद करें)[\s!.]*$/i;
 const START_WORDS = /^(start|subscribe|शुरू करें)[\s!.]*$/i;
+// Short acknowledgements typed instead of tapping a language button ("ok", "👍", "haan"): go on in Hindi.
+const ACK_PATTERN = /^(ok|okay|k|hmm+|haan|han|ha|ji|yes|y|theek|thik|sahi|ठीक|हाँ|हां|जी)[\s!.]*$|^[^\p{L}\p{N}]+$/iu;
 const PAGE_SIZE = 9; // list rows hold 10: 9 questions + "More questions"
+const MAX_MESSAGE_LENGTH = 500; // same cap as /api/chat
 const LOW_CONFIDENCE = 0.5;
 const HANDOVER_NOTICE_GAP_MS = 10 * 60 * 1000;
 const WINDOW_24H = 24 * 60 * 60 * 1000;
@@ -348,6 +351,7 @@ function createEngine({ data, store, respond, assetsBase, handoverTtlMs = 60 * 6
     if (s.step === 'lang') {
       const lang = LANGS.find((code) => LANG_WORDS[code].test(text));
       if (lang) return chooseLang(c, lang);
+      if (ACK_PATTERN.test(text)) return chooseLang(c, detectScript(text) || defaultLang);
       s.step = null;
       if (detectScript(text)) s.lang = detectScript(text);
       if (!s.consentAt) s.consentAt = now();
@@ -373,6 +377,7 @@ function createEngine({ data, store, respond, assetsBase, handoverTtlMs = 60 * 6
       s.step = null;
     }
 
+    if (text.length > MAX_MESSAGE_LENGTH) return c.text(c.L('tooLong', { max: MAX_MESSAGE_LENGTH }));
     return askAi(c, text);
   }
 

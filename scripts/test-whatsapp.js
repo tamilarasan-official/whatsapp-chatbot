@@ -311,6 +311,41 @@ async function part1() {
     assert.ok(/[ऀ-ॿ]/.test(last(r2).text));
   });
 
+  await test('"ok" / emoji instead of a language choice continues in Hindi with the menu', async () => {
+    const K = '919700000011';
+    await h.say(K, 'hi');
+    const r = await h.say(K, 'ok');
+    assert.strictEqual(r.session.lang, 'hi');
+    assert.strictEqual(last(r).type, 'list');
+    const K2 = '919700000012';
+    await h.say(K2, 'hello');
+    const r2 = await h.say(K2, '👍');
+    assert.strictEqual(last(r2).type, 'list');
+  });
+
+  await test('over-long message gets a specific reply, not the generic fallback', async () => {
+    const r = await h.say(U, 'x'.repeat(600));
+    assert.strictEqual(last(r).type, 'text');
+    assert.ok(/500/.test(last(r).text));
+  });
+
+  await test('model reply clean-up: Markdown bold and leaked "Citations:" are removed', async () => {
+    const { cleanReply } = require('../server/llm');
+    assert.strictEqual(cleanReply('Term is **5 years**. Citations: ["F1"]'), 'Term is *5 years*.');
+    assert.strictEqual(cleanReply('Section 125 says X. This is general information. Citations: [S1]'), 'Section 125 says X. This is general information.');
+    assert.strictEqual(cleanReply('## Heading\nBody (citations: [F1, S2]).'), 'Heading\nBody.');
+  });
+
+  await test('neutrality guard: vote advice / predictions in hi, en, Hinglish; legit party-symbol questions pass', async () => {
+    const { isPolitical } = require('../server/guard');
+    const blocked = ['कौन सी पार्टी को वोट दूँ?', 'किसे वोट दें?', 'इस बार कौन जीतेगा?', 'kis party ko vote du', 'kaun jeetega patna me',
+      'Which party should I vote for?', 'Who will win in Patna?', 'who should we vote for in the panchayat election', 'is BJP better than RJD here'];
+    const allowed = ['Can candidates contest on a party symbol?', 'क्या प्रत्याशी पार्टी के चुनाव चिह्न पर लड़ सकते हैं?', 'How are symbols allotted to candidates?',
+      'How do I vote on the eVoting app?', 'मतदान कैसे करें?', 'What is the counting process?', 'kaun mukhiya ban sakta hai', 'who can become a ward councillor'];
+    for (const q of blocked) assert.ok(isPolitical(q), `should block: ${q}`);
+    for (const q of allowed) assert.ok(!isPolitical(q), `should allow: ${q}`);
+  });
+
   await test('answer engine failure -> fallback with officer button, no crash', async () => {
     const r = await h.say(U, 'please throw');
     assert.deepStrictEqual(ids(last(r)), ['officer']);

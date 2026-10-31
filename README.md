@@ -4,7 +4,7 @@ A client demo of a WhatsApp-style help desk for the **State Election Commission,
 (राज्य निर्वाचन आयोग, बिहार), covering Panchayat and Municipal elections. Answers come from the
 Commission's official FAQs (68), the Bihar Panchayat Raj Act 2006, its 2021 amendment, the Bihar
 Municipal Act 2007 and the eVoting case study. Complaint records are **dummy demo data**.
-This is not an official SEC Bihar service. No State Emblem is used; the avatar is a neutral ballot box.
+This is a demo built for SEC Bihar. The avatar is the emblem from the Commission's official profile, used with the client's authorisation (31 Oct 2026).
 
 A switch in the top bar selects one of two chatbot types:
 

@@ -551,8 +551,8 @@ button, input, select { font: inherit; color: inherit; }
   display: flex; align-items: center; justify-content: center;
   color: #fff; font-weight: 600; font-size: 16px;
 }
-.cl-avatar.logo { background: #fff; border: 1px solid #e3e6e8; }
-.cl-avatar.logo img { width: 38px; height: 38px; object-fit: contain; }
+.cl-avatar.logo { background: #fff; border: 1px solid #e3e6e8; overflow: hidden; }
+.cl-avatar.logo img { width: 38px; height: 38px; object-fit: contain; border-radius: 50%; }
 .cl-body { flex: 1; min-width: 0; border-bottom: 1px solid #f0f2f5; padding-bottom: 10px; margin-bottom: -10px; }
 .cl-top, .cl-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .cl-name { display: flex; align-items: center; gap: 4px; min-width: 0; font-size: 16px; font-weight: 500; }

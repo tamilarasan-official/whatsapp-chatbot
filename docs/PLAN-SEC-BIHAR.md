@@ -4,7 +4,7 @@ Client: **State Election Commission, Bihar** (राज्य निर्वा
 Municipal (local body) elections. Replaces the ECI demo content.
 
 Decisions (confirmed):
-- Name: yes. **No State Emblem**: neutral ballot-box avatar + name text
+- Name: yes. Emblem: initially left out (neutral ballot box); on 31 Oct 2026 the client-side developer authorised the emblem from SEC Bihar's official profile as the avatar (public/assets/sec-bihar-emblem.png).
 - Document processing (OCR, conversion, translation): **open-source, offline, no OpenAI**:
   Tesseract 5 (hin+eng) combined with EasyOCR; IndicTrans2 for Hindi -> English
 - Search: small local embedding model (multilingual-e5-small, runs on the server); OpenAI only writes the final answer and does voice

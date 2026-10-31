@@ -62,7 +62,7 @@ export function initHome({ phone, homeView, chatList, chatEl, navBadge, orgName,
     const right = el('span', { class: 'cl-right' }, unread ? el('b', { class: 'cl-badge', text: String(unread) }) : PIN());
     return el('li', {},
       el('button', { class: 'cl-row eci', type: 'button', onclick: openChat, 'aria-label': `Open chat with ${orgName}` },
-        el('span', { class: 'cl-avatar logo' }, el('img', { src: 'assets/ballot-box.svg', alt: '', width: 40, height: 40 })),
+        el('span', { class: 'cl-avatar logo' }, el('img', { src: 'assets/sec-bihar-emblem.png', alt: '', width: 40, height: 40 })),
         el('span', { class: 'cl-body' }, nameRow, el('div', { class: 'cl-bottom' }, msg, right))));
   }
 

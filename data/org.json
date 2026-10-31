@@ -8,8 +8,7 @@
   "defaultLanguage": "hi",
   "languages": [
     "hi",
-    "en",
-    "ta"
+    "en"
   ],
   "colors": {
     "primary": "#075E54",

@@ -12,7 +12,7 @@ const { fallbackReply } = require('./fallback');
 
 const PORT = Number(process.env.PORT) || 3000;
 const MAX_MESSAGE_LENGTH = 500;
-const VALID_LANGS = new Set(['en', 'hi', 'ta']);
+const VALID_LANGS = new Set(['en', 'hi']);
 
 const app = express();
 app.disable('x-powered-by');

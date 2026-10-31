@@ -1,9 +1,9 @@
 // Scripted flow engine. Buttons carry stable payload IDs; free text is matched
 // against a few deterministic rules and everything else goes to the live AI.
 
-import * as chat from './chat.js?v=sec2';
-import * as api from './api.js?v=sec2';
-import { t, faqText, pick, detectScript, LANGS } from './i18n.js?v=sec2';
+import * as chat from './chat.js?v=sec3';
+import * as api from './api.js?v=sec3';
+import { t, faqText, pick, detectScript, LANGS } from './i18n.js?v=sec3';
 
 const CMP_PATTERN = /\bCMP-\d{4}-\d{5}\b/i;
 const CMP_LOOSE = /\bCMP[\s-]*\d/i;
@@ -13,7 +13,7 @@ const MENU_PATTERN = /^(menu|main menu|start over|मेन्यू|मेन�
 // Greetings are answered by the AI; only offline mode maps them to the menu.
 const GREETING_PATTERN = /^(hi+|hello|hey|help|namaste|namaskar|vanakkam|नमस्ते|नमस्कार|प्रणाम|வணக்கம்)[\s!.]*$/i;
 const REF_LIKE = /^[a-z]{0,4}[\s-]*\d[\d\s-]{2,}$/i;
-const LANG_WORDS = { en: /^(english|eng|अंग्रेज़ी|अंग्रेजी)$/i, hi: /^(hindi|हिन्दी|हिंदी)$/i, ta: /^(tamil|தமிழ்)$/i };
+const LANG_WORDS = { en: /^(english|eng|अंग्रेज़ी|अंग्रेजी)$/i, hi: /^(hindi|हिन्दी|हिंदी)$/i };
 const PAGE_SIZE = 9; // WhatsApp lists hold 10 rows: 9 questions + "More questions"
 const LOW_CONFIDENCE = 0.5;
 const DEMO_NOTIFY_REF = 'CMP-2026-00412';

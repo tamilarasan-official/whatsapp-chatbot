@@ -65,14 +65,12 @@ function scriptLanguage(reply) {
 
 // forced: the app asked for this language (e.g. an FAQ tapped in Tamil, sent as its English question).
 function replyLanguage(message, preferred, forced) {
-  if (['hi', 'en', 'ta'].includes(forced)) return forced;
-  if (TAMIL.test(message)) return 'ta';
+  if (['hi', 'en'].includes(forced)) return forced;
   if (DEVANAGARI.test(message)) return 'hi';
-  const hl = hinglishScore(message);
-  const tl = tanglishScore(message);
-  if (Math.max(hl, tl) >= 2) return tl > hl ? 'tanglish' : 'mixed';
+  if (TAMIL.test(message) || tanglishScore(message) >= 2) return preferred === 'en' ? 'en' : 'hi';
+  if (hinglishScore(message) >= 2) return 'mixed';
   if (/[a-z]{3,}/i.test(message)) return 'en';
-  return ['en', 'ta'].includes(preferred) ? preferred : 'hi';
+  return preferred === 'en' ? 'en' : 'hi';
 }
 
 // ------------------------------------------------------------ sources shown to the AI

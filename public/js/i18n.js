@@ -205,7 +205,7 @@ const STRINGS = {
   },
 };
 
-export const LANGS = ['hi', 'en', 'ta'];
+export const LANGS = ['hi', 'en'];
 
 export function t(lang, key, vars = {}) {
   const table = STRINGS[lang] || STRINGS.hi;

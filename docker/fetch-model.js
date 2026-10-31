@@ -10,10 +10,16 @@ const [repo, sha256, out] = process.argv.slice(2);
 const FILE = 'onnx/model_quantized.onnx';
 
 async function main() {
-  const token = fs.readFileSync('/run/secrets/hf_token', 'utf8').trim();
+  // tolerate a value pasted with quotes or spaces in the Dokploy Environment tab
+  const token = fs.readFileSync('/run/secrets/hf_token', 'utf8').trim().replace(/^["']|["']$/g, '').trim();
+  // safe hint for the build log: never the token itself
+  const hint = token ? `token length ${token.length}, starts with "${token.slice(0, 3)}"` : 'token is EMPTY';
   const url = `https://huggingface.co/${repo}/resolve/main/${FILE}`;
   const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-  if (!res.ok) throw new Error(`download failed: HTTP ${res.status} for ${url} (check HF_TOKEN and repo access)`);
+  if (!res.ok) {
+    throw new Error(`download failed: HTTP ${res.status} for ${url} (${hint}). `
+      + 'HF_TOKEN must be a valid Hugging Face token (starts with "hf_") with read access to this private repo.');
+  }
   const buf = Buffer.from(await res.arrayBuffer());
   const got = crypto.createHash('sha256').update(buf).digest('hex');
   if (got !== sha256) throw new Error(`checksum mismatch for ${FILE}: expected ${sha256}, got ${got}`);

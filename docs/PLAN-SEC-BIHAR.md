@@ -121,6 +121,81 @@ Removed: Form 6/8, appointment booking, REF status, Tamil, ECI logo and sample P
 ### Phase 7: Client pack
 - Demo guide PDF and WhatsApp message regenerated for SEC Bihar.
 
+### Phase 8: WhatsApp go-live (real number, Meta WhatsApp Business Platform)
+Status (1 Nov 2026): **not started**. The answer engine (Phases 1–6) is ready to serve a WhatsApp webhook as is;
+everything conversational (consent, language, menu, complaints, STOP/START, PII, handover, per-user state) lives in
+`public/js/flows.js` and must be rebuilt on the server. Longest lead items: Meta business verification, template
+approvals, and the session store + webhook build. Start 8.1 and 8.4 in parallel with the code.
+Open decision: direct Meta Cloud API vs an authorised BSP (Gupshup / Interakt / Twilio). A BSP costs more per
+message but shortens onboarding and gives support; the webhook contract is nearly the same either way.
+Items marked **(client)** need SEC Bihar to act or sign off.
+
+#### 8.1 Meta accounts and approvals
+- [ ] Meta Business Manager for the Commission, business verification done (registered name, address, government document). **(client)**
+- [ ] WhatsApp Business Account under it; dedicated phone number not used in any WhatsApp app, reachable for SMS/voice OTP. **(client)**
+- [ ] Display name approval ("State Election Commission, Bihar" / "राज्य निर्वाचन आयोग, बिहार").
+- [ ] Official Business Account (green badge) application. Optional, expected for a government body.
+- [ ] Channel decision: Cloud API direct or BSP. Payment method for conversation charges; who pays. **(client)**
+- [ ] Message templates submitted per language (HI, EN): complaint update, reminder, re-engagement after the 24-hour window.
+- [ ] Sandbox / test number for staging.
+
+#### 8.2 Hosting and infrastructure
+- [ ] India-region server or cloud project (current Dokploy box must be in India or move).
+- [ ] Public HTTPS webhook URL (Dokploy + Let's Encrypt already give this).
+- [ ] Datastore: Redis (sessions, rate limits) + Postgres (consent records, complaints, transcripts, analytics events).
+      Replaces the demo's "no database" rule for production only; the demo stays file-based.
+- [ ] OpenAI org with usage cap and a dedicated key; documented decision on sending citizen text to OpenAI
+      (alternative: India-hosted model if the client requires in-country processing).
+- [ ] Monitoring and alerts: webhook uptime, error rate, OpenAI failures, queue depth, memory.
+- [ ] Datastore backups; deploy rollback path (Dokploy Deployments tab).
+
+#### 8.3 Code to build (server/, new files)
+- [ ] `server/whatsapp/webhook.js`: GET verify token; POST with X-Hub-Signature-256 check, idempotent on Meta retries
+      (message id dedupe), reply 200 immediately and process async.
+- [ ] `server/whatsapp/send.js`: text, reply buttons (max 3), list messages (max 10 rows / 10 sections), document
+      messages for the Act PDFs, template sends, mark-as-read, typing indicator.
+- [ ] `server/session/`: state machine keyed by phone number, ported from `public/js/flows.js`: consent, language,
+      main menu, FAQ lists, complaint register/status, STOP/START, PII block, officer handover, audience=officials.
+- [ ] Menu redesign for WhatsApp limits: 9 topics as one list; FAQ paging as lists; citations as short text + PDF link
+      (or document message) instead of cards.
+- [ ] Per-phone rate limiting and abuse protection (replaces per-IP `express-rate-limit`).
+- [ ] Officer handover: queue table, minimal console (or email/Slack hook), officer reply through the same number.
+- [ ] Complaint registration against the client's system, or a reviewed holding table; remove the fake sequence counter.
+- [ ] Analytics events: message in/out, route, intent, fallback, handover, language.
+- [ ] Admin tooling: edit FAQs and re-index without a developer.
+- [ ] Tests: webhook signature/dedupe, state machine transitions, message-size and button-count limits; staging run
+      against the sandbox number. `/api/chat` stays for the web demo.
+
+#### 8.4 Content and data
+- [ ] Confirm the target body is SEC Bihar and the 68 FAQs + Act PDFs are current. **(client)**
+- [ ] Election Rules (Panchayat 2006, Municipal 2007) and circulars, to close the Act-answer gaps (Phase 5: 63% pass). **(client)**
+- [ ] Human review of the OCR Hindi Act text and the machine-translated 2021 amendment. **(client / Hindi legal reviewer)**
+- [ ] Approved HI/EN copy for consent, welcome, fallback, STOP confirmation, handover; template wording. **(client)**
+- [ ] Decision on Hinglish replies; handling of Bhojpuri / Maithili (reply in simple Hindi).
+- [ ] Larger test set (Hinglish and Act questions) and a third fine-tune round if the pilot shows gaps.
+- [ ] Ship the Phase 5 fix: exact section text sent with each Act answer.
+
+#### 8.5 Compliance and legal
+- [ ] Opt-in design and per-number consent record (Meta policy, DPDP).
+- [ ] Privacy notice and retention schedule for transcripts and phone numbers. **(client)**
+- [ ] Written approval for the Commission's name and emblem on the number (current approval covers the demo only). **(client)**
+- [ ] Access control and audit trail for anyone reading transcripts.
+- [ ] Neutrality / model code of conduct review of bot behaviour during election periods. **(client)**
+
+#### 8.6 People and process
+- [ ] Named client owner for approvals and the Meta account. **(client)**
+- [ ] Officers on the handover queue with defined working hours. **(client)**
+- [ ] Closed pilot: 20–50 officials, two weeks, every Act answer logged and reviewed; fix top failure patterns.
+- [ ] Go-live checklist, incident contact, peak-load plan for nomination and polling dates.
+- [ ] Cost sign-off: Meta conversation charges, OpenAI usage, hosting, BSP fees.
+
+#### Order of work
+1. Decide channel; start 8.1 verification and number procurement; request 8.4 client documents.
+2. Build 8.2 datastore + 8.3 webhook, sender and session state machine; test on the sandbox number.
+3. Port flows and menu; wire handover and complaints; submit templates.
+4. Compliance sign-off (8.5), then the closed pilot (8.6).
+5. Public go-live only after pilot numbers and sign-off.
+
 ## Risks and notes
 - **sec.bihar.gov.in HTTPS certificate expired on 22 Oct 2026** (browsers show "Privacy error"); the bot's website
   link is a setting, off until the certificate is renewed.

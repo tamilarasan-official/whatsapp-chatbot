@@ -8,16 +8,11 @@ function readJson(name) {
 }
 
 const org = readJson('org.json');
-const faqs = readJson('faqs.json');
-const applications = readJson('applications.json');
+const complaints = readJson('complaints.json');
 
-function findApplication(ref) {
+function findComplaint(ref) {
   const key = String(ref || '').trim().toUpperCase();
-  return applications.find((a) => a.ref === key) || null;
+  return complaints.find((c) => c.ref === key) || null;
 }
 
-function faqIds() {
-  return new Set(faqs.map((f) => f.id));
-}
-
-module.exports = { DATA_DIR, org, faqs, applications, findApplication, faqIds };
+module.exports = { DATA_DIR, org, complaints, findComplaint };

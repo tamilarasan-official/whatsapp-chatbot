@@ -46,22 +46,28 @@ const reliabilityNote = (r) => (r === 'high' ? '' : ' (OCR / machine translation
 const stripHeader = (text) => text.slice(text.indexOf('\n') + 1);
 const nextId = (registry, prefix) => `${prefix}${registry.filter((r) => r.id.startsWith(prefix)).length + 1}`;
 
-function sectionCitation(id, key, sec) {
+// Citation in the reply language when that version exists (Hindi for hi / Hinglish), with its PDF page.
+// The English machine translation of the 2021 amendment links to the Hindi original.
+function sectionCitation(id, key, lang) {
+  const versions = search.sectionsByKey.get(key);
   const isCase = key.startsWith('case:');
+  const want = lang === 'en' ? 'en' : 'hi';
+  const sec = versions.find((s) => s.lang === want && !s.doc.endsWith('_mt'))
+    || versions.find((s) => !s.doc.endsWith('_mt')) || versions[0];
   return {
     id, type: isCase ? 'case_study' : 'act', key,
-    act: sec.act, section: isCase ? null : sec.section, title: sec.title, page: sec.page ?? null,
-    reliability: sec.reliability || 'high',
+    act: sec.act, section: isCase ? null : sec.section, title: sec.title, doc: sec.doc, page: sec.page ?? null,
+    reliability: versions.some((s) => s.reliability === 'high') ? 'high' : sec.reliability || 'high',
   };
 }
 
-function addLookups(registry, lookups) {
+function addLookups(registry, lookups, lang) {
   for (const { key, sections } of lookups) {
     const id = nextId(registry, 'S');
     const body = sections
       .map((s) => `[${s.lang}] ${s.act}, Section ${s.section}: ${s.title}${reliabilityNote(s.reliability)}\n${s.text.slice(0, LOOKUP_CHARS)}`)
       .join('\n\n');
-    registry.push({ id, text: `${id} [SECTION ASKED FOR BY THE USER]\n${body}`, citation: sectionCitation(id, key, sections[0]) });
+    registry.push({ id, text: `${id} [SECTION ASKED FOR BY THE USER]\n${body}`, citation: sectionCitation(id, key, lang) });
   }
 }
 
@@ -79,7 +85,7 @@ function addFaqs(registry, faqHits) {
   }
 }
 
-function addSections(registry, secHits) {
+function addSections(registry, secHits, lang) {
   const seen = new Set(registry.map((r) => r.citation.key).filter(Boolean));
   for (const hit of secHits) {
     const sec = search.sectionsByKey.get(hit.key);
@@ -87,7 +93,7 @@ function addSections(registry, secHits) {
     const id = nextId(registry, 'S');
     const head = hit.chunks[0].text.split('\n')[0] + (hit.score >= SECTION_MIN ? '' : ' (weak match)');
     const body = hit.chunks.map((c) => `[${c.lang}]${reliabilityNote(c.reliability)} ${stripHeader(c.text)}`).join('\n…\n');
-    registry.push({ id, text: `${id} ${head}\n${body}`, citation: sectionCitation(id, hit.key, sec[0]) });
+    registry.push({ id, text: `${id} ${head}\n${body}`, citation: sectionCitation(id, hit.key, lang) });
   }
 }
 
@@ -118,7 +124,7 @@ function officialFaqReply(hit, lang) {
   const f = hit.faq;
   const en = lang === 'en';
   return {
-    reply: `*${en ? f.q_en : f.q_hi}*\n${en ? f.a_en : f.a_hi}`,
+    reply: `*${en ? f.q_en : f.q_hi}*\n${(en ? f.a_en : f.a_hi).replace(/\n\s*\n/g, '\n').replace(/^o\s+/gm, '   ◦ ')}`,
     language: en ? 'en' : 'hi', intent: 'faq', confidence: Number(hit.score.toFixed(3)),
     escalate: false, action: 'none', suggested_replies: [],
   };
@@ -131,7 +137,7 @@ const NO_DETAIL = {
 };
 
 // ------------------------------------------------------------ retrieval
-async function retrieve(message, history, includeOfficials) {
+async function retrieve(message, history, includeOfficials, lang) {
   const lookups = search.lookupSection(message, history);
   let vectors = await search.embed([message]);
   let faqHits = search.searchFaq(vectors, { includeOfficials });
@@ -151,14 +157,14 @@ async function retrieve(message, history, includeOfficials) {
   const confidentFaq = faqHits[0]?.confident ? faqHits[0] : null;
 
   const registry = [];
-  addLookups(registry, lookups);
+  addLookups(registry, lookups, lang);
   let faqCandidates = confidentFaq ? [confidentFaq] : faqHits.filter((h) => h.score >= WEAK_MIN).slice(0, 2);
   if (!confidentFaq && EVOTING_TOPIC.test(`${message} ${rewritten.join(' ')}`)) {
     const evoting = search.searchFaq(vectors, { includeOfficials, set: 'evoting', limit: 2 });
     faqCandidates = faqCandidates.concat(evoting.filter((e) => !faqCandidates.some((c) => c.key === e.key)));
   }
   addFaqs(registry, faqCandidates);
-  addSections(registry, confidentFaq ? secHits.slice(0, 2) : secHits.concat(weakSecs));
+  addSections(registry, confidentFaq ? secHits.slice(0, 2) : secHits.concat(weakSecs), lang);
   return {
     registry, confidentFaq,
     route: lookups.length ? 'lookup' : confidentFaq ? 'faq' : secHits.length ? 'act' : 'chat',
@@ -174,7 +180,7 @@ async function retrieve(message, history, includeOfficials) {
 async function respond({ message, history = [], language = 'hi', context = {}, mode = 'static' }) {
   const started = performance.now();
   const lang = replyLanguage(message, language);
-  const { registry, confidentFaq, route, debug } = await retrieve(message, history, context.audience === 'officials');
+  const { registry, confidentFaq, route, debug } = await retrieve(message, history, context.audience === 'officials', lang);
 
   const finish = (result, citationIds = []) => {
     const citations = registry.filter((r) => citationIds.includes(r.id)).map((r) => r.citation);

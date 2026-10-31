@@ -4,7 +4,8 @@ FROM nginx:1.27-alpine
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker/40-app-config.sh /docker-entrypoint.d/40-app-config.sh
 COPY public /usr/share/nginx/html
-COPY data /usr/share/nginx/html/data
+# Only the small top-level JSON files; data/kb (search index, model) belongs to the backend.
+COPY data/*.json /usr/share/nginx/html/data/
 
 RUN chmod +x /docker-entrypoint.d/40-app-config.sh
 

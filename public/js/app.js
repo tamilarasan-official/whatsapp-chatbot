@@ -16,30 +16,32 @@ function initialMode() {
   try { return localStorage.getItem('chatMode') === 'ai' ? 'ai' : 'static'; } catch { return 'static'; }
 }
 let mode = initialMode();
+let org = null; // data/org.json, set once loaded
 
 // Sample prompts per mode. Static mode shows the scripted features; AI mode shows open conversation.
 const PROMPT_CHIPS = {
   static: [
-    { text: 'How do I register as a new voter?', tag: 'FAQ' },
-    { text: 'REF-2026-10452', tag: 'status' },
+    { text: 'मुखिया पद के लिए नामांकन शुल्क कितना है?', tag: 'FAQ' },
+    { text: 'ग्राम पंचायत का कार्यकाल कितने वर्ष का होता है?', tag: 'Act' },
+    { text: 'पंचायत राज अधिनियम की धारा 14 क्या है?', tag: 'section lookup' },
+    { text: 'evoting app me registration kaise kare?', tag: 'Hinglish' },
+    { text: 'How do I check my name in the voter list?', tag: 'English' },
+    { text: 'CMP-2026-00412', tag: 'complaint status' },
     { text: 'Which party should I vote for?', tag: 'neutrality' },
-    { text: 'When is the next election in my area?', tag: 'no invention' },
-    { text: 'मतदाता सूची में अपना नाम कैसे देखें?', tag: 'Hindi' },
-    { text: 'வாக்குச்சாவடியில் எந்த அடையாள அட்டை காட்டலாம்?', tag: 'Tamil' },
-    { text: 'voter id kaise download kare?', tag: 'Hinglish' },
+    { text: 'When is the next panchayat election?', tag: 'no invention' },
     { text: 'My Aadhaar is 1234 5678 9012', tag: 'PII' },
-    { text: 'I want to talk to an officer', tag: 'handover' },
+    { text: 'मुझे अधिकारी से बात करनी है', tag: 'handover' },
     { text: 'STOP', tag: 'opt-out' },
   ],
   ai: [
-    { text: 'Hi! I just turned 18, how do I become a voter?', tag: 'new voter' },
-    { text: 'I moved to Chennai from Delhi. What should I do about my voter ID?', tag: 'shifting' },
-    { text: 'My application is REF-2026-10454, what is pending?', tag: 'status' },
-    { text: 'I lost my voter ID card, can I still vote?', tag: 'ID at booth' },
-    { text: 'Who will win the election?', tag: 'neutrality' },
-    { text: 'मेरे दादाजी 87 साल के हैं, क्या वो घर से वोट दे सकते हैं?', tag: 'Hindi' },
-    { text: 'naan NRI, enaku vote panna mudiyuma?', tag: 'Tanglish' },
-    { text: 'Someone is distributing cash in my area', tag: 'cVIGIL' },
+    { text: 'नमस्ते! मैं वार्ड पार्षद का चुनाव लड़ना चाहता हूँ, क्या करना होगा?', tag: 'nomination' },
+    { text: 'Mukhiya ka chunav kaun lad sakta hai?', tag: 'Hinglish' },
+    { text: 'Can my whole family vote from one phone using eVoting SECBHR?', tag: 'eVoting' },
+    { text: 'What does section 125 of the Bihar Municipal Act say?', tag: 'section lookup' },
+    { text: 'How was voter data kept secure in the Bihar eVoting system?', tag: 'case study' },
+    { text: 'मतगणना कक्ष में किसे जाने की अनुमति है?', tag: 'counting' },
+    { text: 'Who will win the panchayat election?', tag: 'neutrality' },
+    { text: 'How do I get a new voter ID card?', tag: 'ECI redirect' },
   ],
 };
 
@@ -70,12 +72,13 @@ function applyLangToUi(lang) {
   $('msgInput').placeholder = t(lang, 'placeholder');
   $('presence').textContent = t(lang, 'online');
   document.documentElement.lang = lang;
+  if (org) $('botName').textContent = lang === 'en' ? org.botName : org.botNameHi;
 }
 
 async function main() {
   startClock();
   const data = await loadData();
-  $('botName').textContent = data.org.botName;
+  org = data.org;
 
   panels.initPanels({
     btsList: $('btsList'),
@@ -106,15 +109,15 @@ async function main() {
     actionHandler: (id, label) => flows.handleAction(id, label),
   });
 
-  // Home screen (chat list): Back opens it, tapping the ECI chat returns to the conversation.
+  // Home screen (chat list): Back opens it, tapping the SEC Bihar chat returns to the conversation.
   const home = initHome({
     phone: $('phone'),
     homeView: $('homeView'),
     chatList: $('chatList'),
     chatEl: $('chat'),
     navBadge: $('navBadge'),
-    orgName: data.org.botName,
-    onOtherChat: (name) => toast(`Demo: only the ${data.org.botName} chat is live (${name} is a sample chat)`),
+    orgName: data.org.botNameHi,
+    onOtherChat: (name) => toast(`Demo: only the ${data.org.shortName} chat is live (${name} is a sample chat)`),
   });
   $('btnBack').addEventListener('click', () => { chat.closeSheet(); home.showHome(); });
 
@@ -176,6 +179,7 @@ async function main() {
   $('btnNotify').addEventListener('click', () => {
     const kind = flows.simulateNotification();
     if (kind === 'suppressed') toast('User opted out: notification suppressed');
+    if (kind === 'none') toast('No complaint to update in this chat');
     setTab('phone');
   });
   const toggle = (btnId, cls) => {

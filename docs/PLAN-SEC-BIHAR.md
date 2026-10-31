@@ -84,6 +84,12 @@ Question (Hindi / English / Hinglish / Bhojpuri)
 - Mock records: complaint status (e.g. CMP-2026-xxxxx), sample notification; home screen, prompt chips, client pack updated.
 - Static and AI modes kept.
 
+**Done.** As built: data/org.json, faqs.json (68 official FAQs), menu.json (9 menu items, FAQ lists paged 9 + "More"),
+documents.json + public/assets/docs (5 Act PDFs), complaints.json (CMP-2026-00412/413/414, dummy); /api/complaint/:ref;
+ballot-box avatar; Hindi default; citation cards under AI replies link to the Act PDF at the cited page;
+officials menu sets audience=officials for the answer engine; only top-level /data/*.json served (data/kb never public).
+Removed: Form 6/8, appointment booking, REF status, Tamil, ECI logo and sample PDFs.
+
 ### Phase 5: Accuracy testing
 - ~120 questions: 68 FAQ paraphrases (HI/EN/Hinglish) + ~50 Act questions with expected section.
 - `npm run test:kb` reports: FAQ hit rate, correct section cited, invented facts (target 0), language match.

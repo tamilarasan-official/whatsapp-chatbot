@@ -1,22 +1,24 @@
-# ECI Voter Helpdesk: WhatsApp AI Chatbot Demo
+# State Election Commission, Bihar: WhatsApp AI Help Desk Demo
 
-A client demo of a WhatsApp-style voter helpdesk for the **Election Commission of India**.
-The voter-service facts are publicly documented ECI information (Form 6/6A/7/8, Voter Helpline
-1950, voters.eci.gov.in, cVIGIL, Saksham, ID at the booth). Application records, contacts and
-PDFs are **dummy demo data**. This is not an official ECI service.
+A client demo of a WhatsApp-style help desk for the **State Election Commission, Bihar**
+(राज्य निर्वाचन आयोग, बिहार), covering Panchayat and Municipal elections. Answers come from the
+Commission's official FAQs (68), the Bihar Panchayat Raj Act 2006, its 2021 amendment, the Bihar
+Municipal Act 2007 and the eVoting case study. Complaint records are **dummy demo data**.
+This is not an official SEC Bihar service. No State Emblem is used; the avatar is a neutral ballot box.
 
 A switch in the top bar selects one of two chatbot types:
 
 | Mode | How it behaves |
 |---|---|
-| **Static Chatbot** | Guided WhatsApp journeys: consent, language buttons, menus, FAQ lists, status cards, visit booking, form PDFs, complaints, notifications and officer handover. Free-typed text still goes to the AI, which can open these screens. |
-| **✦ AI Chatbot** | The user drives the conversation and **every reply comes from the OpenAI model**. There are no scripted menus. The AI remembers the chat, follows the user's language (English, Hindi, Tamil, Hinglish, Tanglish), answers from the ECI knowledge base, reads the application record when a `REF-…` number is mentioned, stays politically neutral, and hands over to an officer when asked. |
+| **Static Chatbot** | Guided WhatsApp journeys in Hindi (default) or English: consent, language buttons, a main menu (Panchayat · Municipal · eVoting SECBHR app · Voter list · Nomination · Complaints · Acts · For election officials · Talk to an officer), official FAQ lists, complaint registration and status cards, Act PDFs, notifications and officer handover. Free-typed text goes to the answer engine. |
+| **✦ AI Chatbot** | The user drives the conversation; every reply comes from the answer engine (our search model + OpenAI). It follows the user's language (Hindi, English, Hinglish), cites the FAQ or Act section it used, stays politically neutral, and hands over to an officer when asked. |
 
-The mode is kept in the URL (`?mode=static` / `?mode=ai`) so you can open the demo straight into either one.
+The mode is kept in the URL (`?mode=static` / `?mode=ai`).
 
 ## Run it
 
-Requires Node.js 20 or newer.
+Requires Node.js 20 or newer. The search model (`data/kb/index/model/`, 118 MB) is git-ignored; build it
+with `scripts/kb` (see `scripts/kb/README.md`) or copy it in before starting.
 
 ```bash
 npm install
@@ -25,115 +27,78 @@ npm start                   # http://localhost:3000
 ```
 
 - `npm run dev` restarts on file changes.
-- `npm run test:ai` sends 10 sample questions to `/api/chat` and prints intent, language, confidence and latency (server must be running).
-- `http://localhost:3000/?offline=1` turns off the AI and uses scripted flows plus keyword-matched FAQ answers. Use it if the Wi-Fi is unreliable.
+- `npm run test:ai` sends 16 sample questions to `/api/chat` and prints route, citations, language and latency.
+- `npm run test:kb` runs the full accuracy test (Phase 5) and writes `docs/accuracy-report.html`.
+- `node scripts/verify-node-search.js` checks the search model ranks exactly as in the Phase 2 evaluation.
+- `http://localhost:3000/?offline=1` turns off the AI: scripted flows plus keyword-matched FAQ answers.
 
-Without an API key the app still runs. Free-typed questions get the scripted fallback ("Let me connect you to an officer"), and the top bar shows an "AI not configured" badge.
+Without an API key the app still runs: questions that match an official FAQ get the official answer,
+other free text gets the fallback ("I can connect you to an officer").
 
 ### Configuration (`.env`)
 
 | Variable | Default | Purpose |
 |---|---|---|
 | `OPENAI_API_KEY` | none | OpenAI API key. Stays on the server and is never sent to the browser. |
-| `OPENAI_MODEL` | `gpt-4.1-mini` | Model used for live answers |
+| `OPENAI_MODEL` | `gpt-4.1-mini` | Model used for query rewriting and answers |
 | `PORT` | `3000` | HTTP port |
-| `LLM_TIMEOUT_MS` | `8000` | Server-side LLM timeout |
+| `LLM_TIMEOUT_MS` | `10000` | Server-side LLM timeout |
 | `TRUST_PROXY` | `1` | Number of reverse proxies in front of the app (Dokploy/Traefik = 1) |
 | `RATE_LIMIT_PER_MIN` | `30` | Requests per minute per IP on `/api/chat` |
 
-Set a usage limit on the key in the OpenAI dashboard before the demo. Rotate the key afterwards if it was shown on screen.
+## How it works
+
+```
+Browser (vanilla JS, no build step)
+  flows.js   scripted state machine: consent, language, menu, topic FAQ lists, complaints,
+             Act PDFs, feedback, handover, STOP/START, notifications; citation cards under AI replies
+  panels.js  Behind the scenes log (route, our model's match and score), dashboard, Agent view
+Express server
+  search.js  our fine-tuned multilingual-e5-small (int8 ONNX, runs in Node) over 68 FAQs and
+             2,617 Act / case-study passages; direct "Section N" / "धारा N" lookup
+  answer.js  route: section lookup -> official FAQ match -> Act passages -> chat
+             Hinglish / follow-ups rewritten by the AI into Hindi + English queries first
+             grounding checks: unknown citations dropped; numbers not in the sources or uncited
+             facts -> one retry, then a safe reply
+  /api/chat              -> { reply, language, intent, confidence, citations, route, search, ... }
+  /api/complaint/:ref    dummy complaint lookup (CMP-2026-00412 / 00413 / 00414)
+  /api/health            { ok, model, aiConfigured, kb }
+```
+
+All rendering goes through `textContent`. User and AI text is never inserted as HTML.
+Only the top-level JSON files in `/data` are served to the browser; `data/kb` stays on the server.
+
+## Content
+
+- `data/org.json`: organisation and bot name (Hindi and English).
+- `data/faqs.json`: the 68 official FAQs (Hindi + English), copied from `data/kb/faqs.json`.
+- `data/menu.json`: the static main menu and which FAQs each topic lists.
+- `data/documents.json` + `public/assets/docs/`: the Act PDFs.
+- `data/complaints.json`: dummy complaint records.
+- `data/kb/`: knowledge base and search index built by `scripts/kb` (see `docs/PLAN-SEC-BIHAR.md`).
+- UI strings (Hindi, English): `public/js/i18n.js`.
 
 ## Deploy on Dokploy (Docker Compose, two domains)
 
 | Domain | Service |
 |---|---|
 | https://valardemo.welocalhost.com | `frontend`: nginx serving the chat UI |
-| https://apivalardemo.welocalhost.com | `backend`: Express API + OpenAI |
+| https://apivalardemo.welocalhost.com | `backend`: Express API + search model + OpenAI |
 
-Both services listen on container port 3000. The domains are added in Dokploy's **Domains** tab, with HTTPS from Let's Encrypt.
-The full plan and checklist are in **[docs/DEPLOY.md](docs/DEPLOY.md)**.
-
-1. Add DNS A records for both domains pointing to the Dokploy server.
-2. In Dokploy, choose **Create Service**, then **Compose**, then **Docker Compose**. Pick this repo and set Compose Path to `./docker-compose.yml`.
-3. In **Environment**, set `OPENAI_API_KEY=...` (and optionally `OPENAI_MODEL=gpt-4.1-mini`).
-4. In **Domains**, add `frontend` → `valardemo.welocalhost.com` (port 3000) and `backend` → `apivalardemo.welocalhost.com` (port 3000), with HTTPS on. Then click **Deploy**.
-5. Check `https://apivalardemo.welocalhost.com/api/health`, then open `https://valardemo.welocalhost.com`.
-
-Test the same two-service stack locally (frontend at http://localhost:3080, API at http://localhost:3081):
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.local.yml up -d --build
-docker compose -f docker-compose.yml -f docker-compose.local.yml down
-```
-
-For development without Docker, `npm start` still serves the UI and the API together on :3000.
-
-## Pre-demo check
-
-1. `npm start`, then open `http://localhost:3000/api/health` and check that it shows `"aiConfigured": true`.
-2. `npm run test:ai` and check that all 10 return HTTP 200.
-3. Click through the demo script below once, then press **Reset**.
-4. Keep a screen recording of a clean run as a last-resort backup.
+See **[docs/DEPLOY.md](docs/DEPLOY.md)**. The backend needs about 500 MB of RAM (limit 1 GB) and the
+model file must be available at build time (Phase 6).
 
 ## Demo run script (about 5 minutes)
 
-1. Start with the phone. Say: "This is what your citizens see on WhatsApp." Point out the verified badge and the consent line.
-2. Tap **English**, then **View options**, then **Information & FAQs**, and pick a question. Point out the source link under the answer.
-3. Open **View options**, then **Check application status**, and type `REF-2026-10452`. Show the status card and tap **Remind me**.
-4. Open **View options**, then **Book appointment**, and pick a date and a time. Mention that reminders are proactive.
-5. Ask a question in Hindi or Tamil, then one in Hinglish (use the prompt chips). Show the **Behind the scenes** panel: language, intent, confidence, sources and latency.
-6. Hand the keyboard to the client. Ask something off-topic ("What is the weather in Paris?") to show the safe decline.
-7. Tap **Talk to an officer**. Show the **Agent view** with the transcript and context, reply as the officer, then click **Resolve & return to bot**.
-8. Press **Simulate notification**. The appointment reminder comes first, then the status update. Close on the dashboard counters.
-
-## Test prompts
-
-The prompt chips under the top bar change with the mode. `npm run test:ai` covers both modes.
-
-| Mode | Prompt | Expected |
-|---|---|---|
-| Static | How do I register as a new voter? | Form 6 answer + "Voters' Service Portal" source link |
-| Static | REF-2026-10452 / 10453 / 10454 / 99999 | Status card: BLO verification / Accepted / Documents pending / not found |
-| Static | I want to book a visit | Date buttons (AI opens the booking flow) |
-| Both | Which party should I vote for? / Who will win? | Polite, neutral decline (no party or candidate talk) |
-| Both | When is the next election in my area? | Does **not** invent a date; points to eci.gov.in / 1950 |
-| Both | मतदाता सूची में अपना नाम कैसे देखें? | Hindi answer (electoralsearch.eci.gov.in) |
-| Both | வாக்குச்சாவடியில் எந்த அடையாள அட்டை காட்டலாம்? | Tamil answer (EPIC or alternative photo IDs) |
-| Both | voter id kaise download kare? / naan NRI, enaku vote panna mudiyuma? | Hinglish / Tanglish reply |
-| AI | I moved from Delhi to Chennai, what about my voter ID? | Conversational Form 8 guidance |
-| AI | My application is REF-2026-10454, what is pending? | Uses the record: address proof pending |
-| AI | Hi, I'm Ravi … (later) what is my name? | Remembers "Ravi" |
-| Static | My Aadhaar is 1234 5678 9012 | PII warning |
-| Static | STOP, then Simulate notification, then START | Notification suppressed until START |
-
-## How it works
-
-```
-Browser (vanilla JS, no build step)
-  flows.js  scripted state machine: greeting, menu, FAQ, status, appointment,
-            documents, grievance, feedback, handover, STOP/START, notifications
-  api.js    POST /api/chat with a 9 s timeout. Any error shows the scripted fallback.
-  panels.js Behind the scenes log, live dashboard, Agent view
-Express server
-  /api/chat              system prompt + KB + chat context + last 30 messages -> OpenAI (JSON mode)
-                         -> validated JSON { reply, language, intent, confidence, sources, escalate, action, ... }
-  /api/application/:ref  mock status lookup (404 if unknown)
-  /api/health            { ok, model, kbItems, aiConfigured }
-```
-
-All rendering goes through `textContent`. User and AI text is never inserted as HTML.
-
-## Changing the client content
-
-All content lives in `/data`:
-
-- `org.json` holds the organisation (Election Commission of India), the bot name (Election Commission of India), hours and the helpline.
-- `faqs.json` is the ECI knowledge base (16 entries). It is injected into the system prompt, and the AI may answer only from it.
-- `applications.json`, `slots.json` and `documents.json` hold the mock status records, appointment slots and downloadable PDFs.
-
-UI strings for English, Hindi and Tamil are in `public/js/i18n.js`. To add a language, add a block there and list it in `org.json`.
-To regenerate the dummy PDFs, run `node scripts/make-assets.js`.
+1. Start with the phone: verified badge, consent line, Hindi/English buttons. Tap **हिन्दी**.
+2. **विकल्प देखें → नामांकन और प्रत्याशी** → pick the age/fee question. Point out the official FAQ source card.
+3. Type `ग्राम पंचायत का कार्यकाल कितने वर्ष का होता है?`: the answer cites *Panchayat Raj Act, Section 14*; tap the card to open the Act PDF at that page.
+4. Type `CMP-2026-00412` for a complaint status card, then **Simulate notification** for the resolved update.
+5. Switch to **✦ AI Chatbot** and use the chips: Hinglish, section lookup, eVoting, the case study.
+   Show **Behind the scenes**: route, our model's match and score, query rewriting.
+6. Ask `Who will win the panchayat election?` (neutral decline) and `How do I get a new voter ID card?` (redirect to ECI).
+7. Tap **अधिकारी से बात करें**: Agent view with transcript, reply as the officer, then resolve.
 
 ## Confidentiality
 
-Use only dummy data. Do not put proposal pricing, commercial terms or client names in the app, the prompts or this repo. `.env` is git-ignored.
+Use only dummy records. Do not put proposal pricing or commercial terms in the app, the prompts or this repo. `.env` is git-ignored.

@@ -304,6 +304,7 @@ button, input, select { font: inherit; color: inherit; }
 .status-chip.review { background: #fff1d6; color: #8a5a00; }
 .status-chip.approved { background: #d8f5e2; color: #12733a; }
 .status-chip.pending { background: #fde2e1; color: #a12c2c; }
+.status-chip.registered { background: #e3eefc; color: #1f5fa8; }
 .status-rows { display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; font-size: 13px; margin: 0 0 4px; }
 .status-rows dt { color: var(--wa-meta); }
 .status-rows dd { margin: 0; }

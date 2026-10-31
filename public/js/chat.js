@@ -220,16 +220,20 @@ export function closeSheet() {
 // ---------- Cards ----------
 
 export function linkPreview({ title, description, url }) {
-  const domain = url.startsWith('/') ? location.hostname : new URL(url).hostname;
-  return el('a', { class: 'card-link', href: url, target: '_blank', rel: 'noopener noreferrer' },
+  const parts = [
     el('div', { class: 'link-title', text: title }),
     description ? el('div', { class: 'link-desc', text: description }) : null,
-    el('div', { class: 'link-domain', text: domain }));
+  ];
+  // Without a URL (e.g. an FAQ citation) the card is a plain source label.
+  if (!url) return el('div', { class: 'card-link' }, ...parts);
+  const domain = url.startsWith('http') ? new URL(url).hostname : location.hostname;
+  return el('a', { class: 'card-link', href: url, target: '_blank', rel: 'noopener noreferrer' },
+    ...parts, el('div', { class: 'link-domain', text: domain }));
 }
 
 export function documentCard({ title, file, size, pages }) {
   const dl = svg('0 0 24 24', 'M12 16 7 11l1.4-1.4 2.6 2.6V4h2v8.2l2.6-2.6L17 11zm-6 4v-2h12v2z', { width: 18, height: 18 });
-  return el('a', { class: 'card-doc', href: `/assets/${file}`, target: '_blank', rel: 'noopener', download: file },
+  return el('a', { class: 'card-doc', href: `assets/${file}`, target: '_blank', rel: 'noopener', download: file.split('/').pop() },
     el('span', { class: 'pdf-icon', text: 'PDF' }),
     el('span', { class: 'doc-info' },
       el('div', { class: 'doc-name', text: `${title}.pdf` }),
@@ -237,15 +241,14 @@ export function documentCard({ title, file, size, pages }) {
     el('span', { class: 'doc-dl' }, dl));
 }
 
-export function statusCard(app, labels) {
+// rows: [[label, value], ...]
+export function statusCard({ ref, statusKey, statusLabel, rows }) {
   return el('div', { class: 'card-status' },
     el('div', { class: 'status-head' },
-      el('span', { class: 'status-ref', text: app.ref }),
-      el('span', { class: `status-chip ${app.statusKey}`, text: app.statusLabel })),
+      el('span', { class: 'status-ref', text: ref }),
+      el('span', { class: `status-chip ${statusKey}`, text: statusLabel })),
     el('dl', { class: 'status-rows' },
-      el('dt', { text: labels.applicant }), el('dd', { text: app.applicant }),
-      el('dt', { text: labels.updated }), el('dd', { text: app.updated }),
-      el('dt', { text: labels.next }), el('dd', { text: app.nextStep })));
+      ...rows.filter(([, v]) => v).flatMap(([k, v]) => [el('dt', { text: k }), el('dd', { text: v })])));
 }
 
 export function imageCard(src, alt) {

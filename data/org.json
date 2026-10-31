@@ -1,11 +1,11 @@
 {
-  "orgName": "Election Commission of India",
-  "shortName": "ECI",
-  "botName": "Election Commission of India",
-  "workingHours": "Monday to Saturday, 10:00 AM to 5:00 PM (Voter Facilitation Centre)",
-  "supportPhone": "1950 (Voter Helpline, with your STD code)",
-  "website": "voters.eci.gov.in",
-  "defaultLanguage": "en",
-  "languages": ["en", "hi", "ta"],
+  "orgName": "State Election Commission, Bihar",
+  "orgNameHi": "राज्य निर्वाचन आयोग, बिहार",
+  "shortName": "SEC Bihar",
+  "botName": "State Election Commission, Bihar",
+  "botNameHi": "राज्य निर्वाचन आयोग, बिहार",
+  "scope": "Panchayat and Municipal (urban local body) elections in Bihar",
+  "defaultLanguage": "hi",
+  "languages": ["hi", "en"],
   "colors": { "primary": "#075E54", "accent": "#128C7E" }
 }

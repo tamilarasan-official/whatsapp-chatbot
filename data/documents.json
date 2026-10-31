@@ -1,5 +1,7 @@
 [
-  { "id": "doc_form6", "title": "Form 6 - New Voter Registration", "description": "Register as a new voter", "file": "form-6-sample.pdf", "size": "2 KB", "pages": 2 },
-  { "id": "doc_form8", "title": "Form 8 - Correction or Shifting", "description": "Correct details, change address", "file": "form-8-sample.pdf", "size": "2 KB", "pages": 1 },
-  { "id": "doc_guide", "title": "Voter Guide", "description": "Registration, ID at booth, voting day", "file": "voter-guide.pdf", "size": "3 KB", "pages": 3 }
+  { "id": "doc_panchayat_en", "doc": "panchayat_act_en", "title": "Bihar Panchayat Raj Act, 2006 (English)", "title_hi": "बिहार पंचायत राज अधिनियम, 2006 (अंग्रेज़ी)", "description": "Official text, as amended", "file": "docs/bihar-panchayat-raj-act-2006-en.pdf", "size": "863 KB", "pages": 166 },
+  { "id": "doc_panchayat_hi", "doc": "panchayat_act_hi", "title": "Bihar Panchayat Raj Act, 2006 (Hindi)", "title_hi": "बिहार पंचायत राज अधिनियम, 2006 (हिन्दी)", "description": "Official Hindi text", "file": "docs/bihar-panchayat-raj-act-2006-hi.pdf", "size": "1.7 MB", "pages": 298 },
+  { "id": "doc_amendment_2021", "doc": "panchayat_amendment_2021_hi", "title": "Bihar Panchayat Raj (Amendment) Act, 2021 (Hindi)", "title_hi": "बिहार पंचायत राज (संशोधन) अधिनियम, 2021", "description": "Bihar Gazette No. 674", "file": "docs/bihar-panchayat-raj-amendment-2021-hi.pdf", "size": "204 KB", "pages": 4 },
+  { "id": "doc_municipal_en", "doc": "municipal_act_en", "title": "Bihar Municipal Act, 2007 (English)", "title_hi": "बिहार नगरपालिका अधिनियम, 2007 (अंग्रेज़ी)", "description": "Official text", "file": "docs/bihar-municipal-act-2007-en.pdf", "size": "626 KB", "pages": 130 },
+  { "id": "doc_municipal_hi", "doc": "municipal_act_hi", "title": "Bihar Municipal Act, 2007 (Hindi)", "title_hi": "बिहार नगरपालिका अधिनियम, 2007 (हिन्दी)", "description": "Official Hindi text", "file": "docs/bihar-municipal-act-2007-hi.pdf", "size": "801 KB", "pages": 181 }
 ]

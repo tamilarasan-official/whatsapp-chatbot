@@ -2,7 +2,7 @@
 
 import { el } from './chat.js';
 
-const LANG_LABELS = { en: 'English', hi: 'Hindi', ta: 'Tamil', mixed: 'Hinglish' };
+const LANG_LABELS = { en: 'English', hi: 'Hindi', mixed: 'Hinglish' };
 const ROUTE_LABELS = { ai: 'Live AI', scripted: 'Scripted flow', fallback: 'Fallback', offline: 'Offline match' };
 
 let els;
@@ -129,9 +129,9 @@ export function openAgent(ctx, transcript) {
     ['Language', LANG_LABELS[ctx.language] || ctx.language],
     ['Last intent', ctx.intent],
     ['Reason', ctx.reason],
-    ['Application', ctx.ref],
-    ['Appointment', ctx.appointment],
-    ['Grievance', ctx.ticket],
+    ['Complaint', ctx.complaint],
+    ['New ticket', ctx.ticket !== ctx.complaint ? ctx.ticket : null],
+    ['Section', ctx.audience === 'officials' ? 'For election officials' : null],
     ['Consent', ctx.optedOut ? 'Opted out of notifications' : 'Opted in'],
   ].filter(([, v]) => v);
   els.agentCtx.replaceChildren(...rows.flatMap(([k, v]) => [el('dt', { text: k }), el('dd', { text: v })]));

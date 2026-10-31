@@ -4,7 +4,7 @@ const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
-const { DATA_DIR, findApplication } = require('./kb');
+const { DATA_DIR, findComplaint } = require('./kb');
 const { MODEL } = require('./llm');
 const { respond } = require('./answer');
 const search = require('./search');
@@ -52,10 +52,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-app.get('/api/application/:ref', (req, res) => {
-  const application = findApplication(req.params.ref);
-  if (!application) return res.status(404).json({ error: 'not_found' });
-  res.json(application);
+// Dummy complaint records (CMP-YYYY-NNNNN) for the complaint-status demo flow.
+app.get('/api/complaint/:ref', (req, res) => {
+  const complaint = findComplaint(req.params.ref);
+  if (!complaint) return res.status(404).json({ error: 'not_found' });
+  res.json(complaint);
 });
 
 app.post('/api/chat', chatLimiter, async (req, res) => {
@@ -85,8 +86,10 @@ app.use('/api', (req, res) => res.status(404).json({ error: 'not_found' }));
 
 // SERVE_STATIC=false when the UI is served by the separate frontend container (API-only backend).
 if (process.env.SERVE_STATIC !== 'false') {
-  // Dummy JSON data is read-only and safe to serve; the browser flow engine uses it.
-  app.use('/data', express.static(DATA_DIR));
+  // Only the top-level JSON files (org, FAQs, menu, documents, dummy complaints) are served;
+  // data/kb (search index and the 118 MB model) stays server-side.
+  app.use('/data', (req, res, next) => (/^\/[\w-]+\.json$/.test(req.path) ? next() : res.status(404).end()),
+    express.static(DATA_DIR, { index: false }));
   app.use(express.static(path.join(__dirname, '..', 'public')));
 } else {
   app.get('/', (req, res) => res.json({ service: 'whatsapp-ai-demo-api', health: '/api/health' }));

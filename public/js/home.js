@@ -1,15 +1,15 @@
-// WhatsApp-style home screen (chat list). The Election Commission of India chat is pinned on top
+// WhatsApp-style home screen (chat list). The State Election Commission, Bihar chat is pinned on top
 // and mirrors the live conversation (last message, typing…, unread count). Other chats are decoration.
 
 import { el } from './chat.js';
 
 const OTHER_CHATS = [
-  { name: 'Amma', color: '#e57373', msg: 'Saapteengala? 🍛', time: '9:41 pm', unread: 2 },
+  { name: 'Maa', color: '#e57373', msg: 'Khana kha liya? 🍛', time: '9:41 pm', unread: 2 },
   { name: 'Family Group 👨‍👩‍👧‍👦', initials: 'FG', color: '#7986cb', msg: 'Ravi: Photos from the wedding 📷', time: '9:12 pm', unread: 12 },
-  { name: 'Rahul Sharma', color: '#4db6ac', msg: 'Bro, match at 7 tomorrow?', time: '8:30 pm', read: true },
+  { name: 'Rahul Sharma', color: '#4db6ac', msg: 'Bhai, kal Gandhi Maidan chalein?', time: '8:30 pm', read: true },
   { name: 'Office Team', color: '#ffb74d', msg: 'Priya: Meeting moved to 11 AM', time: '7:55 pm', unread: 3 },
   { name: 'Ananya', color: '#ba68c8', msg: '📷 Photo', time: 'Yesterday', read: true },
-  { name: 'Cricket Gang 🏏', initials: 'CG', color: '#81c784', msg: 'Karthik: What a finish!! 🔥', time: 'Yesterday' },
+  { name: 'Cricket Gang 🏏', initials: 'CG', color: '#81c784', msg: 'Amit: What a finish!! 🔥', time: 'Yesterday' },
   { name: 'Landlord', color: '#90a4ae', msg: 'Rent received, thanks 🙏', time: 'Monday', read: true },
   { name: 'Deepak (Electrician)', color: '#a1887f', msg: 'Will come by 10 am', time: 'Sunday' },
   { name: 'College Friends', initials: 'CF', color: '#64b5f6', msg: 'Sneha: Reunion plan 🎉', time: '02/10/26' },
@@ -62,7 +62,7 @@ export function initHome({ phone, homeView, chatList, chatEl, navBadge, orgName,
     const right = el('span', { class: 'cl-right' }, unread ? el('b', { class: 'cl-badge', text: String(unread) }) : PIN());
     return el('li', {},
       el('button', { class: 'cl-row eci', type: 'button', onclick: openChat, 'aria-label': `Open chat with ${orgName}` },
-        el('span', { class: 'cl-avatar logo' }, el('img', { src: 'assets/eci-logo.svg', alt: '', width: 40, height: 40 })),
+        el('span', { class: 'cl-avatar logo' }, el('img', { src: 'assets/ballot-box.svg', alt: '', width: 40, height: 40 })),
         el('span', { class: 'cl-body' }, nameRow, el('div', { class: 'cl-bottom' }, msg, right))));
   }
 

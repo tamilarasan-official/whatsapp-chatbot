@@ -3,38 +3,33 @@
 
 import * as chat from './chat.js';
 import * as api from './api.js';
-import { t, faqText, detectScript, LANGS } from './i18n.js';
+import { t, faqText, pick, detectScript, LANGS } from './i18n.js';
 
-const REF_PATTERN = /\bREF-\d{4}-\d{5}\b/i;
-const REF_LOOSE = /\bREF[\s-]*\d/i;
+const CMP_PATTERN = /\bCMP-\d{4}-\d{5}\b/i;
+const CMP_LOOSE = /\bCMP[\s-]*\d/i;
 const PII_PATTERN = /\b\d{4}\s?\d{4}\s?\d{4}\b|\b\d{10,}\b|\b(otp|password|passcode|pin)\b.*\d{4,}/i;
-const OFFICER_PATTERN = /\b(officer|human|real person|agent|customer care)\b|अधिकारी|इंसान|அதிகாரி/i;
-const MENU_PATTERN = /^(menu|main menu|start over|मेन्यू|மெனு)[\s!.]*$/i;
+const OFFICER_PATTERN = /\b(officer|human|real person|agent|customer care|adhikari)\b|अधिकारी|इंसान/i;
+const MENU_PATTERN = /^(menu|main menu|start over|मेन्यू|मेनू|मुख्य मेन्यू)[\s!.]*$/i;
 // Greetings are answered by the AI; only offline mode maps them to the menu.
-const GREETING_PATTERN = /^(hi+|hello|hey|help|namaste|vanakkam|नमस्ते|வணக்கம்)[\s!.]*$/i;
+const GREETING_PATTERN = /^(hi+|hello|hey|help|namaste|namaskar|नमस्ते|नमस्कार|प्रणाम)[\s!.]*$/i;
 const REF_LIKE = /^[a-z]{0,4}[\s-]*\d[\d\s-]{2,}$/i;
-const LANG_WORDS = { en: /^(english|eng)$/i, hi: /^(hindi|हिन्दी|हिंदी)$/i, ta: /^(tamil|தமிழ்)$/i };
-const FAQ_LIST_IDS = ['faq_eligibility', 'faq_new_registration', 'faq_documents_required', 'faq_check_name', 'faq_epic_download', 'faq_id_at_booth'];
+const LANG_WORDS = { en: /^(english|eng|अंग्रेज़ी|अंग्रेजी)$/i, hi: /^(hindi|हिन्दी|हिंदी)$/i };
+const PAGE_SIZE = 9; // WhatsApp lists hold 10 rows: 9 questions + "More questions"
 const LOW_CONFIDENCE = 0.5;
-const DEMO_NOTIFY_REF = 'REF-2026-10452';
+const DEMO_NOTIFY_REF = 'CMP-2026-00412';
 
 // Keyword map used only in ?offline=1 mode (no AI).
 const OFFLINE_KEYWORDS = [
-  [/document|papers|proof|दस्तावेज़|ஆவண/i, 'faq_documents_required'],
-  [/eligib|who can (vote|register)|पात्र|தகுதி/i, 'faq_eligibility'],
-  [/register|registration|form 6|new voter|पंजीकरण|பதிவு/i, 'faq_new_registration'],
-  [/correct|change address|shift|form 8|सुधार|திருத்த/i, 'faq_correction'],
-  [/delet|form 7|objection/i, 'faq_deletion'],
-  [/nri|overseas|abroad|form 6a/i, 'faq_overseas'],
-  [/my name|electoral roll|voter list|मतदाता सूची|வாக்காளர் பட்டியல்/i, 'faq_check_name'],
-  [/polling (station|booth)|where.*vote|मतदान केंद्र|வாக்குச்சாவடி/i, 'faq_polling_station'],
-  [/e-?epic|download.*(voter id|card)|voter id.*download/i, 'faq_epic_download'],
-  [/id|identity|aadhaar|पहचान|அடையாள/i, 'faq_id_at_booth'],
-  [/helpline|1950|contact|call/i, 'faq_helpline'],
-  [/cvigil|model code|violation|bribe/i, 'faq_cvigil'],
-  [/disab|senior|wheelchair|home voting|saksham/i, 'faq_pwd_senior'],
-  [/nota/i, 'faq_nota'],
-  [/election date|next election|schedule|चुनाव कब|தேர்தல் எப்போது/i, 'faq_election_schedule'],
+  [/e-?voting|secbhr|ई-?वोटिंग|ऐप/i, 'municipal_23'],
+  [/nomination fee|age|उम्र|आयु|शुल्क|eligib|पात्र/i, 'panchayat_04'],
+  [/nomination|नामांकन|affidavit|शपथ/i, 'municipal_06'],
+  [/voter list|e-?roll|my name|मतदाता सूची|नाम/i, 'panchayat_11'],
+  [/helpline|हेल्पलाइन|contact|call/i, 'municipal_17'],
+  [/complain|शिकायत/i, 'municipal_21'],
+  [/code of conduct|mcc|आचार संहिता/i, 'municipal_11'],
+  [/count|मतगणना/i, 'panchayat_07'],
+  [/reservation|आरक्षण/i, 'panchayat_02'],
+  [/symbol|प्रतीक/i, 'municipal_08'],
 ];
 
 // mode: 'static' = scripted flows + AI for free text; 'ai' = every reply comes from the AI.
@@ -42,7 +37,10 @@ export function createFlows({ data, panels, offline, onLangChange }) {
   let state;
   let queue = Promise.resolve();
   let pendingTicks = [];
-  let grievanceSeq = 41;
+  let complaintSeq = 431;
+
+  const faqById = new Map(data.faqs.map((f) => [f.id, f]));
+  const docByKey = new Map(data.documents.map((d) => [d.doc, d]));
 
   function freshState(lang = data.org.defaultLanguage, mode = 'static') {
     return {
@@ -51,11 +49,12 @@ export function createFlows({ data, panels, offline, onLangChange }) {
       step: null,
       optedOut: false,
       handover: false,
-      lastRef: null,
+      audience: null,
+      lastComplaint: null,
+      lastTicket: null,
       lastIntent: null,
       lastLang: lang,
-      appointment: null,
-      reminderSent: false,
+      complaints: {},
       statusReminders: new Set(),
       statusOverrides: {},
       history: [],
@@ -64,6 +63,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
   }
 
   const L = (key, vars) => t(state.lang, key, vars);
+  const orgName = () => pick(state.lang, data.org, 'orgName');
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const typingDelay = () => 600 + Math.random() * 800;
 
@@ -129,31 +129,31 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     queue = Promise.resolve();
     pendingTicks = [];
     chat.clearChat();
-    chat.addDateChip('Today');
+    chat.addDateChip(state.lang === 'hi' ? 'आज' : 'Today');
     chat.addSystemNote(L('bizNote'), 'biz');
     if (mode === 'ai') {
       // AI mode: no menus or language buttons; the user drives the conversation.
-      say(L('aiWelcome', { bot: data.org.botName, org: data.org.orgName }), { delay: 500 });
+      say(L('aiWelcome', { org: orgName() }), { delay: 500 });
       panels.log({ route: 'ai', query: '(AI chatbot mode)', language: state.lang, intent: 'greeting', confidence: null, sources: [], latency: null, label: 'Every reply below comes from the AI model' });
       return;
     }
     state.step = 'lang';
-    say(`${L('consent', { bot: data.org.botName, org: data.org.orgName })}\n\n${L('chooseLang')}`, {
+    say(`${L('consent', { org: orgName() })}\n\n${L('chooseLang')}`, {
       buttons: LANGS.map((code) => ({ id: `lang:${code}`, label: t(code, 'langName') })),
     });
     logScripted('(conversation start)', 'greeting', ['org.json'], { label: 'Consent + language' });
   }
 
   function mainMenuList() {
-    const rows = ['faq', 'status', 'appointment', 'documents', 'grievance', 'officer'].map((key) => {
-      const [title, description] = L(`menu.${key}`);
-      return { id: `menu:${key}`, title, description };
-    });
+    const rows = data.menu.items.map((item) => ({
+      id: `menu:${item.key}`, title: pick(state.lang, item, 'title'), description: pick(state.lang, item, 'desc'),
+    }));
     return { button: L('viewOptions'), title: L('menuTitle'), sections: [{ title: L('menuSection'), rows }] };
   }
 
   function showMenu() {
     state.step = null;
+    state.audience = null;
     say(L('howHelp'), { list: mainMenuList() });
   }
 
@@ -163,25 +163,37 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     if (announce && state.mode !== 'ai') showMenu();
   }
 
-  // ---------- FAQ ----------
+  // ---------- Topic question lists (FAQs) ----------
 
-  function faqList() {
-    const rows = FAQ_LIST_IDS.map((id) => data.faqs.find((f) => f.id === id)).filter(Boolean).map((faq) => {
-      const { question } = faqText(state.lang, faq);
-      return { id: `faq:${faq.id}`, title: question, description: faq.category };
-    });
-    return { button: L('viewOptions'), title: L('faqTitle'), sections: [{ title: L('faqSection'), rows }] };
+  function topicList(item, page) {
+    const ids = item.faqs.filter((id) => faqById.has(id));
+    const shown = ids.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+    const rows = shown.map((id) => ({ id: `faq:${id}`, title: faqText(state.lang, faqById.get(id)).question }));
+    if (ids.length > (page + 1) * PAGE_SIZE) {
+      rows.push({ id: `topic:${item.key}:${page + 1}`, title: L('moreQuestions'), description: L('moreQuestionsDesc') });
+    }
+    const title = pick(state.lang, item, 'title');
+    return { button: L('viewQuestions'), title, sections: [{ title: '', rows }] };
   }
 
-  function showFaqList() {
-    say(L('faqIntro'), { list: faqList() });
+  function showTopic(key, page = 0) {
+    const item = data.menu.items.find((i) => i.key === key);
+    if (!item?.faqs) return;
+    state.audience = item.audience || null;
+    const topic = pick(state.lang, item, 'title');
+    const intro = page > 0 ? L('moreQuestionsDesc') : L(item.audience === 'officials' ? 'officialsIntro' : 'topicIntro', { topic });
+    say(intro, { list: topicList(item, page) });
+  }
+
+  function faqSource(faq) {
+    return { title: L('sourceFaq'), description: `${faq.category_hi && state.lang === 'hi' ? faq.category_hi : faq.category} · ${faq.source}` };
   }
 
   function answerFaq(id, query, route = 'scripted') {
-    const faq = data.faqs.find((f) => f.id === id);
+    const faq = faqById.get(id);
     if (!faq) return;
     const { answer } = faqText(state.lang, faq);
-    say(answer, { source: { title: faq.source, description: `${L('source')}: ${data.org.orgName}`, url: faq.url } });
+    say(answer, { source: faqSource(faq), buttons: [menuBtn(), officerBtn()] });
     if (route === 'offline') {
       panels.log({ route: 'offline', query, language: state.lang, intent: 'faq', confidence: 0.7, sources: [id], latency: null, label: 'Keyword match (offline)' });
     } else {
@@ -190,96 +202,95 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     panels.recordQuery({ intent: 'faq', resolved: true });
   }
 
-  // ---------- Application status ----------
+  // ---------- Complaints ----------
 
-  function askRef() {
-    state.step = 'ref';
-    say(L('askRef'));
+  function showComplaintMenu() {
+    state.step = null;
+    say(L('complaintIntro'), {
+      buttons: [
+        { id: 'cmp:new', label: L('complaintNew') },
+        { id: 'cmp:status', label: L('complaintStatus') },
+        { id: 'faq:municipal_21', label: L('complaintHow') },
+      ],
+    });
   }
 
-  async function lookupStatus(ref, query) {
+  function askComplaint() {
+    state.step = 'complaint';
+    say(L('complaintAsk'));
+  }
+
+  function registerComplaint(text) {
+    state.step = null;
+    complaintSeq += 1;
+    const ticket = `CMP-2026-${String(complaintSeq).padStart(5, '0')}`;
+    state.lastTicket = ticket;
+    state.lastComplaint = ticket;
+    state.complaints[ticket] = {
+      ref: ticket, complainant: state.lang === 'hi' ? 'आप (डेमो)' : 'You (demo)', category: text.slice(0, 60),
+      statusKey: 'registered', updated: state.lang === 'hi' ? 'आज' : 'Today',
+      office: state.lang === 'hi' ? 'जिला निर्वाचन कार्यालय (नमूना)' : 'District Election Office (sample)',
+    };
+    say(L('complaintDone', { ticket }));
+    askFeedback();
+    logScripted(text, 'complaint', ['complaint-flow'], { label: `Ticket ${ticket}` });
+    panels.recordQuery({ intent: 'complaint', resolved: true });
+  }
+
+  function askComplaintRef() {
+    state.step = 'cmp_ref';
+    say(L('askComplaintRef'));
+  }
+
+  async function lookupComplaint(ref, query) {
     state.step = null;
     ref = ref.toUpperCase();
-    const res = await api.getApplication(ref);
-    let app = res.ok ? res.data : null;
-    if (!res.ok && res.status !== 404) app = data.applications.find((a) => a.ref === ref) || null;
-
-    if (!app) {
-      say(L('refNotFound', { ref }), { buttons: [officerBtn(), menuBtn()] });
-      logScripted(query, 'status', ['applications.json'], { tags: ['not found'] });
-      panels.recordQuery({ intent: 'status', resolved: false });
+    let record = state.complaints[ref];
+    let label = 'This chat';
+    if (!record) {
+      const res = await api.getComplaint(ref);
+      record = res.ok ? res.data : null;
+      label = res.ok ? 'GET /api/complaint' : 'Local data';
+      if (!res.ok && res.status !== 404) record = data.complaints.find((c) => c.ref === ref) || null;
+    }
+    if (!record) {
+      say(L('complaintNotFound', { ref }), { buttons: [officerBtn(), menuBtn()] });
+      logScripted(query, 'complaint_status', ['complaints.json'], { tags: ['not found'] });
+      panels.recordQuery({ intent: 'complaint', resolved: false });
       return;
     }
-    state.lastRef = ref;
-    showStatusCard(app, true);
-    logScripted(query, 'status', [`applications.json#${ref}`], { label: res.ok ? 'GET /api/application' : 'Local data' });
-    panels.recordQuery({ intent: 'status', resolved: true });
+    state.lastComplaint = ref;
+    showComplaintCard(record, true);
+    logScripted(query, 'complaint_status', [`complaints.json#${ref}`], { label });
+    panels.recordQuery({ intent: 'complaint', resolved: true });
   }
 
-  function showStatusCard(app, withFollowUp) {
-    const statusKey = state.statusOverrides[app.ref] || app.statusKey;
+  function showComplaintCard(c, withFollowUp) {
+    const statusKey = state.statusOverrides[c.ref] || c.statusKey;
+    const labels = L('complaintLabels');
     const view = {
-      ...app,
+      ref: c.ref,
       statusKey,
       statusLabel: L(`statusNames.${statusKey}`),
-      updated: state.statusOverrides[app.ref] ? 'Today' : app.updated,
-      nextStep: state.statusOverrides[app.ref] ? L('approvedNextStep') : app.nextStep,
+      rows: [
+        [labels.applicant, c.complainant],
+        [labels.category, pick(state.lang, c, 'category')],
+        [labels.updated, state.statusOverrides[c.ref] ? (state.lang === 'hi' ? 'आज' : 'Today') : c.updated],
+        [labels.next, pick(state.lang, c, 'office')],
+      ],
     };
-    const text = withFollowUp && statusKey !== 'approved' ? L('statusFollow') : '';
-    const buttons = withFollowUp
-      ? [{ id: `remind:${app.ref}`, label: L('remindMe') }, officerBtn()]
+    const text = withFollowUp && statusKey !== 'approved' ? L('complaintFollow') : '';
+    const buttons = withFollowUp && statusKey !== 'approved'
+      ? [{ id: `remind:${c.ref}`, label: L('remindMe') }, officerBtn()]
       : [menuBtn()];
-    say(text, { cardNode: chat.statusCard(view, L('statusLabels')), buttons, wide: true },
-      `[Status card] ${app.ref} | ${view.statusLabel} | Updated ${view.updated}. ${text}`);
+    say(text, { cardNode: chat.statusCard(view), buttons, wide: true },
+      `[Complaint card] ${c.ref} | ${view.statusLabel}. ${text}`);
   }
 
-  // ---------- Appointment ----------
-
-  function dateButtons(page) {
-    const dates = data.slots.dates;
-    const shown = page === 0 ? dates.slice(0, 2) : dates.slice(2, 4);
-    const buttons = shown.map((d) => ({ id: `date:${d.id}`, label: d.label }));
-    buttons.push(page === 0 ? { id: 'date:more', label: L('moreDates') } : { id: `date:${dates[4].id}`, label: dates[4].label });
-    return buttons;
-  }
-
-  function askDate(page = 0) {
-    state.step = 'appt_date';
-    say(L('apptDate'), { buttons: dateButtons(page) });
-  }
-
-  function askTime(dateId, query) {
-    const date = data.slots.dates.find((d) => d.id === dateId);
-    if (!date) return;
-    state.step = 'appt_time';
-    state.appointment = { date: date.label };
-    say(L('apptTime', { date: date.label }), {
-      buttons: data.slots.times.map((s) => ({ id: `time:${s.id}`, label: s.label })),
-    });
-    logScripted(query, 'appointment', ['slots.json']);
-  }
-
-  function confirmAppointment(timeId, query) {
-    const time = data.slots.times.find((s) => s.id === timeId);
-    if (!time || !state.appointment) return;
-    state.appointment.time = time.label;
-    state.reminderSent = false;
-    state.step = null;
-    const { date } = state.appointment;
-    say(L('apptConfirmed', { date, time: time.label }));
-    botTurn(() => {
-      chat.addBotMessage({ cardNode: chat.imageCard('/assets/office-map.svg', 'Location map'), text: L('apptMap') });
-      record('bot', `[Image] ${L('apptMap')}`);
-    }, { delay: 700 });
-    askFeedback();
-    logScripted(query, 'appointment', ['slots.json'], { label: 'Booking confirmed' });
-    panels.recordQuery({ intent: 'appointment', resolved: true });
-  }
-
-  // ---------- Documents ----------
+  // ---------- Documents (Acts) ----------
 
   function documentsList() {
-    const rows = data.documents.map((d) => ({ id: `doc:${d.id}`, title: d.title, description: d.description }));
+    const rows = data.documents.map((d) => ({ id: `doc:${d.id}`, title: pick(state.lang, d, 'title'), description: `${d.description} · ${d.pages} pages` }));
     return { button: L('viewDocs'), title: L('docsTitle'), sections: [{ title: '', rows }] };
   }
 
@@ -290,28 +301,11 @@ export function createFlows({ data, panels, offline, onLangChange }) {
   function sendDocument(id, query) {
     const doc = data.documents.find((d) => d.id === id);
     if (!doc) return;
-    say(L('docSent'), { cardNode: chat.documentCard(doc), wide: true }, `[Document] ${doc.title}.pdf`);
+    const title = pick(state.lang, doc, 'title');
+    say(L('docSent'), { cardNode: chat.documentCard({ ...doc, title }), wide: true }, `[Document] ${title}.pdf`);
     askFeedback();
     logScripted(query, 'document', [`documents.json#${id}`]);
     panels.recordQuery({ intent: 'document', resolved: true });
-  }
-
-  // ---------- Grievance ----------
-
-  function askGrievance() {
-    state.step = 'grievance';
-    say(L('grievanceAsk'));
-  }
-
-  function registerGrievance(text) {
-    state.step = null;
-    grievanceSeq += 1;
-    const ticket = `GRV-2026-${String(grievanceSeq).padStart(4, '0')}`;
-    state.lastTicket = ticket;
-    say(L('grievanceDone', { ticket }));
-    askFeedback();
-    logScripted(text, 'grievance', ['grievance-policy'], { label: `Ticket ${ticket}` });
-    panels.recordQuery({ intent: 'grievance', resolved: true });
   }
 
   // ---------- Feedback ----------
@@ -333,8 +327,8 @@ export function createFlows({ data, panels, offline, onLangChange }) {
         language: state.lastLang,
         intent: state.lastIntent || 'handover',
         reason,
-        ref: state.lastRef,
-        appointment: state.appointment?.time ? `${state.appointment.date}, ${state.appointment.time}` : null,
+        complaint: state.lastComplaint,
+        audience: state.audience,
         ticket: state.lastTicket,
         optedOut: state.optedOut,
       }, state.transcript);
@@ -362,7 +356,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     askFeedback();
   }
 
-  // ---------- Proactive notifications ----------
+  // ---------- Proactive notification (complaint status update) ----------
 
   function simulateNotification() {
     if (state.optedOut) {
@@ -370,25 +364,8 @@ export function createFlows({ data, panels, offline, onLangChange }) {
       panels.log({ route: 'scripted', query: '(proactive notification)', language: state.lang, intent: 'notification', confidence: 1, sources: [], latency: null, tags: ['suppressed', 'opted out'] });
       return 'suppressed';
     }
-    if (state.appointment?.time && !state.reminderSent) {
-      state.reminderSent = true;
-      const { date, time } = state.appointment;
-      botTurn(() => {
-        chat.addBotMessage({
-          header: chat.templateHeader(L('templateLabel'), L('reminderTitle')),
-          text: L('apptReminder', { date, time }),
-          footer: L('notifyFooter'),
-          variant: 'template',
-          wide: true,
-          buttons: [{ id: 'appt:keep', label: L('keepIt') }, { id: 'appt:reschedule', label: L('reschedule') }],
-        });
-        record('bot', L('apptReminder', { date, time }));
-      }, { delay: 300 });
-      panels.log({ route: 'scripted', query: '(proactive: appointment reminder)', language: state.lang, intent: 'notification', confidence: 1, sources: ['slots.json'], latency: null, label: 'Template message' });
-      return 'reminder';
-    }
-    const ref = state.lastRef && data.applications.some((a) => a.ref === state.lastRef && a.statusKey !== 'approved')
-      ? state.lastRef : DEMO_NOTIFY_REF;
+    const ref = state.lastComplaint || DEMO_NOTIFY_REF;
+    if (!state.complaints[ref] && !data.complaints.some((c) => c.ref === ref)) return 'none';
     state.statusOverrides[ref] = 'approved';
     botTurn(() => {
       chat.addBotMessage({
@@ -401,21 +378,16 @@ export function createFlows({ data, panels, offline, onLangChange }) {
       });
       record('bot', L('notifyBody', { ref }));
     }, { delay: 300 });
-    panels.log({ route: 'scripted', query: '(proactive: status update)', language: state.lang, intent: 'notification', confidence: 1, sources: [`applications.json#${ref}`], latency: null, label: 'Template message' });
+    panels.log({ route: 'scripted', query: '(proactive: complaint update)', language: state.lang, intent: 'notification', confidence: 1, sources: [`complaints.json#${ref}`], latency: null, label: 'Template message' });
     return 'status';
   }
 
   // ---------- Live AI ----------
 
   function aiContext() {
-    const app = state.lastRef && data.applications.find((a) => a.ref === state.lastRef);
-    const statusKey = app && (state.statusOverrides[app.ref] || app.statusKey);
     return {
-      lastRef: state.lastRef || undefined,
-      lastStatus: statusKey ? t('en', `statusNames.${statusKey}`) : undefined,
-      nextStep: app && !state.statusOverrides[app.ref] ? app.nextStep : undefined,
-      appointment: state.appointment?.time ? `${state.appointment.date}, ${state.appointment.time}` : undefined,
-      ticket: state.lastTicket,
+      ticket: state.lastTicket || undefined,
+      audience: state.audience || undefined,
       optedOut: state.optedOut,
     };
   }
@@ -446,16 +418,40 @@ export function createFlows({ data, panels, offline, onLangChange }) {
   // The AI can ask the app to open a built-in step; the UI is attached to its reply.
   function actionUi(action) {
     switch (action) {
-      case 'menu': return { list: mainMenuList() };
-      case 'faq_list': return { list: faqList() };
-      case 'documents': return { list: documentsList() };
-      case 'appointment':
-        state.step = 'appt_date';
-        return { buttons: dateButtons(0) };
-      case 'status': state.step = 'ref'; return {};
-      case 'grievance': state.step = 'grievance'; return {};
+      case 'menu':
+      case 'faq_list': return { list: mainMenuList() };
+      case 'grievance': state.step = 'complaint'; return {};
       default: return {};
     }
+  }
+
+  // Citation card under an AI reply: the first source, with a link to the Act PDF at that page.
+  function citationSource(citations, lang) {
+    if (!citations?.length) return null;
+    const c = citations[0];
+    const more = citations.length > 1 ? ` · +${citations.length - 1} ${lang === 'hi' ? 'अन्य स्रोत' : 'more'}` : '';
+    const caution = c.reliability && c.reliability !== 'high' ? ` · ⚠ ${t(lang, 'verifyNote')}` : '';
+    if (c.type === 'faq') {
+      return { title: t(lang, 'sourceFaq'), description: `${lang === 'en' ? c.title_en : c.title}${more}` };
+    }
+    if (c.type === 'case_study') {
+      return { title: t(lang, 'caseStudy'), description: `${c.title}${more}` };
+    }
+    const doc = docByKey.get(c.doc);
+    return {
+      title: `${c.act} · ${t(lang, 'sourceAct')} ${c.section}`,
+      description: `${c.title}${more}${caution}`,
+      url: doc ? `assets/${doc.file}${c.page ? `#page=${c.page}` : ''}` : undefined,
+    };
+  }
+
+  // What our search model found, for the "Behind the scenes" panel.
+  function searchNote(r) {
+    const s = r.search || {};
+    if (r.route === 'lookup') return 'Direct section lookup';
+    if (r.route === 'faq' && s.top_faq) return `Our model: FAQ match ${s.top_faq.id} (score ${s.top_faq.score})`;
+    if (s.top_section) return `Our model: best section ${s.top_section.key} (score ${s.top_section.score})`;
+    return undefined;
   }
 
   function renderAiReply(query, res, guessLang) {
@@ -474,19 +470,19 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     if (LANGS.includes(r.language) && r.language !== state.lang && detectScript(query) === r.language) {
       setLang(r.language, { announce: false });
     }
-    const lang = LANGS.includes(r.language) ? r.language : state.lang;
+    const lang = r.language === 'en' ? 'en' : r.language === 'hi' ? 'hi' : state.lang;
     state.lastIntent = r.intent;
     state.lastLang = r.language;
     const low = r.confidence < LOW_CONFIDENCE;
     const action = r.action || 'none';
     const offerOfficer = action !== 'handover' && (r.escalate || low || r.intent === 'out_of_scope');
+    const citations = r.citations || [];
 
-    const faq = r.sources.map((id) => data.faqs.find((f) => f.id === id)).find(Boolean);
     // In AI mode the reply stands on its own; only a handover can change the screen.
     const ui = action === 'handover' || state.mode === 'ai' ? {} : actionUi(action);
-    // Suggestions are hidden when the next message is free text the app collects (grievance, reference no.).
-    const collectsText = state.mode !== 'ai' && (action === 'grievance' || action === 'status');
-    const suggestions = ui.list || collectsText ? [] : r.suggested_replies
+    // Suggestions are hidden when the next message is free text the app collects (complaint text).
+    const collectsText = state.mode !== 'ai' && action === 'grievance';
+    const suggestions = ui.list || collectsText ? [] : (r.suggested_replies || [])
       .filter((s) => !OFFICER_PATTERN.test(s))
       .map((s) => ({ id: `ask:${s}`, label: s }));
     let buttons = ui.buttons || suggestions;
@@ -497,20 +493,23 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     chat.addBotMessage({
       text: r.reply,
       ai: '✦ AI',
-      source: faq && !offerOfficer && action === 'none' ? { title: faq.source, description: `${t(lang, 'source')}: ${data.org.orgName}`, url: faq.url } : null,
+      source: action === 'none' ? citationSource(citations, r.language === 'mixed' ? 'en' : lang) : null,
       buttons: buttons.slice(0, 3),
       list: ui.list,
     });
     record('bot', r.reply);
 
-    const tags = [];
+    const tags = [`route: ${r.route}`];
     if (action !== 'none') tags.push(`action: ${action}`);
     if (low) tags.push('low confidence');
     if (r.escalate) tags.push('escalate');
     if (r.intent === 'out_of_scope') tags.push('guardrail');
+    if (r.search?.rewritten?.length) tags.push('query rewritten');
     panels.log({
       route: 'ai', query, language: r.language, intent: r.intent, confidence: r.confidence,
-      sources: r.sources, latency: r.latency_ms ?? res.latency, tags,
+      sources: citations.map((c) => (c.type === 'faq' ? c.faq_id : c.key)),
+      latency: r.latency_ms ?? res.latency, tags,
+      label: searchNote(r),
     });
 
     if (action === 'handover') {
@@ -552,21 +551,21 @@ export function createFlows({ data, panels, offline, onLangChange }) {
       case 'menu':
         if (!arg) return showMenu();
         return openMenuItem(arg, label);
+      case 'topic': {
+        const [key, page] = arg.split(':');
+        return showTopic(key, Number(page) || 0);
+      }
       case 'faq': return answerFaq(arg, label);
+      case 'cmp':
+        if (arg === 'new') return askComplaint();
+        return askComplaintRef();
       case 'remind':
         state.statusReminders.add(arg);
         return say(L('reminderSet', { ref: arg }));
       case 'view': {
-        const app = data.applications.find((a) => a.ref === arg);
-        return app && showStatusCard(app, false);
+        const c = state.complaints[arg] || data.complaints.find((x) => x.ref === arg);
+        return c && showComplaintCard(c, false);
       }
-      case 'date':
-        if (arg === 'more') return askDate(1);
-        return askTime(arg, label);
-      case 'time': return confirmAppointment(arg, label);
-      case 'appt':
-        if (arg === 'reschedule') return askDate(0);
-        return say(L('keepItAck'));
       case 'doc': return sendDocument(arg, label);
       case 'fb':
         panels.log({ route: 'scripted', query: label, language: state.lang, intent: 'feedback', confidence: 1, sources: [], latency: null, tags: [arg === 'yes' ? 'positive' : 'negative'] });
@@ -579,12 +578,13 @@ export function createFlows({ data, panels, offline, onLangChange }) {
   }
 
   function openMenuItem(key, label) {
-    switch (key) {
-      case 'faq': logScripted(label, 'faq', ['faqs.json']); return showFaqList();
-      case 'status': logScripted(label, 'status', []); return askRef();
-      case 'appointment': logScripted(label, 'appointment', ['slots.json']); return askDate(0);
-      case 'documents': logScripted(label, 'document', ['documents.json']); return showDocuments();
-      case 'grievance': logScripted(label, 'grievance', []); return askGrievance();
+    const item = data.menu.items.find((i) => i.key === key);
+    if (!item) return undefined;
+    logScripted(label, key, item.faqs ? ['menu.json', 'faqs.json'] : ['menu.json']);
+    if (item.faqs) return showTopic(key);
+    switch (item.flow) {
+      case 'complaint': return showComplaintMenu();
+      case 'documents': return showDocuments();
       case 'officer': return startHandover(label);
       default: return undefined;
     }
@@ -600,13 +600,9 @@ export function createFlows({ data, panels, offline, onLangChange }) {
 
     if (state.handover) return;
 
-    if (state.mode === 'ai') {
-      const ref = text.match(REF_PATTERN);
-      if (ref) state.lastRef = ref[0].toUpperCase();
-      return askAi(text);
-    }
+    if (state.mode === 'ai') return askAi(text);
 
-    if (/^stop$/i.test(text) || text === 'रोकें' || text === 'நிறுத்து') {
+    if (/^stop$/i.test(text) || text === 'रोकें') {
       state.optedOut = true;
       logScripted(text, 'opt_out', [], { tags: ['opted out'] });
       return say(L('optedOut'));
@@ -632,29 +628,27 @@ export function createFlows({ data, panels, offline, onLangChange }) {
       logScripted(text, 'menu', []);
       return showMenu();
     }
-    if (/^reschedule$/i.test(text)) return askDate(0);
 
-    const ref = text.match(REF_PATTERN);
-    if (ref) return lookupStatus(ref[0], text);
+    const ref = text.match(CMP_PATTERN);
+    if (ref) return lookupComplaint(ref[0], text);
 
     // Short explicit requests hand over instantly (even mid-step); longer messages go to the AI, which can also hand over.
     if (OFFICER_PATTERN.test(text) && text.length < 40) return startHandover(text);
 
-    if (state.step === 'grievance') return registerGrievance(text);
+    if (state.step === 'complaint') return registerComplaint(text);
 
     if (PII_PATTERN.test(text)) {
       logScripted(text, 'pii_warning', [], { tags: ['pii guard'] });
       return say(L('pii'));
     }
 
-    if (state.step === 'ref') {
-      if (REF_LOOSE.test(text) || REF_LIKE.test(text)) {
-        logScripted(text, 'status', [], { tags: ['invalid format'] });
-        return say(L('refInvalid'), { buttons: [officerBtn(), menuBtn()] });
+    if (state.step === 'cmp_ref') {
+      if (CMP_LOOSE.test(text) || REF_LIKE.test(text)) {
+        logScripted(text, 'complaint_status', [], { tags: ['invalid format'] });
+        return say(L('complaintInvalid'), { buttons: [officerBtn(), menuBtn()] });
       }
       state.step = null;
     }
-
 
     return askAi(text);
   }

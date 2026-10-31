@@ -5,7 +5,7 @@
 // writes config.js with the API domain, e.g. https://apivalardemo.welocalhost.com.
 const API_BASE = String(window.APP_CONFIG?.apiBase || '').replace(/\/+$/, '');
 
-const CHAT_TIMEOUT_MS = 9000; // server LLM timeout is 8 s; allow a little network overhead
+const CHAT_TIMEOUT_MS = 20000; // search + optional query rewrite + answer (+ one grounding retry)
 
 async function fetchJson(url, options = {}, timeoutMs = CHAT_TIMEOUT_MS) {
   const controller = new AbortController();
@@ -37,8 +37,8 @@ export function postChat(message, history, language, context, mode = 'static') {
   });
 }
 
-export function getApplication(ref) {
-  return fetchJson(`${API_BASE}/api/application/${encodeURIComponent(ref)}`, {}, 4000);
+export function getComplaint(ref) {
+  return fetchJson(`${API_BASE}/api/complaint/${encodeURIComponent(ref)}`, {}, 4000);
 }
 
 export function getHealth() {
@@ -46,7 +46,7 @@ export function getHealth() {
 }
 
 export async function loadData() {
-  const names = ['org', 'faqs', 'applications', 'slots', 'documents'];
+  const names = ['org', 'faqs', 'documents', 'menu', 'complaints'];
   const results = await Promise.all(names.map((n) => fetch(`/data/${n}.json`).then((r) => r.json())));
   return Object.fromEntries(names.map((n, i) => [n, results[i]]));
 }

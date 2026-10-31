@@ -1,0 +1,20 @@
+{
+  "_comment": "Static chatbot main menu. 'faqs' lists FAQ ids from faqs.json shown as a question list; 'flow' opens a built-in step.",
+  "items": [
+    { "key": "panchayat", "title": "Panchayat elections", "title_hi": "पंचायत चुनाव", "desc": "Posts, reservation, voting, counting", "desc_hi": "पद, आरक्षण, मतदान, मतगणना",
+      "faqs": ["panchayat_01", "panchayat_02", "panchayat_05", "panchayat_07", "panchayat_06", "panchayat_08", "panchayat_09", "panchayat_10", "panchayat_15", "panchayat_18"] },
+    { "key": "municipal", "title": "Municipal elections", "title_hi": "नगरपालिका चुनाव", "desc": "EVMs, counting, code of conduct", "desc_hi": "ईवीएम, मतगणना, आचार संहिता",
+      "faqs": ["municipal_01", "municipal_02", "municipal_03", "municipal_04", "municipal_11", "municipal_10", "municipal_12", "municipal_13", "municipal_14", "municipal_19", "municipal_22"] },
+    { "key": "evoting", "title": "eVoting SECBHR app", "title_hi": "ई-वोटिंग SECBHR ऐप", "desc": "Register and vote from your phone", "desc_hi": "फ़ोन से पंजीकरण और मतदान",
+      "faqs": ["municipal_23", "municipal_24", "evoting_01", "evoting_07", "evoting_09", "evoting_10", "evoting_11", "evoting_12", "evoting_14", "evoting_02", "evoting_03", "evoting_04", "evoting_05", "evoting_06", "evoting_08", "evoting_13", "evoting_15", "evoting_16"] },
+    { "key": "voterlist", "title": "Voter list & e-Roll", "title_hi": "मतदाता सूची और ई-रोल", "desc": "Find your name, claims, helpline", "desc_hi": "नाम खोजें, दावा-आपत्ति, हेल्पलाइन",
+      "faqs": ["panchayat_11", "panchayat_03", "panchayat_14", "municipal_16", "municipal_17"] },
+    { "key": "nomination", "title": "Nomination & candidates", "title_hi": "नामांकन और प्रत्याशी", "desc": "Eligibility, fees, documents, symbols", "desc_hi": "पात्रता, शुल्क, दस्तावेज़, प्रतीक",
+      "faqs": ["panchayat_04", "municipal_05", "municipal_06", "municipal_07", "municipal_08", "municipal_09", "municipal_20"] },
+    { "key": "complaint", "title": "Complaints", "title_hi": "शिकायत", "desc": "Register a complaint or check its status", "desc_hi": "शिकायत दर्ज करें या स्थिति देखें", "flow": "complaint" },
+    { "key": "acts", "title": "Acts & documents", "title_hi": "अधिनियम और दस्तावेज़", "desc": "Panchayat Raj Act, Municipal Act (PDF)", "desc_hi": "पंचायत राज अधिनियम, नगरपालिका अधिनियम (PDF)", "flow": "documents" },
+    { "key": "officials", "title": "For election officials", "title_hi": "निर्वाचन कर्मियों के लिए", "desc": "Software and ward-entry rules", "desc_hi": "सॉफ़्टवेयर और वार्ड प्रविष्टि नियम",
+      "faqs": ["evoting_17", "evoting_18", "evoting_19", "evoting_20", "evoting_21", "evoting_22", "evoting_23", "evoting_24", "evoting_25"], "audience": "officials" },
+    { "key": "officer", "title": "Talk to an officer", "title_hi": "अधिकारी से बात करें", "desc": "Chat with a help-desk officer", "desc_hi": "हेल्प-डेस्क अधिकारी से चैट", "flow": "officer" }
+  ]
+}

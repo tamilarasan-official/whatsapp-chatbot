@@ -122,10 +122,9 @@ Removed: Form 6/8, appointment booking, REF status, Tamil, ECI logo and sample P
 - Demo guide PDF and WhatsApp message regenerated for SEC Bihar.
 
 ### Phase 8: WhatsApp go-live (real number, Meta WhatsApp Business Platform)
-Status (1 Nov 2026): **not started**. The answer engine (Phases 1–6) is ready to serve a WhatsApp webhook as is;
-everything conversational (consent, language, menu, complaints, STOP/START, PII, handover, per-user state) lives in
-`public/js/flows.js` and must be rebuilt on the server. Longest lead items: Meta business verification, template
-approvals, and the session store + webhook build. Start 8.1 and 8.4 in parallel with the code.
+Status (1 Nov 2026): **code done (8.3); waiting on the client for 8.1 / 8.4 / 8.5.** The server hosts the whole
+WhatsApp channel; going live needs only the `WHATSAPP_*` env values (docs/WHATSAPP.md). Longest lead items now:
+Meta business verification and template approvals.
 Open decision: direct Meta Cloud API vs an authorised BSP (Gupshup / Interakt / Twilio). A BSP costs more per
 message but shortens onboarding and gives support; the webhook contract is nearly the same either way.
 Items marked **(client)** need SEC Bihar to act or sign off.
@@ -150,21 +149,26 @@ Items marked **(client)** need SEC Bihar to act or sign off.
 - [ ] Datastore backups; deploy rollback path (Dokploy Deployments tab).
 
 #### 8.3 Code to build (server/, new files)
-- [ ] `server/whatsapp/webhook.js`: GET verify token; POST with X-Hub-Signature-256 check, idempotent on Meta retries
-      (message id dedupe), reply 200 immediately and process async.
-- [ ] `server/whatsapp/send.js`: text, reply buttons (max 3), list messages (max 10 rows / 10 sections), document
-      messages for the Act PDFs, template sends, mark-as-read, typing indicator.
-- [ ] `server/session/`: state machine keyed by phone number, ported from `public/js/flows.js`: consent, language,
-      main menu, FAQ lists, complaint register/status, STOP/START, PII block, officer handover, audience=officials.
-- [ ] Menu redesign for WhatsApp limits: 9 topics as one list; FAQ paging as lists; citations as short text + PDF link
-      (or document message) instead of cards.
-- [ ] Per-phone rate limiting and abuse protection (replaces per-IP `express-rate-limit`).
-- [ ] Officer handover: queue table, minimal console (or email/Slack hook), officer reply through the same number.
-- [ ] Complaint registration against the client's system, or a reviewed holding table; remove the fake sequence counter.
-- [ ] Analytics events: message in/out, route, intent, fallback, handover, language.
-- [ ] Admin tooling: edit FAQs and re-index without a developer.
-- [ ] Tests: webhook signature/dedupe, state machine transitions, message-size and button-count limits; staging run
-      against the sandbox number. `/api/chat` stays for the web demo.
+**Done (1 Nov 2026)**; `npm run test:wa` = 35 offline checks. As built:
+- [x] `server/whatsapp/webhook.js`: GET handshake; POST with X-Hub-Signature-256 (timing-safe), 200 before processing,
+      message-id de-duplication (Meta retries), one ordered queue per phone, per-phone rate limit (20/min: one warning,
+      then silence), failed-delivery statuses logged. Own JSON parser (raw body for the signature, 1 MB).
+- [x] `server/whatsapp/send.js` + `limits.js` + `graph.js`: text / 3 reply buttons / lists (10 rows) / document /
+      template / mark-read + typing indicator. Bodies over 1024 chars are split, titles clipped on grapheme boundaries
+      (no broken matras), Graph API retries on 429/5xx, token never logged. Dry-run transport when no token.
+- [x] `server/session/engine.js` + `strings.js`: full port of `public/js/flows.js` (consent, language, menu, FAQ lists
+      with "More questions…", official FAQ answers, complaint register/status/remind, Act PDFs, feedback, STOP/START,
+      PII guard, officer handover, officials audience, AI replies with citation line + PDF page link + suggestion
+      buttons, AI actions menu/grievance/handover). WhatsApp additions: numbered rows + reply-by-number, first question
+      answered right after language choice, welcome-back after 24 h idle, "text only" reply to media, handover expiry.
+- [x] `server/session/store.js`: per-number profile (language, consent time, STOP, complaints, reminders) persisted to
+      `STATE_DIR/whatsapp-profiles.json` (atomic, debounced; `wa-state` volume in compose); conversation and
+      transcript in memory only, reset after `SESSION_TTL_MIN`. Swap for Redis/Postgres by replacing load()/flush().
+- [x] Officer path: `/api/whatsapp/admin/{handovers,session/:phone,reply,close,notify}` (Bearer `ADMIN_TOKEN`) and the
+      optional `HANDOVER_WEBHOOK_URL` push. Proactive complaint update respects STOP, the 24-hour window and templates.
+- [x] Complaint tickets numbered server-side (persisted counter) and looked up later from any device.
+- [ ] Still open: analytics store, officer console UI (the API exists), FAQ admin tooling, complaint integration
+      with the client's system (tickets are a holding record today).
 
 #### 8.4 Content and data
 - [ ] Confirm the target body is SEC Bihar and the 68 FAQs + Act PDFs are current. **(client)**

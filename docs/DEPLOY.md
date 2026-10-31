@@ -97,6 +97,14 @@ The browser loads the UI from the frontend domain and calls the API on the backe
 | Yellow "AI not configured" badge | The frontend can't reach `/api/health`. Check `config.js` and the API domain. |
 | A domain shows the wrong app | Check that each domain in the Domains tab points to the right service (`frontend` or `backend`). |
 
+## WhatsApp (real number)
+
+The backend ships with the WhatsApp Cloud API channel built in. Without the `WHATSAPP_*` env vars it runs in
+dry-run mode and the deploy above is unaffected. To connect the client's number: **docs/WHATSAPP.md**
+(env values to collect, Meta webhook configuration, test number, templates, officer endpoints, troubleshooting).
+Session profiles (language, STOP, complaints per number) are stored in the `wa-state` volume defined in
+`docker-compose.yml`.
+
 ## Security notes
 - The key is only in Dokploy's Environment tab and is passed to the **backend only**. It is not in Git, not in either image, and never sent to the browser.
 - `HF_TOKEN` is used only in the build's first stage as a BuildKit secret; it is not in any image layer (verified with `docker history` and a file search of the image).

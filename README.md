@@ -30,6 +30,8 @@ npm start                   # http://localhost:3000
 - `npm run test:ai` sends 16 sample questions to `/api/chat` and prints route, citations, language and latency.
 - `npm run test:kb` runs the full accuracy test (Phase 5) and writes `docs/accuracy-report.html`.
 - `node scripts/verify-node-search.js` checks the search model ranks exactly as in the Phase 2 evaluation.
+- `npm run test:wa` tests the WhatsApp channel offline: every scripted flow, Cloud API limits, webhook signatures,
+  de-duplication, rate limit and the officer API (no Meta account or OpenAI key needed).
 - `http://localhost:3000/?offline=1` turns off the AI: scripted flows plus keyword-matched FAQ answers.
 
 Without an API key the app still runs: questions that match an official FAQ get the official answer,
@@ -45,6 +47,24 @@ other free text gets the fallback ("I can connect you to an officer").
 | `LLM_TIMEOUT_MS` | `10000` | Server-side LLM timeout |
 | `TRUST_PROXY` | `1` | Number of reverse proxies in front of the app (Dokploy/Traefik = 1) |
 | `RATE_LIMIT_PER_MIN` | `30` | Requests per minute per IP on `/api/chat` |
+
+## WhatsApp (real number)
+
+The same backend serves the WhatsApp Cloud API: `GET/POST /webhook/whatsapp` receives Meta's webhooks and
+`/api/whatsapp/admin/*` lets officers see the handover queue, reply, close and send complaint updates.
+Without the `WHATSAPP_*` env vars the channel runs in dry-run mode (messages are logged). Going live is
+configuration only: see **docs/WHATSAPP.md**.
+
+```
+Meta Cloud API ──webhook──> server/whatsapp/webhook.js  signature check, de-dupe, per-phone order + rate limit
+                            server/session/engine.js    consent, language, menu, FAQ lists, complaints, Acts,
+                                                        STOP/START, PII guard, officer handover, numbered picks;
+                                                        free text -> server/answer.js (same engine as the web demo)
+                            server/whatsapp/send.js     text / buttons (3) / lists (10 rows) / documents / templates,
+                                                        bodies split and titles clipped to Meta's limits
+                            server/session/store.js     per-number profile (language, STOP, complaints) in STATE_DIR;
+                                                        conversations in memory, reset after 24 h idle
+```
 
 ## How it works
 

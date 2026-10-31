@@ -33,6 +33,8 @@ COPY public ./public
 COPY data ./data
 COPY --from=model /model/model_quantized.onnx ./data/kb/index/model/onnx/model_quantized.onnx
 COPY scripts/test-ai.js ./scripts/test-ai.js
+# WhatsApp session profiles live here (mounted as a volume by docker-compose.yml); must be writable by node.
+RUN mkdir -p /app/runtime && chown node:node /app/runtime
 
 USER node
 EXPOSE 3000

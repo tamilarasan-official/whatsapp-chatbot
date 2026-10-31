@@ -9,6 +9,7 @@ const { MODEL } = require('./llm');
 const { respond } = require('./answer');
 const search = require('./search');
 const { fallbackReply } = require('./fallback');
+const whatsapp = require('./whatsapp');
 
 const PORT = Number(process.env.PORT) || 3000;
 const MAX_MESSAGE_LENGTH = 500;
@@ -22,6 +23,8 @@ app.set('trust proxy', Number(process.env.TRUST_PROXY ?? 1));
 // Unset = allow any origin (local development).
 const corsOrigins = (process.env.CORS_ORIGIN || '').split(',').map((s) => s.trim()).filter(Boolean);
 app.use(cors({ origin: corsOrigins.length ? corsOrigins : true, methods: ['GET', 'POST'] }));
+// WhatsApp routes parse their own body (raw bytes are needed for Meta's signature), so they mount first.
+const wa = whatsapp.mountWhatsApp(app, { respond });
 app.use(express.json({ limit: '50kb' }));
 
 const chatLimiter = rateLimit({
@@ -50,6 +53,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     ok: true, provider: 'openai', model: MODEL, aiConfigured: Boolean(process.env.OPENAI_API_KEY),
     kb: { faqs: search.faqs.length, sections: search.sectionsByKey.size, embedding: search.meta.model },
+    whatsapp: whatsapp.status(),
   });
 });
 
@@ -85,6 +89,15 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
 
 app.use('/api', (req, res) => res.status(404).json({ error: 'not_found' }));
 
+// Malformed JSON and oversized bodies get a JSON error instead of Express's HTML page.
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'invalid_json' });
+  if (err.type === 'entity.too.large') return res.status(413).json({ error: 'payload_too_large' });
+  console.error(`[http] ${req.method} ${req.path}: ${err.stack || err.message}`);
+  return res.status(500).json({ error: 'internal_error' });
+});
+
 // SERVE_STATIC=false when the UI is served by the separate frontend container (API-only backend).
 if (process.env.SERVE_STATIC !== 'false') {
   // Only the top-level JSON files (org, FAQs, menu, documents, dummy complaints) are served;
@@ -96,6 +109,9 @@ if (process.env.SERVE_STATIC !== 'false') {
   app.get('/', (req, res) => res.json({ service: 'whatsapp-ai-demo-api', health: '/api/health' }));
 }
 
+// A failed background task (webhook processing, officer hook) must never take the whole bot down.
+process.on('unhandledRejection', (err) => console.error(`[process] unhandled rejection: ${err?.stack || err}`));
+
 app.listen(PORT, (err) => {
   if (err) {
     console.error(`Could not start server on port ${PORT}: ${err.message}`);
@@ -103,6 +119,9 @@ app.listen(PORT, (err) => {
   }
   console.log(`WhatsApp AI demo running at http://localhost:${PORT}`);
   console.log(`Model: ${MODEL} | KB: ${search.faqs.length} FAQs, ${search.sectionsByKey.size} sections | AI ${process.env.OPENAI_API_KEY ? 'enabled (OpenAI)' : 'DISABLED (no OPENAI_API_KEY, official FAQ answers only)'}`);
+  console.log(wa.status.configured
+    ? `WhatsApp: live, webhook ${wa.status.webhookPath}, phone number id ${wa.status.phoneNumberId}, admin ${wa.status.adminEnabled ? 'on' : 'off (no ADMIN_TOKEN)'}`
+    : `WhatsApp: DRY RUN (missing ${wa.status.missing.join(', ')}); outgoing messages are logged, not sent`);
   // Load the embedding model now so the first question is not slow.
   const t = performance.now();
   search.loadModel()

@@ -59,6 +59,20 @@ services:
       SERVE_STATIC: "false"
       PORT: 3000
       NODE_ENV: production
+      # ---- WhatsApp Cloud API (all optional: without them the channel runs in dry-run mode) ----
+      WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID:-}
+      WHATSAPP_ACCESS_TOKEN: ${WHATSAPP_ACCESS_TOKEN:-}
+      WHATSAPP_APP_SECRET: ${WHATSAPP_APP_SECRET:-}
+      WHATSAPP_VERIFY_TOKEN: ${WHATSAPP_VERIFY_TOKEN:-}
+      WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION:-v22.0}
+      PUBLIC_ASSETS_BASE: ${PUBLIC_ASSETS_BASE:-https://valardemo.welocalhost.com/assets}
+      ADMIN_TOKEN: ${ADMIN_TOKEN:-}
+      HANDOVER_WEBHOOK_URL: ${HANDOVER_WEBHOOK_URL:-}
+      WHATSAPP_TEMPLATE_COMPLAINT_UPDATE: ${WHATSAPP_TEMPLATE_COMPLAINT_UPDATE:-}
+      STATE_DIR: /app/runtime
+    volumes:
+      # Session profiles (language, STOP opt-outs, complaints registered on WhatsApp). Survives redeploys.
+      - wa-state:/app/runtime
     expose:
       - "3000"
     healthcheck:
@@ -67,7 +81,7 @@ services:
       timeout: 5s
       start_period: 30s
       retries: 3
-    # The API never writes to disk, so the filesystem can be read-only.
+    # The API writes only to the wa-state volume, so the rest of the filesystem can be read-only.
     read_only: true
     tmpfs:
       - /tmp
@@ -86,3 +100,6 @@ services:
 secrets:
   hf_token:
     environment: HF_TOKEN
+
+volumes:
+  wa-state:

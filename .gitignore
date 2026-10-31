@@ -11,3 +11,6 @@ __pycache__/
 
 # ONNX model binaries (>100 MB, GitHub limit); fetched at Docker build time
 data/kb/index/model/onnx/
+
+# WhatsApp session profiles (phone numbers: personal data, never committed)
+runtime/

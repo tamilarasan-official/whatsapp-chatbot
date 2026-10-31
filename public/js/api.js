@@ -47,6 +47,6 @@ export function getHealth() {
 
 export async function loadData() {
   const names = ['org', 'faqs', 'documents', 'menu', 'complaints'];
-  const results = await Promise.all(names.map((n) => fetch(`/data/${n}.json`).then((r) => r.json())));
+  const results = await Promise.all(names.map((n) => fetch(`/data/${n}.json`, { cache: 'no-cache' }).then((r) => r.json())));
   return Object.fromEntries(names.map((n, i) => [n, results[i]]));
 }

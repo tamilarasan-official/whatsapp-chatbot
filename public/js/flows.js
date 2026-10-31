@@ -1,9 +1,9 @@
 // Scripted flow engine. Buttons carry stable payload IDs; free text is matched
 // against a few deterministic rules and everything else goes to the live AI.
 
-import * as chat from './chat.js';
-import * as api from './api.js';
-import { t, faqText, pick, detectScript, LANGS } from './i18n.js';
+import * as chat from './chat.js?v=sec2';
+import * as api from './api.js?v=sec2';
+import { t, faqText, pick, detectScript, LANGS } from './i18n.js?v=sec2';
 
 const CMP_PATTERN = /\bCMP-\d{4}-\d{5}\b/i;
 const CMP_LOOSE = /\bCMP[\s-]*\d/i;

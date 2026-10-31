@@ -1,11 +1,11 @@
 // Bootstrap: load data, wire the phone input, control bar, prompt chips and panels.
 
-import * as chat from './chat.js';
-import * as panels from './panels.js';
-import { loadData, getHealth } from './api.js';
-import { createFlows } from './flows.js';
-import { initHome } from './home.js';
-import { t } from './i18n.js';
+import * as chat from './chat.js?v=sec2';
+import * as panels from './panels.js?v=sec2';
+import { loadData, getHealth } from './api.js?v=sec2';
+import { createFlows } from './flows.js?v=sec2';
+import { initHome } from './home.js?v=sec2';
+import { t } from './i18n.js?v=sec2';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);

@@ -1,5 +1,6 @@
 # Production image for Dokploy (or any Docker host).
-FROM node:20-alpine
+# Debian slim, not Alpine: onnxruntime-node (the search model runtime) needs glibc.
+FROM node:20-bookworm-slim
 
 ENV NODE_ENV=production \
     PORT=3000
@@ -17,7 +18,8 @@ COPY scripts/test-ai.js ./scripts/test-ai.js
 USER node
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget -qO- "http://127.0.0.1:${PORT}/api/health" >/dev/null || exit 1
+# No wget in the slim image: use Node's fetch. Longer start period: the search model loads at startup.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:'+process.env.PORT+'/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
 CMD ["node", "server/index.js"]

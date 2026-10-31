@@ -60,6 +60,21 @@ Question (Hindi / English / Hinglish / Bhojpuri)
 - Languages: Hindi default, English, Hinglish; Bhojpuri/Maithili understood, replied in simple Hindi.
 - Officials Q&As answered only when the question is about the software/ward-entry rules or the officials menu is used.
 
+**Done.** As built:
+- `server/search.js`: fine-tuned e5-small int8 ONNX via transformers.js (onnxruntime-node) + Phase 2 index; Node
+  ranking verified identical to Python (`node scripts/verify-node-search.js`: FAQ test R@1 91.4%, section R@5 100%,
+  0 out-of-scope accepted, ~9 ms/question). Direct lookup for "Section N" / "धारा N" / "dhara N" with Act hints.
+- `server/answer.js`: routes lookup / faq / act / chat. Non-confident questions are rewritten by the AI into
+  standalone Hindi + English queries (Hinglish, follow-ups). Score floors: FAQ 0.45, section 0.48, weak 0.40.
+  eVoting topic words also pull in the eVoting FAQs (the model ranks generic "eVoting app" wording weakly).
+- Grounding checks: unknown citation ids dropped; numbers not in the sources, or factual replies with no citation,
+  get one corrective retry, then a safe reply (official FAQ text, or "I don't have that detail").
+- No OpenAI key / AI failure: confident FAQ matches are answered with the official FAQ text.
+- Response adds `citations` [{type faq|act|case_study, faq_id | act, section, title, page, reliability}], `route`, `search`.
+- Reply language set by the server from the message (hi / en / Hinglish) and passed to the AI explicitly.
+- Docker: backend image moved to node:20-bookworm-slim (onnxruntime-node needs glibc); memory limit 1 GB (~500 MB used).
+- Known gaps for Phase 5: Hinglish FAQ R@1 69%; generic eVoting wording; add more training questions and re-fine-tune.
+
 ### Phase 4: Rebrand the demo
 - Name "State Election Commission, Bihar" / "राज्य निर्वाचन आयोग, बिहार", neutral ballot-box avatar (no emblem), Hindi default.
 - Language buttons: हिन्दी, English (Tamil removed).
@@ -74,7 +89,7 @@ Question (Hindi / English / Hinglish / Bhojpuri)
 - `npm run test:kb` reports: FAQ hit rate, correct section cited, invented facts (target 0), language match.
 
 ### Phase 6: Deploy
-- Same Dokploy compose (frontend + backend, same domains). Backend memory limit 256 MB -> 512 MB for the index.
+- Same Dokploy compose (frontend + backend, same domains). Backend memory limit set to 1 GB in Phase 3. Model file (118 MB, git-ignored) fetched at build time.
 - Optional: password-protect the demo link (government branding on a public URL).
 
 ### Phase 7: Client pack

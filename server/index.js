@@ -4,13 +4,15 @@ const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
-const { DATA_DIR, faqs, findApplication } = require('./kb');
-const { chat, MODEL } = require('./llm');
+const { DATA_DIR, findApplication } = require('./kb');
+const { MODEL } = require('./llm');
+const { respond } = require('./answer');
+const search = require('./search');
 const { fallbackReply } = require('./fallback');
 
 const PORT = Number(process.env.PORT) || 3000;
 const MAX_MESSAGE_LENGTH = 500;
-const VALID_LANGS = new Set(['en', 'hi', 'ta']);
+const VALID_LANGS = new Set(['en', 'hi']);
 
 const app = express();
 app.disable('x-powered-by');
@@ -37,17 +39,17 @@ function sanitiseContext(ctx) {
   if (!ctx || typeof ctx !== 'object') return {};
   const str = (v, max = 60) => (typeof v === 'string' ? v.slice(0, max) : undefined);
   return {
-    lastRef: str(ctx.lastRef, 20),
-    lastStatus: str(ctx.lastStatus, 30),
-    nextStep: str(ctx.nextStep, 80),
-    appointment: str(ctx.appointment),
     ticket: str(ctx.ticket, 20),
+    audience: ctx.audience === 'officials' ? 'officials' : undefined,
     optedOut: ctx.optedOut === true,
   };
 }
 
 app.get('/api/health', (req, res) => {
-  res.json({ ok: true, provider: 'openai', model: MODEL, kbItems: faqs.length, aiConfigured: Boolean(process.env.OPENAI_API_KEY) });
+  res.json({
+    ok: true, provider: 'openai', model: MODEL, aiConfigured: Boolean(process.env.OPENAI_API_KEY),
+    kb: { faqs: search.faqs.length, sections: search.sectionsByKey.size, embedding: search.meta.model },
+  });
 });
 
 app.get('/api/application/:ref', (req, res) => {
@@ -58,7 +60,7 @@ app.get('/api/application/:ref', (req, res) => {
 
 app.post('/api/chat', chatLimiter, async (req, res) => {
   const message = typeof req.body?.message === 'string' ? req.body.message.trim() : '';
-  const language = VALID_LANGS.has(req.body?.language) ? req.body.language : 'en';
+  const language = VALID_LANGS.has(req.body?.language) ? req.body.language : 'hi';
 
   if (!message || message.length > MAX_MESSAGE_LENGTH) {
     return res.status(400).json({ error: 'invalid_message', ...fallbackReply(language, 'invalid_message') });
@@ -67,11 +69,10 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
   try {
     const mode = req.body?.mode === 'ai' ? 'ai' : 'static';
     const context = sanitiseContext(req.body.context);
-    // Give the AI the (dummy) application record when the user mentions or already checked a reference.
-    const ref = (message.match(/\bREF-\d{4}-\d{5}\b/i) || [])[0] || context.lastRef;
-    if (ref) context.application = findApplication(ref) || { ref: ref.toUpperCase(), notFound: true };
-    const result = await chat({ message, history: req.body.history, language, context, mode });
-    console.log(`[chat] ${mode} ${result.intent}/${result.action} ${result.language} conf=${result.confidence} ${result.latency_ms}ms`);
+    const history = Array.isArray(req.body.history) ? req.body.history : [];
+    const result = await respond({ message, history, language, context, mode });
+    console.log(`[chat] ${mode} ${result.route} ${result.intent}/${result.action} ${result.language} conf=${result.confidence} `
+      + `cites=${result.citations.map((c) => c.faq_id || c.key).join('|') || '-'} ${result.latency_ms}ms`);
     res.json(result);
   } catch (err) {
     const status = err.status || 502;
@@ -97,5 +98,10 @@ app.listen(PORT, (err) => {
     process.exit(1);
   }
   console.log(`WhatsApp AI demo running at http://localhost:${PORT}`);
-  console.log(`Model: ${MODEL} | KB items: ${faqs.length} | AI ${process.env.OPENAI_API_KEY ? 'enabled (OpenAI)' : 'DISABLED (no OPENAI_API_KEY, fallback only)'}`);
+  console.log(`Model: ${MODEL} | KB: ${search.faqs.length} FAQs, ${search.sectionsByKey.size} sections | AI ${process.env.OPENAI_API_KEY ? 'enabled (OpenAI)' : 'DISABLED (no OPENAI_API_KEY, official FAQ answers only)'}`);
+  // Load the embedding model now so the first question is not slow.
+  const t = performance.now();
+  search.loadModel()
+    .then(() => console.log(`Search model ${search.meta.model} loaded in ${Math.round(performance.now() - t)} ms`))
+    .catch((err) => console.error(`Search model failed to load: ${err.message}`));
 });

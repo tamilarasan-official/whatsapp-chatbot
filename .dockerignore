@@ -10,3 +10,7 @@ docker-compose.local.yml
 kb-source
 kb-work
 scripts/kb/.venv
+# the model is downloaded and checksum-verified during the build (Dockerfile stage "model")
+data/kb/index/model/onnx
+# evaluation data and results are not needed at runtime
+data/kb/eval

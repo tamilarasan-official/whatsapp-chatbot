@@ -8,7 +8,7 @@ const MODEL = process.env.OPENAI_MODEL || 'gpt-5.4-mini';
 const REASONING = /^(gpt-5|o\d)/.test(MODEL);
 const REASONING_EFFORT = process.env.OPENAI_REASONING_EFFORT || 'low';
 const TIMEOUT_MS = Number(process.env.LLM_TIMEOUT_MS) || 10000;
-const REWRITE_TIMEOUT_MS = 4000; // x3 for reasoning models
+const REWRITE_TIMEOUT_MS = 5000; // optional step: on a stall the answer goes ahead without the rewrite
 const MAX_HISTORY = 30;
 
 const INTENTS = new Set(['faq', 'act', 'evoting', 'complaint', 'handover', 'out_of_scope', 'smalltalk']);
@@ -66,7 +66,7 @@ function extractJson(text) {
   }
 }
 
-async function completeJson(messages, { maxTokens, temperature, timeoutMs }) {
+async function completeJson(messages, { maxTokens, temperature, timeoutMs, effort = REASONING_EFFORT }) {
   if (!getClient()) throw new LlmError('OPENAI_API_KEY is not set', 503);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -76,7 +76,7 @@ async function completeJson(messages, { maxTokens, temperature, timeoutMs }) {
       {
         model: MODEL, messages, response_format: { type: 'json_object' },
         ...(REASONING
-          ? { max_completion_tokens: maxTokens * 4, reasoning_effort: REASONING_EFFORT } // room for reasoning tokens
+          ? { max_completion_tokens: maxTokens * 4, reasoning_effort: effort } // room for reasoning tokens
           : { max_tokens: maxTokens, temperature }),
       },
       { signal: controller.signal },
@@ -97,7 +97,7 @@ async function rewriteQuery(message, history) {
     const recent = cleanHistory(history).slice(-4).map((m) => `${m.role}: ${m.content.slice(0, 300)}`).join('\n');
     const user = `${recent ? `Earlier chat:\n${recent}\n\n` : ''}Last message: ${message}`;
     const out = await completeJson([{ role: 'system', content: REWRITE_PROMPT }, { role: 'user', content: user }],
-      { maxTokens: 160, temperature: 0, timeoutMs: REWRITE_TIMEOUT_MS * (REASONING ? 3 : 1) });
+      { maxTokens: 160, temperature: 0, timeoutMs: REWRITE_TIMEOUT_MS, effort: 'none' }); // simple task: no reasoning
     return [out.hi, out.en].map((s) => String(s || '').trim().slice(0, 300)).filter(Boolean);
   } catch (err) {
     console.warn(`[rewrite] skipped: ${err.message}`);

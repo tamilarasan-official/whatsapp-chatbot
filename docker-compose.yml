@@ -43,6 +43,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      # HF_TOKEN (read-only) downloads the search model during the build; it is not stored in the image.
+      secrets:
+        - hf_token
     restart: unless-stopped
     init: true
     environment:
@@ -79,3 +82,7 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+
+secrets:
+  hf_token:
+    environment: HF_TOKEN

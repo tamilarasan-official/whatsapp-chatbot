@@ -12,7 +12,7 @@ const REWRITE_TIMEOUT_MS = 4000; // x3 for reasoning models
 const MAX_HISTORY = 30;
 
 const INTENTS = new Set(['faq', 'act', 'evoting', 'complaint', 'handover', 'out_of_scope', 'smalltalk']);
-const LANGUAGES = new Set(['en', 'hi', 'mixed']);
+const LANGUAGES = new Set(['en', 'hi', 'ta', 'mixed']);
 const ACTIONS = new Set(['none', 'menu', 'faq_list', 'grievance', 'handover']);
 
 class LlmError extends Error {

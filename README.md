@@ -10,8 +10,8 @@ A switch in the top bar selects one of two chatbot types:
 
 | Mode | How it behaves |
 |---|---|
-| **Static Chatbot** | Guided WhatsApp journeys in Hindi (default) or English: consent, language buttons, a main menu (Panchayat · Municipal · eVoting SECBHR app · Voter list · Nomination · Complaints · Acts · For election officials · Talk to an officer), official FAQ lists, complaint registration and status cards, Act PDFs, notifications and officer handover. Free-typed text goes to the answer engine. |
-| **✦ AI Chatbot** | The user drives the conversation; every reply comes from the answer engine (our search model + OpenAI). It follows the user's language (Hindi, English, Hinglish), cites the FAQ or Act section it used, stays politically neutral, and hands over to an officer when asked. |
+| **Static Chatbot** | Guided WhatsApp journeys in Hindi (default), English or Tamil: consent, language buttons, a main menu (Panchayat · Municipal · eVoting SECBHR app · Voter list · Nomination · Complaints · Acts · For election officials · Talk to an officer), official FAQ lists, complaint registration and status cards, Act PDFs, notifications and officer handover. Free-typed text goes to the answer engine. |
+| **✦ AI Chatbot** | The user drives the conversation; every reply comes from the answer engine (our search model + OpenAI). It follows the user's language (Hindi, English, Tamil, Hinglish, Tanglish), cites the FAQ or Act section it used, stays politically neutral, and hands over to an officer when asked. |
 
 The mode is kept in the URL (`?mode=static` / `?mode=ai`).
 
@@ -76,7 +76,7 @@ Only the top-level JSON files in `/data` are served to the browser; `data/kb` st
 - `data/documents.json` + `public/assets/docs/`: the Act PDFs.
 - `data/complaints.json`: dummy complaint records.
 - `data/kb/`: knowledge base and search index built by `scripts/kb` (see `docs/PLAN-SEC-BIHAR.md`).
-- UI strings (Hindi, English): `public/js/i18n.js`.
+- UI strings (Hindi, English, Tamil): `public/js/i18n.js`. Tamil FAQ text: `python scripts/kb/translate_faqs_ta.py` (IndicTrans2, offline; until it runs, FAQ taps in Tamil are answered by the AI in Tamil from the official FAQ).
 
 ## Deploy on Dokploy (Docker Compose, two domains)
 

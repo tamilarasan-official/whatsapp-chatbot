@@ -12,7 +12,7 @@ const { fallbackReply } = require('./fallback');
 
 const PORT = Number(process.env.PORT) || 3000;
 const MAX_MESSAGE_LENGTH = 500;
-const VALID_LANGS = new Set(['en', 'hi']);
+const VALID_LANGS = new Set(['en', 'hi', 'ta']);
 
 const app = express();
 app.disable('x-powered-by');
@@ -41,6 +41,7 @@ function sanitiseContext(ctx) {
   return {
     ticket: str(ctx.ticket, 20),
     audience: ctx.audience === 'officials' ? 'officials' : undefined,
+    replyLanguage: VALID_LANGS.has(ctx.replyLanguage) ? ctx.replyLanguage : undefined,
     optedOut: ctx.optedOut === true,
   };
 }

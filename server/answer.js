@@ -30,32 +30,49 @@ const HINGLISH_WORDS = new Set(('mujhe mera meri mere kya kaise kab kahan kaun k
   + 'raha rahi rahe rahega rahegi gaye gayi chale aaya aaye aata aati lagta lagti lagte dena dene lena lene bharein '
   + 'bharna dalne dalna wapas pehle baad andar seedhe janta chunti chune chunav chunaw matdan namankan nirvachan '
   + 'ummeedwar ummeedwaron sadasya saal waqt yojana zaroori jankari jaankari').split(' '));
-const LANGUAGE_NOTE = { hi: 'Hindi (Devanagari)', en: 'English', mixed: 'Hinglish (Hindi in English letters, not Devanagari)' };
+// Romanised Tamil (Tanglish) words; two hits mark a message as Tanglish.
+const TANGLISH_WORDS = new Set(('enna eppadi epdi enaku enakku ennoda naan nan unga ungaloda ungal venum vendum irukku '
+  + 'iruka irukka illa illai pannanum pannunga panna pannalaama sollunga sollu evlo evvalavu eppo enga yaaru yaar '
+  + 'romba nandri vanakkam seri sari aagum aaguma podanum poda kudunga theriyuma theriyala mudiyuma mudiyum '
+  + 'vote-a votu therthal therdhal vetpalar vaakkalar').split(' '));
+const TAMIL = /[஀-௿]/;
+const LANGUAGE_NOTE = {
+  hi: 'Hindi (Devanagari)', en: 'English', ta: 'Tamil (Tamil script)',
+  mixed: 'Hinglish (Hindi in English letters, not Devanagari)',
+  tanglish: 'Tanglish (Tamil in English letters, not Tamil script)',
+};
 const FACT_INTENTS = new Set(['faq', 'act', 'evoting', 'complaint']);
 // The model ranks generic "eVoting app" questions weakly; these words also pull in the eVoting FAQs.
 const EVOTING_TOPIC = /e-?voting|secbhr|\bapp\b|mobile se vote|ई-?वोटिंग|ऐप|एप/i;
 const REWRITE_MIN = 0.50;
 const FAQ_SAFE = 0.70; // FAQ score above which the official text may stand in for a failed AI reply
 
-function hinglishScore(message) {
-  if (DEVANAGARI.test(message)) return 0;
-  return (message.toLowerCase().match(/[a-z]+/g) || []).filter((w) => HINGLISH_WORDS.has(w)).length;
+function romanScore(message, words) {
+  if (DEVANAGARI.test(message) || TAMIL.test(message)) return 0;
+  return (message.toLowerCase().match(/[a-z]+/g) || []).filter((w) => words.has(w)).length;
 }
+const hinglishScore = (message) => romanScore(message, HINGLISH_WORDS);
+const tanglishScore = (message) => romanScore(message, TANGLISH_WORDS);
 
-// The reply's language from its script (the AI's own label is not reliable): Devanagari -> hi;
-// Latin -> Hinglish if it reads as romanised Hindi, else English.
+// The reply's language from its script (the AI's own label is not reliable): Devanagari -> hi, Tamil -> ta;
+// Latin -> "mixed" if it reads as romanised Hindi or Tamil, else English.
 function scriptLanguage(reply) {
   const letters = (reply.match(/\p{L}/gu) || []).length || 1;
-  const deva = (reply.match(/[ऀ-ॿ]/g) || []).length;
-  if (deva / letters > 0.5) return 'hi';
-  return hinglishScore(reply) >= 2 ? 'mixed' : 'en';
+  if ((reply.match(/[ऀ-ॿ]/g) || []).length / letters > 0.5) return 'hi';
+  if ((reply.match(/[஀-௿]/g) || []).length / letters > 0.5) return 'ta';
+  return Math.max(hinglishScore(reply), tanglishScore(reply)) >= 2 ? 'mixed' : 'en';
 }
 
-function replyLanguage(message, preferred) {
+// forced: the app asked for this language (e.g. an FAQ tapped in Tamil, sent as its English question).
+function replyLanguage(message, preferred, forced) {
+  if (['hi', 'en', 'ta'].includes(forced)) return forced;
+  if (TAMIL.test(message)) return 'ta';
   if (DEVANAGARI.test(message)) return 'hi';
-  if (hinglishScore(message) >= 2) return 'mixed';
+  const hl = hinglishScore(message);
+  const tl = tanglishScore(message);
+  if (Math.max(hl, tl) >= 2) return tl > hl ? 'tanglish' : 'mixed';
   if (/[a-z]{3,}/i.test(message)) return 'en';
-  return preferred === 'en' ? 'en' : 'hi';
+  return ['en', 'ta'].includes(preferred) ? preferred : 'hi';
 }
 
 // ------------------------------------------------------------ sources shown to the AI
@@ -63,12 +80,12 @@ const reliabilityNote = (r) => (r === 'high' ? '' : ' (OCR / machine translation
 const stripHeader = (text) => text.slice(text.indexOf('\n') + 1);
 const nextId = (registry, prefix) => `${prefix}${registry.filter((r) => r.id.startsWith(prefix)).length + 1}`;
 
-// Citation in the reply language when that version exists (Hindi for hi / Hinglish), with its PDF page.
+// Citation in the reply language when that version exists (Hindi for hi / Hinglish, else English), with its PDF page.
 // The English machine translation of the 2021 amendment links to the Hindi original.
 function sectionCitation(id, key, lang) {
   const versions = search.sectionsByKey.get(key);
   const isCase = key.startsWith('case:');
-  const want = lang === 'en' ? 'en' : 'hi';
+  const want = lang === 'hi' || lang === 'mixed' ? 'hi' : 'en';
   const sec = versions.find((s) => s.lang === want && !s.doc.endsWith('_mt'))
     || versions.find((s) => !s.doc.endsWith('_mt')) || versions[0];
   return {
@@ -162,12 +179,13 @@ function groundingProblem(result, allowedText) {
 }
 
 // Official FAQ text, used when the AI is unavailable or its reply cannot be grounded.
+// Official text in Hindi (hi / Hinglish), Tamil when translated (ta), else English.
 function officialFaqReply(hit, lang) {
   const f = hit.faq;
-  const en = lang === 'en';
+  const l = lang === 'hi' || lang === 'mixed' ? 'hi' : lang === 'ta' && f.a_ta ? 'ta' : 'en';
   return {
-    reply: `*${en ? f.q_en : f.q_hi}*\n${(en ? f.a_en : f.a_hi).replace(/\n\s*\n/g, '\n').replace(/^o\s+/gm, '   ◦ ')}`,
-    language: en ? 'en' : 'hi', intent: 'faq', confidence: Number(hit.score.toFixed(3)),
+    reply: `*${f[`q_${l}`]}*\n${f[`a_${l}`].replace(/\n\s*\n/g, '\n').replace(/^o\s+/gm, '   ◦ ')}`,
+    language: l, intent: 'faq', confidence: Number(hit.score.toFixed(3)),
     escalate: false, action: 'none', suggested_replies: [],
   };
 }
@@ -176,6 +194,8 @@ const NO_DETAIL = {
   hi: 'क्षमा करें, इस बारे में मेरे पास सटीक जानकारी उपलब्ध नहीं है। कृपया अपने जिला निर्वाचन कार्यालय से संपर्क करें, या मैं आपको एक अधिकारी से जोड़ सकता हूँ।',
   en: "Sorry, I don't have the exact detail on this. Please contact your District Election Office, or I can connect you to an officer.",
   mixed: 'Sorry, iski exact jaankari mere paas nahi hai. Aap apne District Election Office se sampark karein, ya main aapko officer se jod sakta hoon.',
+  ta: 'மன்னிக்கவும், இது குறித்த சரியான தகவல் என்னிடம் இல்லை. உங்கள் மாவட்ட தேர்தல் அலுவலகத்தைத் தொடர்பு கொள்ளவும், அல்லது உங்களை ஒரு அலுவலருடன் இணைக்கலாம்.',
+  tanglish: 'Sorry, idhu pathi correct-aana thagaval ennidam illai. Unga District Election Office-a contact pannunga, illa naan ungala oru officer-oda connect panren.',
 };
 
 // ------------------------------------------------------------ retrieval
@@ -185,7 +205,9 @@ async function retrieve(message, history, includeOfficials, lang) {
   let faqHits = search.searchFaq(query, { includeOfficials });
   let rewritten = [];
   const followUp = history.length > 0 && message.split(/\s+/).length <= 8;
-  const worthRewriting = hinglishScore(message) >= 1 || followUp || (faqHits[0]?.score ?? 0) >= REWRITE_MIN;
+  // Tamil / Tanglish are always rewritten: the search model was fine-tuned on Hindi and English.
+  const tamil = TAMIL.test(message) || tanglishScore(message) >= 1;
+  const worthRewriting = tamil || hinglishScore(message) >= 1 || followUp || (faqHits[0]?.score ?? 0) >= REWRITE_MIN;
   if (!faqHits[0]?.confident && !lookups.length && worthRewriting && llm.getClient()) {
     rewritten = await llm.rewriteQuery(message, history);
     if (rewritten.length) {
@@ -222,8 +244,9 @@ async function retrieve(message, history, includeOfficials, lang) {
 // ------------------------------------------------------------ main entry
 // withSources (tests only, never from the API): also return the full text of every source shown to the AI.
 async function respond({ message, history = [], language = 'hi', context = {}, mode = 'static', withSources = false }) {
+  // context.replyLanguage: set by the app when it sends an FAQ's English question for a Tamil user
   const started = performance.now();
-  const lang = replyLanguage(message, language);
+  const lang = replyLanguage(message, language, context.replyLanguage);
   const { registry, confidentFaq, route, debug } = await retrieve(message, history, context.audience === 'officials', lang);
 
   const finish = (result, citationIds = []) => {

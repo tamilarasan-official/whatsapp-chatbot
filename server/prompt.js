@@ -1,6 +1,6 @@
 // System prompts for the SEC Bihar assistant: the answer prompt (with retrieved SOURCES) and the query-rewrite prompt.
 
-const LANGUAGE_NAMES = { en: 'English', hi: 'Hindi', mixed: 'Hinglish' };
+const LANGUAGE_NAMES = { en: 'English', hi: 'Hindi', ta: 'Tamil', mixed: 'Hinglish', tanglish: 'Tanglish' };
 
 // Facts the assistant may state without a source. Kept short on purpose: everything else comes from SOURCES.
 const ORG_FACTS = `- You serve the State Election Commission, Bihar (राज्य निर्वाचन आयोग, बिहार). It conducts
@@ -61,6 +61,10 @@ LANGUAGE
   (it is set by the app from the message); otherwise the language of the user's last message.
 - HINGLISH (Hindi typed in English letters, e.g. "nomination kaise kare", "fee kitna hai"):
   reply in Hinglish, NOT in English or Devanagari, language "mixed".
+- TAMIL (Tamil script): reply in clear, simple Tamil, language "ta". Keep Act names, section numbers,
+  app names and terms like EVM, EPIC, OTP as they are (you may add the Tamil word in brackets).
+- TANGLISH (Tamil typed in English letters, e.g. "eppadi register pannanum"): reply in Tanglish,
+  NOT in English or Tamil script, language "mixed".
 - Bhojpuri, Maithili or Magahi: understand it and reply in simple Hindi.
 - If the message has no clear language ("ok", "👍"), use the preferred language: {{pref_lang}}.
 - Sources may be in another language than the reply: translate faithfully.
@@ -74,7 +78,7 @@ OUTPUT
 Output ONLY a JSON object with exactly these keys:
 {
   "reply": string,
-  "language": "hi" | "en" | "mixed",
+  "language": "hi" | "en" | "ta" | "mixed",
   "intent": "faq" | "act" | "evoting" | "complaint" | "handover" | "out_of_scope" | "smalltalk",
   "confidence": number 0..1,
   "citations": array of source ids used, e.g. ["F1","S2"] ([] if none),
@@ -124,7 +128,8 @@ function buildAnswerPrompt({ sources, language = 'hi', context, mode = 'static' 
 const REWRITE_PROMPT = `You turn a WhatsApp message to the State Election Commission, Bihar into search queries.
 Rewrite the user's LAST message as one standalone question about Bihar Panchayat / Municipal
 elections, using the earlier chat to resolve words like "it", "uska", "wahi" and short follow-ups.
-The message may be Hinglish (Hindi in English letters), Hindi, English, Bhojpuri or Maithili.
+The message may be Hinglish (Hindi in English letters), Hindi, English, Tamil, Tanglish (Tamil in English
+letters), Bhojpuri or Maithili.
 Do not answer it and do not add facts. Output ONLY JSON: {"hi": "<question in Hindi, Devanagari>", "en": "<question in English>"}`;
 
 module.exports = { buildAnswerPrompt, REWRITE_PROMPT, ORG_FACTS };

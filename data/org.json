@@ -6,6 +6,15 @@
   "botNameHi": "राज्य निर्वाचन आयोग, बिहार",
   "scope": "Panchayat and Municipal (urban local body) elections in Bihar",
   "defaultLanguage": "hi",
-  "languages": ["hi", "en"],
-  "colors": { "primary": "#075E54", "accent": "#128C7E" }
+  "languages": [
+    "hi",
+    "en",
+    "ta"
+  ],
+  "colors": {
+    "primary": "#075E54",
+    "accent": "#128C7E"
+  },
+  "orgNameTa": "மாநில தேர்தல் ஆணையம், பீகார்",
+  "botNameTa": "மாநில தேர்தல் ஆணையம், பீகார்"
 }

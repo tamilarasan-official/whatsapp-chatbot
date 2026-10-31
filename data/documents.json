@@ -1,7 +1,57 @@
 [
-  { "id": "doc_panchayat_en", "doc": "panchayat_act_en", "title": "Bihar Panchayat Raj Act, 2006 (English)", "title_hi": "बिहार पंचायत राज अधिनियम, 2006 (अंग्रेज़ी)", "description": "Official text, as amended", "file": "docs/bihar-panchayat-raj-act-2006-en.pdf", "size": "863 KB", "pages": 166 },
-  { "id": "doc_panchayat_hi", "doc": "panchayat_act_hi", "title": "Bihar Panchayat Raj Act, 2006 (Hindi)", "title_hi": "बिहार पंचायत राज अधिनियम, 2006 (हिन्दी)", "description": "Official Hindi text", "file": "docs/bihar-panchayat-raj-act-2006-hi.pdf", "size": "1.7 MB", "pages": 298 },
-  { "id": "doc_amendment_2021", "doc": "panchayat_amendment_2021_hi", "title": "Bihar Panchayat Raj (Amendment) Act, 2021 (Hindi)", "title_hi": "बिहार पंचायत राज (संशोधन) अधिनियम, 2021", "description": "Bihar Gazette No. 674", "file": "docs/bihar-panchayat-raj-amendment-2021-hi.pdf", "size": "204 KB", "pages": 4 },
-  { "id": "doc_municipal_en", "doc": "municipal_act_en", "title": "Bihar Municipal Act, 2007 (English)", "title_hi": "बिहार नगरपालिका अधिनियम, 2007 (अंग्रेज़ी)", "description": "Official text", "file": "docs/bihar-municipal-act-2007-en.pdf", "size": "626 KB", "pages": 130 },
-  { "id": "doc_municipal_hi", "doc": "municipal_act_hi", "title": "Bihar Municipal Act, 2007 (Hindi)", "title_hi": "बिहार नगरपालिका अधिनियम, 2007 (हिन्दी)", "description": "Official Hindi text", "file": "docs/bihar-municipal-act-2007-hi.pdf", "size": "801 KB", "pages": 181 }
+  {
+    "id": "doc_panchayat_en",
+    "doc": "panchayat_act_en",
+    "title": "Bihar Panchayat Raj Act, 2006 (English)",
+    "title_hi": "बिहार पंचायत राज अधिनियम, 2006 (अंग्रेज़ी)",
+    "description": "Official text, as amended",
+    "file": "docs/bihar-panchayat-raj-act-2006-en.pdf",
+    "size": "863 KB",
+    "pages": 166,
+    "title_ta": "பீகார் பஞ்சாயத்து ராஜ் சட்டம், 2006 (ஆங்கிலம்)"
+  },
+  {
+    "id": "doc_panchayat_hi",
+    "doc": "panchayat_act_hi",
+    "title": "Bihar Panchayat Raj Act, 2006 (Hindi)",
+    "title_hi": "बिहार पंचायत राज अधिनियम, 2006 (हिन्दी)",
+    "description": "Official Hindi text",
+    "file": "docs/bihar-panchayat-raj-act-2006-hi.pdf",
+    "size": "1.7 MB",
+    "pages": 298,
+    "title_ta": "பீகார் பஞ்சாயத்து ராஜ் சட்டம், 2006 (இந்தி)"
+  },
+  {
+    "id": "doc_amendment_2021",
+    "doc": "panchayat_amendment_2021_hi",
+    "title": "Bihar Panchayat Raj (Amendment) Act, 2021 (Hindi)",
+    "title_hi": "बिहार पंचायत राज (संशोधन) अधिनियम, 2021",
+    "description": "Bihar Gazette No. 674",
+    "file": "docs/bihar-panchayat-raj-amendment-2021-hi.pdf",
+    "size": "204 KB",
+    "pages": 4,
+    "title_ta": "பீகார் பஞ்சாயத்து ராஜ் (திருத்த) சட்டம், 2021 (இந்தி)"
+  },
+  {
+    "id": "doc_municipal_en",
+    "doc": "municipal_act_en",
+    "title": "Bihar Municipal Act, 2007 (English)",
+    "title_hi": "बिहार नगरपालिका अधिनियम, 2007 (अंग्रेज़ी)",
+    "description": "Official text",
+    "file": "docs/bihar-municipal-act-2007-en.pdf",
+    "size": "626 KB",
+    "pages": 130,
+    "title_ta": "பீகார் நகராட்சி சட்டம், 2007 (ஆங்கிலம்)"
+  },
+  {
+    "id": "doc_municipal_hi",
+    "doc": "municipal_act_hi",
+    "title": "Bihar Municipal Act, 2007 (Hindi)",
+    "title_hi": "बिहार नगरपालिका अधिनियम, 2007 (हिन्दी)",
+    "description": "Official Hindi text",
+    "file": "docs/bihar-municipal-act-2007-hi.pdf",
+    "size": "801 KB",
+    "pages": 181,
+    "title_ta": "பீகார் நகராட்சி சட்டம், 2007 (இந்தி)"
+  }
 ]

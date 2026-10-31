@@ -67,6 +67,7 @@ const STRINGS = {
     online: 'ऑनलाइन',
     typing: 'लिख रहे हैं…',
     placeholder: 'संदेश लिखें',
+    today: 'आज',
   },
   en: {
     langName: 'English',
@@ -133,10 +134,78 @@ const STRINGS = {
     online: 'online',
     typing: 'typing…',
     placeholder: 'Message',
+    today: 'Today',
+  },
+  ta: {
+    langName: 'தமிழ்',
+    bizNote: 'மாநில தேர்தல் ஆணையம், பீகார் · உதவி மையம் (டெமோ). பதில்கள் ஆணையத்தின் அதிகாரப்பூர்வ FAQ மற்றும் சட்டங்களிலிருந்து வழங்கப்படுகின்றன.',
+    consent: 'வணக்கம்! 🙏 *{org}* வாட்ஸ்அப் உதவி மையத்திற்கு வரவேற்கிறோம். பஞ்சாயத்து மற்றும் நகராட்சி தேர்தல் தகவல்களுக்காக. அறிவிப்புகளை நிறுத்த எப்போது வேண்டுமானாலும் STOP என அனுப்பவும்.',
+    chooseLang: 'உங்கள் மொழியைத் தேர்ந்தெடுக்கவும் / Choose your language:',
+    howHelp: 'நான் உங்களுக்கு எப்படி உதவலாம்? *விருப்பங்களைக் காண்க* அழுத்தவும் அல்லது உங்கள் கேள்வியை டைப் செய்யவும்.',
+    aiWelcome: 'வணக்கம்! 🙏 நான் *{org}* இன் AI உதவியாளர். பஞ்சாயத்து தேர்தல், நகராட்சி தேர்தல், eVoting SECBHR செயலி, வேட்புமனு, வாக்காளர் பட்டியல் அல்லது பஞ்சாயத்து ராஜ் / நகராட்சி சட்டங்கள் பற்றி எதையும் கேளுங்கள்.',
+    viewOptions: 'விருப்பங்களைக் காண்க',
+    menuTitle: 'முதன்மை மெனு',
+    menuSection: 'தேர்தல் சேவைகள்',
+    topicIntro: '*{topic}*: கீழே ஒரு கேள்வியைத் தேர்ந்தெடுக்கவும் அல்லது உங்கள் கேள்வியை டைப் செய்யவும்.',
+    officialsIntro: '*{topic}*: இந்தப் பகுதி தேர்தல் அலுவலர்களுக்கானது (மென்பொருள் மற்றும் வார்டு பதிவு விதிகள்). கேள்வியைத் தேர்ந்தெடுக்கவும் அல்லது டைப் செய்யவும்.',
+    viewQuestions: 'கேள்விகளைக் காண்க',
+    moreQuestions: 'மேலும் கேள்விகள்…',
+    moreQuestionsDesc: 'அடுத்த கேள்விகளைக் காண்க',
+    complaintIntro: 'புகார்: புதிய புகாரைப் பதிவு செய்யலாம் அல்லது ஏற்கனவே பதிவு செய்த புகாரின் நிலையைப் பார்க்கலாம்.',
+    complaintNew: 'புகார் பதிவு',
+    complaintStatus: 'நிலையைப் பார்க்க',
+    complaintHow: 'புகார் செய்வது எப்படி?',
+    complaintAsk: 'உங்களுக்கு ஏற்பட்ட சிரமத்திற்கு வருந்துகிறோம். உங்கள் புகாரை ஒரே செய்தியில் எழுதவும் (உதா: "வாக்காளர் பட்டியலில் என் பெயர் தவறாக உள்ளது").',
+    complaintDone: '📝 உங்கள் புகார் பதிவு செய்யப்பட்டது.\nபுகார் எண்: *{ticket}*\nநிலையை அறிய இந்த எண்ணை இங்கே அனுப்பவும். (டெமோ: இது மாதிரி எண்)',
+    askComplaintRef: 'உங்கள் புகார் எண்ணை அனுப்பவும் (உதா: *CMP-2026-00412*).',
+    complaintInvalid: 'இது சரியான புகார் எண் போல் தெரியவில்லை. வடிவம் *CMP-YYYY-NNNNN*, உதா: CMP-2026-00412.',
+    complaintNotFound: '*{ref}* என்ற புகார் கிடைக்கவில்லை. எண்ணைச் சரிபார்க்கவும் அல்லது அலுவலருடன் பேசவும்.',
+    complaintFollow: 'நிலை மாறும்போது இங்கேயே உங்களுக்குத் தெரிவிப்போம்.',
+    complaintLabels: { applicant: 'புகார்தாரர்', category: 'பொருள்', updated: 'புதுப்பிப்பு', next: 'அலுவலகம்' },
+    statusNames: { review: 'பரிசீலனையில்', approved: 'தீர்வு காணப்பட்டது', pending: 'கூடுதல் விவரம் தேவை', registered: 'பதிவு செய்யப்பட்டது' },
+    remindMe: 'எனக்குத் தெரிவிக்கவும்',
+    reminderSet: '✅ சரி! *{ref}* இன் நிலை மாறும்போது இங்கே செய்தி அனுப்புவேன்.',
+    talkOfficer: 'அலுவலருடன் பேச',
+    mainMenu: 'முதன்மை மெனு',
+    docsIntro: 'ஆணையம் தொடர்பான சட்டங்கள் (அதிகாரப்பூர்வ PDF). *ஆவணங்களைக் காண்க* அழுத்தவும்.',
+    viewDocs: 'ஆவணங்களைக் காண்க',
+    docsTitle: 'சட்டங்கள் மற்றும் ஆவணங்கள்',
+    docSent: 'இதோ உங்கள் ஆவணம். 📄',
+    helpful: 'இந்தத் தகவல் பயனுள்ளதாக இருந்ததா?',
+    yes: 'ஆம் 👍',
+    no: 'இல்லை 👎',
+    thanksYes: 'உங்கள் கருத்துக்கு நன்றி! 😊 எப்போது வேண்டுமானாலும் *menu* என டைப் செய்யவும்.',
+    thanksNo: 'மன்னிக்கவும். அலுவலருடன் பேச விரும்புகிறீர்களா?',
+    handover: 'உங்களை அலுவலருடன் இணைக்கிறோம். சற்றுக் காத்திருக்கவும், உதவி மைய அலுவலர் விரைவில் இங்கே பதிலளிப்பார். 🙋',
+    handoverNote: 'அரட்டை அலுவலருக்கு மாற்றப்பட்டது',
+    officerJoined: 'அலுவலர் ரஞ்சனா (உதவி மையம், மா.தே.ஆ. பீகார்) அரட்டையில் இணைந்தார்',
+    officerName: 'அலுவலர் ரஞ்சனா',
+    handoverEnd: 'அலுவலர் இந்த உரையாடலை முடித்துவிட்டார். நான் மீண்டும் உதவ இங்கே இருக்கிறேன். 🤖',
+    handoverEndNote: 'அரட்டை AI உதவியாளருக்குத் திரும்பியது',
+    notifyTitle: 'புகார் நிலை',
+    notifyBody: 'புதுப்பிப்பு: உங்கள் புகார் *{ref}* க்கு *தீர்வு காணப்பட்டது*. ✅ விவரங்களுக்கு கீழே அழுத்தவும்.',
+    notifyFooter: 'மாநில தேர்தல் ஆணையம், பீகார் · சேவை அறிவிப்பு (டெமோ)',
+    viewDetails: 'விவரங்களைக் காண்க',
+    templateLabel: 'டெம்ப்ளேட் செய்தி',
+    optedOut: 'உங்கள் சந்தா நிறுத்தப்பட்டது. இனி அறிவிப்புகள் வராது. மீண்டும் தொடங்க *START* என அனுப்பவும்.',
+    optedIn: 'மீண்டும் வரவேற்கிறோம்! சேவைச் செய்திகள் மீண்டும் உங்களுக்கு வரும். ✅',
+    suppressed: 'அறிவிப்பு அனுப்பப்படவில்லை: பயனர் STOP செய்துள்ளார்.',
+    fallback: 'மன்னிக்கவும், இப்போது இதற்குப் பதிலளிக்க முடியவில்லை. உங்களை ஒரு அலுவலருடன் இணைக்கலாம்.',
+    pii: '⚠️ உங்கள் பாதுகாப்பிற்காக, இந்த அரட்டையில் ஆதார் எண், கடவுச்சொல் அல்லது OTP பகிர வேண்டாம். புகார் நிலைக்கு புகார் எண் (CMP-YYYY-NNNNN) மட்டும் போதும்.',
+    offlineNoMatch: 'இந்தத் தகவல் இப்போது என்னிடம் இல்லை. அலுவலருடன் பேச விரும்புகிறீர்களா?',
+    source: 'ஆதாரம்',
+    sourceFaq: 'ஆணையத்தின் அதிகாரப்பூர்வ FAQ',
+    sourceAct: 'பிரிவு',
+    caseStudy: 'eVoting ஆய்வறிக்கை (நகர உள்ளாட்சித் தேர்தல் 2025)',
+    verifyNote: 'OCR / இயந்திர மொழிபெயர்ப்பு: அதிகாரப்பூர்வ உரையுடன் சரிபார்க்கவும்',
+    online: 'ஆன்லைன்',
+    typing: 'டைப் செய்கிறார்…',
+    placeholder: 'செய்தி',
+    today: 'இன்று',
   },
 };
 
-export const LANGS = ['hi', 'en'];
+export const LANGS = ['hi', 'en', 'ta'];
 
 export function t(lang, key, vars = {}) {
   const table = STRINGS[lang] || STRINGS.hi;
@@ -146,19 +215,23 @@ export function t(lang, key, vars = {}) {
   return value.replace(/{(\w+)}/g, (_, k) => (vars[k] ?? `{${k}}`));
 }
 
-// FAQs carry both languages (q_hi/a_hi, q_en/a_en). Sub-points written "o ..." in the source become "◦ ...".
+// FAQs carry q_/a_ fields per language (en, hi; ta once translated). `translated` is false when the
+// language has no version yet and English is shown. Sub-points written "o ..." in the source become "◦ ...".
 const tidy = (answer) => answer.replace(/\n\s*\n/g, '\n').replace(/^o\s+/gm, '   ◦ ');
 export function faqText(lang, faq) {
-  return lang === 'en' ? { question: faq.q_en, answer: tidy(faq.a_en) } : { question: faq.q_hi, answer: tidy(faq.a_hi) };
+  const has = lang !== 'en' && faq[`q_${lang}`] && faq[`a_${lang}`];
+  const l = has ? lang : 'en';
+  return { question: faq[`q_${l}`], answer: tidy(faq[`a_${l}`]), translated: lang === 'en' || Boolean(has) };
 }
 
-// Pick the Hindi or English field of a data row ({title, title_hi} style).
+// Pick the field of a data row in the UI language ({title, title_hi, title_ta} style), English as fallback.
 export function pick(lang, row, field) {
-  return (lang === 'hi' && row[`${field}_hi`]) || row[field];
+  return (lang !== 'en' && row[`${field}_${lang}`]) || row[field];
 }
 
-// Script of a typed message ('hi' for Devanagari), or null.
+// Script of a typed message ('hi' Devanagari, 'ta' Tamil), or null.
 export function detectScript(text) {
   if (/[ऀ-ॿ]/.test(text)) return 'hi';
+  if (/[஀-௿]/.test(text)) return 'ta';
   return null;
 }

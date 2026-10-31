@@ -1,5 +1,44 @@
 [
-  { "ref": "CMP-2026-00412", "complainant": "R. Kumar (dummy)", "category": "Voter list", "category_hi": "मतदाता सूची", "status": "Under review", "status_hi": "जाँच में", "statusKey": "review", "updated": "28 Oct 2026", "office": "District Election Office, Patna (sample)", "office_hi": "जिला निर्वाचन कार्यालय, पटना (नमूना)" },
-  { "ref": "CMP-2026-00413", "complainant": "S. Devi (dummy)", "category": "Polling station", "category_hi": "मतदान केंद्र", "status": "Resolved", "status_hi": "निस्तारित", "statusKey": "approved", "updated": "27 Oct 2026", "office": "District Election Office, Gaya (sample)", "office_hi": "जिला निर्वाचन कार्यालय, गया (नमूना)" },
-  { "ref": "CMP-2026-00414", "complainant": "A. Ansari (dummy)", "category": "eVoting app", "category_hi": "ई-वोटिंग ऐप", "status": "More details needed", "status_hi": "अतिरिक्त जानकारी आवश्यक", "statusKey": "pending", "updated": "29 Oct 2026", "office": "eVoting help desk, SEC Bihar (sample)", "office_hi": "ई-वोटिंग हेल्प डेस्क, रा.नि.आ. बिहार (नमूना)" }
+  {
+    "ref": "CMP-2026-00412",
+    "complainant": "R. Kumar (dummy)",
+    "category": "Voter list",
+    "category_hi": "मतदाता सूची",
+    "status": "Under review",
+    "status_hi": "जाँच में",
+    "statusKey": "review",
+    "updated": "28 Oct 2026",
+    "office": "District Election Office, Patna (sample)",
+    "office_hi": "जिला निर्वाचन कार्यालय, पटना (नमूना)",
+    "category_ta": "வாக்காளர் பட்டியல்",
+    "office_ta": "மாவட்ட தேர்தல் அலுவலகம், பாட்னா (மாதிரி)"
+  },
+  {
+    "ref": "CMP-2026-00413",
+    "complainant": "S. Devi (dummy)",
+    "category": "Polling station",
+    "category_hi": "मतदान केंद्र",
+    "status": "Resolved",
+    "status_hi": "निस्तारित",
+    "statusKey": "approved",
+    "updated": "27 Oct 2026",
+    "office": "District Election Office, Gaya (sample)",
+    "office_hi": "जिला निर्वाचन कार्यालय, गया (नमूना)",
+    "category_ta": "வாக்குச்சாவடி",
+    "office_ta": "மாவட்ட தேர்தல் அலுவலகம், கயா (மாதிரி)"
+  },
+  {
+    "ref": "CMP-2026-00414",
+    "complainant": "A. Ansari (dummy)",
+    "category": "eVoting app",
+    "category_hi": "ई-वोटिंग ऐप",
+    "status": "More details needed",
+    "status_hi": "अतिरिक्त जानकारी आवश्यक",
+    "statusKey": "pending",
+    "updated": "29 Oct 2026",
+    "office": "eVoting help desk, SEC Bihar (sample)",
+    "office_hi": "ई-वोटिंग हेल्प डेस्क, रा.नि.आ. बिहार (नमूना)",
+    "category_ta": "eVoting செயலி",
+    "office_ta": "eVoting உதவி மையம், மா.தே.ஆ. பீகார் (மாதிரி)"
+  }
 ]

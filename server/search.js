@@ -232,11 +232,11 @@ function searchSections(query, { limit = 4, chunksPerKey = 2 } = {}) {
 // ------------------------------------------------------------ direct "Section N" lookup
 const DEVANAGARI_DIGITS = /[०-९]/g;
 const toAscii = (s) => s.replace(DEVANAGARI_DIGITS, (d) => String(d.charCodeAt(0) - 0x0966));
-const SECTION_REF = /(?:\bsection|\bsec\.?|\bdhara|\bdhaara|\bdhra|धारा)\s*(?:no\.?\s*)?(\d{1,3}[A-Za-z]?)\b/i;
+const SECTION_REF = /(?:\bsection|\bsec\.?|\bdhara|\bdhaara|\bdhra|धारा|பிரிவு)\s*(?:no\.?\s*)?(\d{1,3}[A-Za-z]?)\b/i;
 const ACT_HINTS = [
   { family: 'amend2021', re: /amendment|sanshodhan|संशोधन|2021/i },
-  { family: 'panchayat_act', re: /panchayat|panchayath|gram|mukhiya|sarpanch|zila parishad|samiti|पंचायत|ग्राम|मुखिया|सरपंच|जिला परिषद|समिति/i },
-  { family: 'municipal_act', re: /municipal|nagar|nigam|ward|councillor|parshad|ulb|नगर|निगम|पार्षद|वार्ड/i },
+  { family: 'panchayat_act', re: /panchayat|panchayath|gram|mukhiya|sarpanch|zila parishad|samiti|पंचायत|ग्राम|मुखिया|सरपंच|जिला परिषद|समिति|பஞ்சாயத்து|கிராம/i },
+  { family: 'municipal_act', re: /municipal|nagar|nigam|ward|councillor|parshad|ulb|नगर|निगम|पार्षद|वार्ड|நகராட்சி|மாநகராட்சி|வார்டு/i },
 ];
 
 // Returns [] (no reference), or the matching sections (more than one family = ask which Act).

@@ -2,7 +2,7 @@
 
 import { el } from './chat.js';
 
-const LANG_LABELS = { en: 'English', hi: 'Hindi', mixed: 'Hinglish' };
+const LANG_LABELS = { en: 'English', hi: 'Hindi', ta: 'Tamil', mixed: 'Hinglish / Tanglish' };
 const ROUTE_LABELS = { ai: 'Live AI', scripted: 'Scripted flow', fallback: 'Fallback', offline: 'Offline match' };
 
 let els;

@@ -8,12 +8,12 @@ import { t, faqText, pick, detectScript, LANGS } from './i18n.js';
 const CMP_PATTERN = /\bCMP-\d{4}-\d{5}\b/i;
 const CMP_LOOSE = /\bCMP[\s-]*\d/i;
 const PII_PATTERN = /\b\d{4}\s?\d{4}\s?\d{4}\b|\b\d{10,}\b|\b(otp|password|passcode|pin)\b.*\d{4,}/i;
-const OFFICER_PATTERN = /\b(officer|human|real person|agent|customer care|adhikari)\b|अधिकारी|इंसान/i;
-const MENU_PATTERN = /^(menu|main menu|start over|मेन्यू|मेनू|मुख्य मेन्यू)[\s!.]*$/i;
+const OFFICER_PATTERN = /\b(officer|human|real person|agent|customer care|adhikari)\b|अधिकारी|इंसान|அலுவலர்|அதிகாரி/i;
+const MENU_PATTERN = /^(menu|main menu|start over|मेन्यू|मेनू|मुख्य मेन्यू|மெனு)[\s!.]*$/i;
 // Greetings are answered by the AI; only offline mode maps them to the menu.
-const GREETING_PATTERN = /^(hi+|hello|hey|help|namaste|namaskar|नमस्ते|नमस्कार|प्रणाम)[\s!.]*$/i;
+const GREETING_PATTERN = /^(hi+|hello|hey|help|namaste|namaskar|vanakkam|नमस्ते|नमस्कार|प्रणाम|வணக்கம்)[\s!.]*$/i;
 const REF_LIKE = /^[a-z]{0,4}[\s-]*\d[\d\s-]{2,}$/i;
-const LANG_WORDS = { en: /^(english|eng|अंग्रेज़ी|अंग्रेजी)$/i, hi: /^(hindi|हिन्दी|हिंदी)$/i };
+const LANG_WORDS = { en: /^(english|eng|अंग्रेज़ी|अंग्रेजी)$/i, hi: /^(hindi|हिन्दी|हिंदी)$/i, ta: /^(tamil|தமிழ்)$/i };
 const PAGE_SIZE = 9; // WhatsApp lists hold 10 rows: 9 questions + "More questions"
 const LOW_CONFIDENCE = 0.5;
 const DEMO_NOTIFY_REF = 'CMP-2026-00412';
@@ -63,7 +63,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
   }
 
   const L = (key, vars) => t(state.lang, key, vars);
-  const orgName = () => pick(state.lang, data.org, 'orgName');
+  const orgName = () => ({ hi: data.org.orgNameHi, ta: data.org.orgNameTa }[state.lang] || data.org.orgName);
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const typingDelay = () => 600 + Math.random() * 800;
 
@@ -129,7 +129,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     queue = Promise.resolve();
     pendingTicks = [];
     chat.clearChat();
-    chat.addDateChip(state.lang === 'hi' ? 'आज' : 'Today');
+    chat.addDateChip(L('today'));
     chat.addSystemNote(L('bizNote'), 'biz');
     if (mode === 'ai') {
       // AI mode: no menus or language buttons; the user drives the conversation.
@@ -186,13 +186,15 @@ export function createFlows({ data, panels, offline, onLangChange }) {
   }
 
   function faqSource(faq) {
-    return { title: L('sourceFaq'), description: `${faq.category_hi && state.lang === 'hi' ? faq.category_hi : faq.category} · ${faq.source}` };
+    return { title: L('sourceFaq'), description: `${pick(state.lang, faq, 'category')} · ${faq.source}` };
   }
 
   function answerFaq(id, query, route = 'scripted') {
     const faq = faqById.get(id);
     if (!faq) return;
-    const { answer } = faqText(state.lang, faq);
+    const { answer, translated } = faqText(state.lang, faq);
+    // No official text in this language yet (Tamil before translation): the AI gives the official answer in it.
+    if (!translated && !offline) return askAi(faq.q_en, { replyLanguage: state.lang });
     say(answer, { source: faqSource(faq), buttons: [menuBtn(), officerBtn()] });
     if (route === 'offline') {
       panels.log({ route: 'offline', query, language: state.lang, intent: 'faq', confidence: 0.7, sources: [id], latency: null, label: 'Keyword match (offline)' });
@@ -227,9 +229,9 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     state.lastTicket = ticket;
     state.lastComplaint = ticket;
     state.complaints[ticket] = {
-      ref: ticket, complainant: state.lang === 'hi' ? 'आप (डेमो)' : 'You (demo)', category: text.slice(0, 60),
-      statusKey: 'registered', updated: state.lang === 'hi' ? 'आज' : 'Today',
-      office: state.lang === 'hi' ? 'जिला निर्वाचन कार्यालय (नमूना)' : 'District Election Office (sample)',
+      ref: ticket, complainant: { hi: 'आप (डेमो)', ta: 'நீங்கள் (டெமோ)' }[state.lang] || 'You (demo)', category: text.slice(0, 60),
+      statusKey: 'registered', updated: L('today'),
+      office: { hi: 'जिला निर्वाचन कार्यालय (नमूना)', ta: 'மாவட்ட தேர்தல் அலுவலகம் (மாதிரி)' }[state.lang] || 'District Election Office (sample)',
     };
     say(L('complaintDone', { ticket }));
     askFeedback();
@@ -275,7 +277,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
       rows: [
         [labels.applicant, c.complainant],
         [labels.category, pick(state.lang, c, 'category')],
-        [labels.updated, state.statusOverrides[c.ref] ? (state.lang === 'hi' ? 'आज' : 'Today') : c.updated],
+        [labels.updated, state.statusOverrides[c.ref] ? L('today') : c.updated],
         [labels.next, pick(state.lang, c, 'office')],
       ],
     };
@@ -384,15 +386,17 @@ export function createFlows({ data, panels, offline, onLangChange }) {
 
   // ---------- Live AI ----------
 
-  function aiContext() {
+  function aiContext(extra = {}) {
     return {
+      ...extra,
       ticket: state.lastTicket || undefined,
       audience: state.audience || undefined,
       optedOut: state.optedOut,
     };
   }
 
-  async function askAi(text) {
+  // replyLanguage: answer in this language whatever the message's language (FAQ taps in Tamil).
+  async function askAi(text, { replyLanguage } = {}) {
     const guessLang = detectScript(text) || state.lang;
     if (offline) return answerOffline(text, guessLang);
 
@@ -405,7 +409,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
       const idx = state.history.indexOf(entry);
       const history = idx === -1 ? state.history.slice() : state.history.slice(0, idx);
       const started = performance.now();
-      const res = await api.postChat(text, history, state.lang, aiContext(), state.mode);
+      const res = await api.postChat(text, history, state.lang, aiContext({ replyLanguage }), state.mode);
       const elapsed = performance.now() - started;
       if (elapsed < 700) await sleep(700 - elapsed);
       chat.hideTyping();
@@ -429,10 +433,12 @@ export function createFlows({ data, panels, offline, onLangChange }) {
   function citationSource(citations, lang) {
     if (!citations?.length) return null;
     const c = citations[0];
-    const more = citations.length > 1 ? ` · +${citations.length - 1} ${lang === 'hi' ? 'अन्य स्रोत' : 'more'}` : '';
+    const more = citations.length > 1 ? ` · +${citations.length - 1} ${{ hi: 'अन्य स्रोत', ta: 'பிற ஆதாரங்கள்' }[lang] || 'more'}` : '';
     const caution = c.reliability && c.reliability !== 'high' ? ` · ⚠ ${t(lang, 'verifyNote')}` : '';
     if (c.type === 'faq') {
-      return { title: t(lang, 'sourceFaq'), description: `${lang === 'en' ? c.title_en : c.title}${more}` };
+      const faq = faqById.get(c.faq_id);
+      const title = faq ? faqText(lang, faq).question : c.title_en; // Tamil when translated, else English
+      return { title: t(lang, 'sourceFaq'), description: `${lang === 'hi' ? c.title : title}${more}` };
     }
     if (c.type === 'case_study') {
       return { title: t(lang, 'caseStudy'), description: `${c.title}${more}` };
@@ -470,7 +476,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     if (LANGS.includes(r.language) && r.language !== state.lang && detectScript(query) === r.language) {
       setLang(r.language, { announce: false });
     }
-    const lang = r.language === 'en' ? 'en' : r.language === 'hi' ? 'hi' : state.lang;
+    const lang = LANGS.includes(r.language) ? r.language : state.lang;
     state.lastIntent = r.intent;
     state.lastLang = r.language;
     const low = r.confidence < LOW_CONFIDENCE;
@@ -602,7 +608,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
 
     if (state.mode === 'ai') return askAi(text);
 
-    if (/^stop$/i.test(text) || text === 'रोकें') {
+    if (/^stop$/i.test(text) || text === 'रोकें' || text === 'நிறுத்து') {
       state.optedOut = true;
       logScripted(text, 'opt_out', [], { tags: ['opted out'] });
       return say(L('optedOut'));

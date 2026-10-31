@@ -67,6 +67,10 @@ def main():
         print(f'{file} / {sheet}: {n} Q&A')
 
     missing_hi = [f['id'] for f in faqs if not (f['q_hi'] and f['a_hi'])]
+    if (OUT / 'faqs_ta.json').exists():  # Tamil machine translations from translate_faqs_ta.py
+        ta = json.loads((OUT / 'faqs_ta.json').read_text(encoding='utf-8'))
+        for f in faqs:
+            f.update(ta.get(f['id'], {}))
     (OUT / 'faqs.json').write_text(json.dumps(faqs, ensure_ascii=False, indent=1), encoding='utf-8')
     by = {}
     for f in faqs:

@@ -26,6 +26,7 @@ const PROMPT_CHIPS = {
     { text: 'पंचायत राज अधिनियम की धारा 14 क्या है?', tag: 'section lookup' },
     { text: 'evoting app me registration kaise kare?', tag: 'Hinglish' },
     { text: 'How do I check my name in the voter list?', tag: 'English' },
+    { text: 'பஞ்சாயத்து தேர்தலில் வேட்புமனு கட்டணம் எவ்வளவு?', tag: 'Tamil' },
     { text: 'CMP-2026-00412', tag: 'complaint status' },
     { text: 'Which party should I vote for?', tag: 'neutrality' },
     { text: 'When is the next panchayat election?', tag: 'no invention' },
@@ -36,6 +37,8 @@ const PROMPT_CHIPS = {
   ai: [
     { text: 'नमस्ते! मैं वार्ड पार्षद का चुनाव लड़ना चाहता हूँ, क्या करना होगा?', tag: 'nomination' },
     { text: 'Mukhiya ka chunav kaun lad sakta hai?', tag: 'Hinglish' },
+    { text: 'eVoting app-la eppadi register pannanum?', tag: 'Tanglish' },
+    { text: 'கிராம பஞ்சாயத்தின் பதவிக்காலம் எத்தனை ஆண்டுகள்?', tag: 'Tamil' },
     { text: 'Can my whole family vote from one phone using eVoting SECBHR?', tag: 'eVoting' },
     { text: 'What does section 125 of the Bihar Municipal Act say?', tag: 'section lookup' },
     { text: 'How was voter data kept secure in the Bihar eVoting system?', tag: 'case study' },
@@ -72,7 +75,7 @@ function applyLangToUi(lang) {
   $('msgInput').placeholder = t(lang, 'placeholder');
   $('presence').textContent = t(lang, 'online');
   document.documentElement.lang = lang;
-  if (org) $('botName').textContent = lang === 'en' ? org.botName : org.botNameHi;
+  if (org) $('botName').textContent = { hi: org.botNameHi, ta: org.botNameTa }[lang] || org.botName;
 }
 
 async function main() {

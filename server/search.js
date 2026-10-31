@@ -1,8 +1,8 @@
-// SEC Bihar search engine: our fine-tuned multilingual-e5-small (int8 ONNX) + the Phase 2 index.
-//   searchFaq(vectors)      -> FAQs ranked by the best-matching unit (question / question+answer, en + hi)
-//   searchSections(vectors) -> Act sections / case-study entries ranked by their best chunk
+// SEC Bihar search engine: our fine-tuned multilingual-e5-small (int8 ONNX) + BM25 keywords, fused as in meta.json.
+//   searchFaq(query)        -> FAQs ranked by the best-matching unit (question / question+answer, en + hi)
+//   searchSections(query)   -> Act sections / case-study entries ranked by their best chunk
 //   lookupSection(message)  -> direct hit for "Section 125" / "धारा 14" / "dhara 14"
-// Several query vectors (original + AI rewrites) are combined by taking the max score per key.
+// query = { texts, vectors }: the message plus AI rewrites; scores take the max over them per key.
 const fs = require('fs');
 const path = require('path');
 
@@ -20,6 +20,9 @@ const faqs = readJson(path.join(KB_DIR, 'faqs.json'));
 const sections = readJson(path.join(KB_DIR, 'sections.json'));
 const faqById = new Map(faqs.map((f) => [f.id, f]));
 const TAU = meta.matcher.threshold_rule.tau;
+// Officials-only FAQs answer a public question only on a very clear match (direct officials questions score
+// ~0.8; a public question wrongly pulled to one scored 0.6 in the Phase 5 test). The officials menu lifts this.
+const OFFICIALS_TAU = 0.70;
 
 // float16 little-endian -> Float32Array (Node 20 has no Float16Array)
 function readF16(file) {
@@ -89,52 +92,141 @@ function scoreRows(matrix, n, q) {
   return scores;
 }
 
-// max over query vectors, then max over units/chunks sharing a key
-function rank(matrix, items, vectors, weights) {
-  const best = new Map();
-  for (const q of vectors) {
-    const scores = scoreRows(matrix, items.length, q);
-    for (let i = 0; i < items.length; i++) {
-      const s = scores[i] * (weights ? weights[i] : 1);
-      const cur = best.get(items[i].key);
-      if (!cur || s > cur.score) best.set(items[i].key, { key: items[i].key, score: s, index: i });
-    }
+// ------------------------------------------------------------ BM25 (port of scripts/kb/retrieval.py)
+const EN_STOP = new Set(('a an the of to in on for and or is are was were be by with at from as it this that what which who how '
+  + 'can do does i my me you your we our they their there when where why will shall should may any all').split(' '));
+const HI_STOP = new Set(('का की के है हैं में से को पर और या एक यह वह क्या कैसे कब कहाँ कौन तो भी ही था थी थे हो होता होती होते '
+  + 'किया किये गया गयी गये कर करें करना जो जा सकता सकते सकती').split(' '));
+const HI_SUFFIXES = ['ाएं', 'ाओं', 'ियों', 'ियां', 'ाने', 'ाता', 'ाती', 'ाते', 'ों', 'ें', 'ीं', 'ना', 'ने', 'नी', 'ी', 'े', 'ा', 'ो']
+  .sort((a, b) => b.length - a.length);
+const EN_SUFFIXES = ['ings', 'ing', 'ies', 'ied', 'es', 'ed', 's'];
+
+const normaliseText = (text) => text.toLowerCase().normalize('NFC').replace(/़/g, '').replace(/ँ/g, 'ं');
+
+function stem(tok) {
+  const hindi = /[ऀ-ॿ]/.test(tok);
+  for (const suf of hindi ? HI_SUFFIXES : EN_SUFFIXES) {
+    if (tok.endsWith(suf) && tok.length - suf.length >= (hindi ? 2 : 3)) return tok.slice(0, -suf.length);
   }
-  return [...best.values()].sort((a, b) => b.score - a.score);
+  return tok;
 }
 
-// FAQs; officials-only FAQs are left out unless includeOfficials (the officials menu or a confident match).
+function tokenize(text) {
+  return (normaliseText(text).match(/[ऀ-ॿ]+|[a-z0-9]+/g) || [])
+    .filter((t) => !EN_STOP.has(t) && !HI_STOP.has(t) && t.length > 1)
+    .map(stem);
+}
+
+class BM25 {
+  constructor(docs, { k1 = 1.2, b = 0.75 } = {}) {
+    this.k1 = k1;
+    this.b = b;
+    this.len = [];
+    this.post = new Map(); // term -> [[doc, count]]
+    docs.forEach((d, i) => {
+      const tf = new Map();
+      for (const t of tokenize(d)) tf.set(t, (tf.get(t) || 0) + 1);
+      this.len[i] = [...tf.values()].reduce((a, c) => a + c, 0);
+      for (const [t, c] of tf) {
+        if (!this.post.has(t)) this.post.set(t, []);
+        this.post.get(t).push([i, c]);
+      }
+    });
+    this.n = docs.length;
+    this.avg = this.len.reduce((a, c) => a + c, 0) / (this.n || 1);
+  }
+
+  scores(query) {
+    const s = new Float32Array(this.n);
+    for (const term of new Set(tokenize(query))) {
+      const list = this.post.get(term);
+      if (!list) continue;
+      const idf = Math.log(1 + (this.n - list.length + 0.5) / (list.length + 0.5));
+      for (const [i, c] of list) {
+        s[i] += (idf * c * (this.k1 + 1)) / (c + this.k1 * (1 - this.b + (this.b * this.len[i]) / this.avg));
+      }
+    }
+    return s;
+  }
+}
+
+// Fusion from meta.json, e.g. "w0.85:e5-small-ft2+bm25" (weighted) or "dense:e5-small-ft".
+const ALPHA = /^w([\d.]+):.*\+bm25$/.test(meta.fusion) ? Number(meta.fusion.match(/^w([\d.]+)/)[1]) : 1;
+const secBm25 = ALPHA < 1 ? new BM25(chunks.map((c) => c.text), meta.bm25) : null;
+const faqBm25 = ALPHA < 1 ? new BM25(faqUnits.map((u) => u.text), meta.bm25) : null;
+
+// Best score per key over items (max over queries as well).
+function perKeyMax(items, scoresPerQuery) {
+  const best = new Map();
+  for (const scores of scoresPerQuery) {
+    for (let i = 0; i < items.length; i++) {
+      const cur = best.get(items[i].key);
+      if (!cur || scores[i] > cur.score) best.set(items[i].key, { score: scores[i], index: i });
+    }
+  }
+  return best;
+}
+
+// Min-max normalised weighted sum over each ranking's top 100 (same as retrieval.weighted()).
+function weightedFusion(dense, sparse, alpha, top = 100) {
+  const norm = (m) => {
+    const items = [...m.entries()].sort((a, b) => b[1].score - a[1].score).slice(0, top);
+    if (!items.length) return new Map();
+    const hi = items[0][1].score;
+    const lo = items[items.length - 1][1].score;
+    return new Map(items.map(([k, v]) => [k, hi > lo ? (v.score - lo) / (hi - lo) : 1]));
+  };
+  const d = norm(dense);
+  const s = norm(sparse);
+  const fused = new Map();
+  for (const k of new Set([...d.keys(), ...s.keys()])) fused.set(k, alpha * (d.get(k) || 0) + (1 - alpha) * (s.get(k) || 0));
+  return fused;
+}
+
+// Cosine of every item for every query vector (chunk weights applied).
+function denseScores(matrix, items, vectors, weights) {
+  return vectors.map((q) => {
+    const s = scoreRows(matrix, items.length, q);
+    if (weights) for (let i = 0; i < s.length; i++) s[i] *= weights[i];
+    return s;
+  });
+}
+
+// Rank keys: by fused score when BM25 is on, else by cosine. Every result keeps `score` = its cosine
+// (the matcher threshold and score floors are cosine-based) and `fused` = the ranking score.
+function rankKeys(items, dense, texts, bm25) {
+  const best = perKeyMax(items, dense);
+  const fused = bm25 ? weightedFusion(best, perKeyMax(items, texts.map((t) => bm25.scores(t))), ALPHA) : null;
+  return [...best.entries()]
+    .map(([key, v]) => ({ key, score: v.score, index: v.index, fused: fused ? fused.get(key) || 0 : v.score }))
+    .sort((a, b) => b.fused - a.fused);
+}
+
+// query = { vectors, texts }: the message (and AI rewrites) and their embeddings.
+// FAQs; officials-only FAQs are left out unless includeOfficials (the officials menu) or a very clear match.
 // `set` restricts the search to one FAQ set (e.g. 'evoting').
-function searchFaq(vectors, { includeOfficials = false, limit = 3, set = null } = {}) {
-  const ranked = rank(FAQ, faqUnits, vectors).filter((r) => !set || faqById.get(r.key).set === set);
+function searchFaq(query, { includeOfficials = false, limit = 3, set = null } = {}) {
+  const ranked = rankKeys(faqUnits, denseScores(FAQ, faqUnits, query.vectors), query.texts, faqBm25)
+    .filter((r) => !set || faqById.get(r.key).set === set);
   const top = ranked[0];
   const topIsOfficials = top && faqById.get(top.key).audience === 'officials';
-  const allow = includeOfficials || (topIsOfficials && top.score >= TAU);
+  const allow = includeOfficials || (topIsOfficials && top.score >= OFFICIALS_TAU);
   return ranked
     .filter((r) => allow || faqById.get(r.key).audience !== 'officials')
     .slice(0, limit)
     .map((r) => ({ ...r, faq: faqById.get(r.key), confident: r.score >= TAU }));
 }
 
-// Sections, each with its best chunks (both languages kept, best first).
-function searchSections(vectors, { limit = 4, chunksPerKey = 2 } = {}) {
-  const perChunk = [];
-  for (const q of vectors) {
-    const scores = scoreRows(SEC, chunks.length, q);
-    for (let i = 0; i < chunks.length; i++) perChunk[i] = Math.max(perChunk[i] ?? -1, scores[i] * chunkWeight[i]);
-  }
-  const byKey = new Map();
-  chunks.forEach((c, i) => {
-    if (!byKey.has(c.key)) byKey.set(c.key, []);
-    byKey.get(c.key).push({ chunk: c, score: perChunk[i] });
+// Sections, each with its best chunks by cosine (both languages kept, best first).
+function searchSections(query, { limit = 4, chunksPerKey = 2 } = {}) {
+  const dense = denseScores(SEC, chunks, query.vectors, chunkWeight);
+  const ranked = rankKeys(chunks, dense, query.texts, secBm25).slice(0, limit);
+  const chunkScore = (i) => Math.max(...dense.map((s) => s[i]));
+  return ranked.map((r) => {
+    const best = chunks.map((c, i) => [c, i]).filter(([c]) => c.key === r.key)
+      .sort((x, y) => chunkScore(y[1]) - chunkScore(x[1]));
+    return { key: r.key, score: r.score, fused: r.fused, chunks: best.slice(0, chunksPerKey).map(([c]) => c) };
   });
-  return [...byKey.entries()]
-    .map(([key, list]) => {
-      list.sort((a, b) => b.score - a.score);
-      return { key, score: list[0].score, chunks: list.slice(0, chunksPerKey).map((x) => x.chunk) };
-    })
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit);
 }
 
 // ------------------------------------------------------------ direct "Section N" lookup

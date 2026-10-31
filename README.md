@@ -40,7 +40,7 @@ other free text gets the fallback ("I can connect you to an officer").
 | Variable | Default | Purpose |
 |---|---|---|
 | `OPENAI_API_KEY` | none | OpenAI API key. Stays on the server and is never sent to the browser. |
-| `OPENAI_MODEL` | `gpt-4.1-mini` | Model used for query rewriting and answers |
+| `OPENAI_MODEL` | `gpt-5.4-mini` | Model used for query rewriting and answers (reasoning effort: `OPENAI_REASONING_EFFORT`, default `low`) |
 | `PORT` | `3000` | HTTP port |
 | `LLM_TIMEOUT_MS` | `10000` | Server-side LLM timeout |
 | `TRUST_PROXY` | `1` | Number of reverse proxies in front of the app (Dokploy/Traefik = 1) |

@@ -7,9 +7,11 @@ Training pairs (dev split only - test questions are never seen):
   - FAQ keywords                  -> the FAQ question
   - dev Act / case-study questions-> the gold section's best chunk
 Hard negatives: the highest-ranked wrong FAQ / section from BM25.
+--extra (Phase 5) also uses data/kb/eval/train_extra.json: section-title queries -> that section, and
+hand-written Hinglish / casual FAQ paraphrases -> that FAQ.
 
-Usage: python finetune.py <base-model-key> [epochs]
-Output: kb-work/models/<base>-secbihar  (then evaluate with: python eval_retrieval.py <base>-ft)
+Usage: python finetune.py <base-model-key> [epochs] [--extra]     (Phase 5: python finetune.py e5-small 1 --extra)
+Output: kb-work/models/<base>-secbihar  (--extra: <base>-secbihar2; evaluate as <base>-ft / <base>-ft2)
 """
 import json
 import random
@@ -20,13 +22,37 @@ from common import OUT, WORK
 from retrieval import MODELS, BM25, load_corpora
 
 
+def extra_rows(extra, qp, pp, fby, hard_neg_faq, sec_chunks, sec_bm25):
+    """Triplets from train_extra.json. Section positive = the section's chunk BM25 ranks highest for the query."""
+    rows = []
+    by_key = {}
+    for i, c in enumerate(sec_chunks):
+        by_key.setdefault(c['key'], []).append(i)
+    for r in extra:
+        if r['kind'] == 'faq':
+            pos = fby[r['gold']]
+            neg = hard_neg_faq(r['text'], {r['gold']})
+            for p_text, n_text in ((pos['q_en'], neg['q_en']), (pos['q_hi'], neg['q_hi']),
+                                   (pos['q_en'] + '\n' + pos['a_en'], neg['q_en'] + '\n' + neg['a_en'])):
+                rows.append((qp + r['text'], pp + p_text, pp + n_text))
+        elif r['gold'] in by_key:
+            scores = sec_bm25.scores(r['text'])
+            pos_i = max(by_key[r['gold']], key=lambda i: scores[i])
+            neg_i = next(i for i in np.argsort(-scores) if sec_chunks[i]['key'] != r['gold'])
+            rows.append((qp + r['text'], pp + sec_chunks[pos_i]['text'], pp + sec_chunks[neg_i]['text']))
+    print(f'{len(rows)} extra triplets from train_extra.json')
+    return rows
+
+
 def main():
     from datasets import Dataset
     from sentence_transformers import SentenceTransformer, SentenceTransformerTrainer, SentenceTransformerTrainingArguments
     from sentence_transformers.losses import MultipleNegativesRankingLoss
 
-    base = sys.argv[1]
-    epochs = int(sys.argv[2]) if len(sys.argv) > 2 else 3
+    args_ = [a for a in sys.argv[1:] if not a.startswith('--')]
+    extra = '--extra' in sys.argv
+    base = args_[0]
+    epochs = int(args_[1]) if len(args_) > 1 else 3
     name, qp, pp = MODELS[base]
     random.seed(13)
     questions = json.loads((OUT / 'eval' / 'questions.json').read_text(encoding='utf-8'))
@@ -61,6 +87,9 @@ def main():
                 pos_i = next(i for i, c in enumerate(sec_chunks) if c['key'] in gold)
             neg_i = next(i for i in cand if sec_chunks[i]['key'] not in gold)
             rows.append((qp + q['text'], pp + sec_chunks[pos_i]['text'], pp + sec_chunks[neg_i]['text']))
+    if extra:
+        rows += extra_rows(json.loads((OUT / 'eval' / 'train_extra.json').read_text(encoding='utf-8')),
+                           qp, pp, fby, hard_neg_faq, sec_chunks, sec_bm25)
     for f in faqs:  # cross-lingual alignment + keywords (corpus-only data, no test leakage)
         neg = hard_neg_faq(f['q_en'], {f['id']})
         rows.append((qp + f['q_hi'], pp + f['q_en'], pp + neg['q_en']))
@@ -70,11 +99,14 @@ def main():
     random.shuffle(rows)
     print(f'{len(rows)} training triplets')
 
-    model = SentenceTransformer(name, device='cpu')
+    # --extra continues from the Phase 2 fine-tuned model (1 epoch is enough and ~3x faster on CPU)
+    start = MODELS[f'{base}-ft'][0] if extra and f'{base}-ft' in MODELS else name
+    print(f'starting from {start}')
+    model = SentenceTransformer(start, device='cpu')
     model.max_seq_length = 256
     ds = Dataset.from_dict({'anchor': [r[0] for r in rows], 'positive': [r[1] for r in rows],
                             'negative': [r[2] for r in rows]})
-    out_dir = WORK / 'models' / f'{base}-secbihar'
+    out_dir = WORK / 'models' / f"{base}-secbihar{'2' if extra else ''}"
     args = SentenceTransformerTrainingArguments(
         output_dir=str(WORK / 'models' / 'tmp'), num_train_epochs=epochs, per_device_train_batch_size=16,
         learning_rate=2e-5, warmup_ratio=0.1, logging_steps=20, save_strategy='no', report_to=[], seed=13,

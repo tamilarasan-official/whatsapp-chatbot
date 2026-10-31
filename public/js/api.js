@@ -5,7 +5,7 @@
 // writes config.js with the API domain, e.g. https://apivalardemo.welocalhost.com.
 const API_BASE = String(window.APP_CONFIG?.apiBase || '').replace(/\/+$/, '');
 
-const CHAT_TIMEOUT_MS = 20000; // search + optional query rewrite + answer (+ one grounding retry)
+const CHAT_TIMEOUT_MS = 30000; // search + query rewrite + answer (+ a stalled-call retry or a grounding retry)
 
 async function fetchJson(url, options = {}, timeoutMs = CHAT_TIMEOUT_MS) {
   const controller = new AbortController();

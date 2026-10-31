@@ -47,8 +47,8 @@ services:
     init: true
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY:?Set OPENAI_API_KEY in Dokploy > Environment}
-      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4.1-mini}
-      LLM_TIMEOUT_MS: ${LLM_TIMEOUT_MS:-8000}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5.4-mini}
+      LLM_TIMEOUT_MS: ${LLM_TIMEOUT_MS:-10000}
       RATE_LIMIT_PER_MIN: ${RATE_LIMIT_PER_MIN:-30}
       TRUST_PROXY: ${TRUST_PROXY:-1}
       # Only the frontend domain may call the API from a browser.

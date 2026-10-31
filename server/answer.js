@@ -11,27 +11,44 @@ const llm = require('./llm');
 const { ORG_FACTS } = require('./prompt');
 const { fallbackReply } = require('./fallback');
 
-// Score floors from scripts/verify-node-search.js: out-of-scope questions score below these (p90).
+// Score floors (cosine) from scripts/verify-node-search.js with the Phase 5 model: out-of-scope questions
+// score below these (p90: FAQ 0.44, section 0.36); case-study questions score above (p10 0.43).
 // Between WEAK_MIN and the floor a candidate is still shown to the AI, marked "weak match".
 const FAQ_MIN = 0.45;
-const SECTION_MIN = 0.48;
-const WEAK_MIN = 0.40;
+const SECTION_MIN = 0.40;
+const WEAK_MIN = 0.36;
 const MAX_SECTIONS = 4;
 const LOOKUP_CHARS = 2500;
 
 const DEVANAGARI = /[ऀ-ॿ]/;
-const HINGLISH_WORDS = new Set(('mujhe mera meri mere kya kaise kab kahan kaun kyun kyon hai hain ho hota hoti hote batao bataye bataiye chahiye '
-  + 'karna kare karein karu karun kar sakta sakte sakti nahi nahin haan acha accha theek aap apna apni ji kitna kitne kitni '
-  + 'wala wali milega milta milti liye mein chunav chunaw matdan namankan nirvachan').split(' '));
+// Romanised Hindi words. English look-alikes ("me", "to", "do", "so") are left out so English questions
+// are not mistaken for Hinglish; two hits mark a message as Hinglish.
+const HINGLISH_WORDS = new Set(('mujhe mera meri mere kya kaise kab kahan kaun kyun kyon kis hai hain ho hota hoti hote '
+  + 'batao bataye bataiye bataiye chahiye karna kare karein karu karun kar karte karke sakta sakte sakti nahi nahin '
+  + 'haan acha accha theek aap apna apni apne ji kitna kitne kitni wala wali wale milega milegi milenge milta milti '
+  + 'liye mein ki ka ke ko se par aur agar toh kuch sab bhai jata jaata jati jaati jate jaate diya diye hua hue hui '
+  + 'raha rahi rahe rahega rahegi gaye gayi chale aaya aaye aata aati lagta lagti lagte dena dene lena lene bharein '
+  + 'bharna dalne dalna wapas pehle baad andar seedhe janta chunti chune chunav chunaw matdan namankan nirvachan '
+  + 'ummeedwar ummeedwaron sadasya saal waqt yojana zaroori jankari jaankari').split(' '));
 const LANGUAGE_NOTE = { hi: 'Hindi (Devanagari)', en: 'English', mixed: 'Hinglish (Hindi in English letters, not Devanagari)' };
 const FACT_INTENTS = new Set(['faq', 'act', 'evoting', 'complaint']);
 // The model ranks generic "eVoting app" questions weakly; these words also pull in the eVoting FAQs.
 const EVOTING_TOPIC = /e-?voting|secbhr|\bapp\b|mobile se vote|ई-?वोटिंग|ऐप|एप/i;
 const REWRITE_MIN = 0.50;
+const FAQ_SAFE = 0.70; // FAQ score above which the official text may stand in for a failed AI reply
 
 function hinglishScore(message) {
   if (DEVANAGARI.test(message)) return 0;
   return (message.toLowerCase().match(/[a-z]+/g) || []).filter((w) => HINGLISH_WORDS.has(w)).length;
+}
+
+// The reply's language from its script (the AI's own label is not reliable): Devanagari -> hi;
+// Latin -> Hinglish if it reads as romanised Hindi, else English.
+function scriptLanguage(reply) {
+  const letters = (reply.match(/\p{L}/gu) || []).length || 1;
+  const deva = (reply.match(/[ऀ-ॿ]/g) || []).length;
+  if (deva / letters > 0.5) return 'hi';
+  return hinglishScore(reply) >= 2 ? 'mixed' : 'en';
 }
 
 function replyLanguage(message, preferred) {
@@ -100,8 +117,30 @@ function addSections(registry, secHits, lang) {
 // ------------------------------------------------------------ grounding checks
 const numbersIn = (text) => (search.toAscii(String(text)).replace(/(\d),(?=\d)/g, '$1').match(/\d+(?:\.\d+)?/g) || []);
 
+// Number words in the sources ("पाँच सौ", "six months", "two thousand") count as allowed digits.
+const UNITS = {
+  one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12,
+  fifteen: 15, twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, seventy: 70, eighty: 80, ninety: 90,
+  एक: 1, दो: 2, तीन: 3, चार: 4, पाँच: 5, पांच: 5, पॉच: 5, छह: 6, छः: 6, सात: 7, आठ: 8, नौ: 9, दस: 10, ग्यारह: 11,
+  बारह: 12, पंद्रह: 15, पन्द्रह: 15, बीस: 20, पच्चीस: 25, तीस: 30, चालीस: 40, पचास: 50, साठ: 60, सत्तर: 70, अस्सी: 80, नब्बे: 90,
+};
+const MULTIPLIERS = { hundred: 100, thousand: 1000, lakh: 100000, सौ: 100, हज़ार: 1000, हजार: 1000, लाख: 100000 };
+
+function wordNumbers(text) {
+  const out = [];
+  const words = String(text).toLowerCase().split(/[^\p{L}\p{M}]+/u);
+  for (let i = 0; i < words.length; i++) {
+    const unit = UNITS[words[i]];
+    if (unit === undefined) continue;
+    out.push(String(unit));
+    const mult = MULTIPLIERS[words[i + 1]];
+    if (mult) out.push(String(unit * mult));
+  }
+  return out;
+}
+
 function unsupportedNumbers(reply, allowedText) {
-  const allowed = new Set(numbersIn(allowedText));
+  const allowed = new Set([...numbersIn(allowedText), ...wordNumbers(allowedText)]);
   return [...new Set(numbersIn(reply).filter((n) => n.replace('.', '').length >= 2 && !allowed.has(n)))];
 }
 
@@ -112,7 +151,10 @@ function groundingProblem(result, allowedText) {
     return `Your previous draft contained these numbers that are NOT in the SOURCES: ${bad.join(', ')}. `
       + 'Remove them, or use only numbers that appear in the SOURCES.';
   }
-  if (FACT_INTENTS.has(result.intent) && !result.citationIds.length) {
+  // factual intent, or a long reply mislabelled as small talk
+  const factual = FACT_INTENTS.has(result.intent)
+    || (result.intent === 'smalltalk' && result.reply.split(/\s+/).length > 40);
+  if (factual && !result.citationIds.length) {
     return 'Your previous draft stated facts without citing any source. Cite the SOURCES that support every fact, '
       + 'or if none do, say honestly that you do not have that detail.';
   }
@@ -139,19 +181,20 @@ const NO_DETAIL = {
 // ------------------------------------------------------------ retrieval
 async function retrieve(message, history, includeOfficials, lang) {
   const lookups = search.lookupSection(message, history);
-  let vectors = await search.embed([message]);
-  let faqHits = search.searchFaq(vectors, { includeOfficials });
+  const query = { texts: [message], vectors: await search.embed([message]) };
+  let faqHits = search.searchFaq(query, { includeOfficials });
   let rewritten = [];
   const followUp = history.length > 0 && message.split(/\s+/).length <= 8;
   const worthRewriting = hinglishScore(message) >= 1 || followUp || (faqHits[0]?.score ?? 0) >= REWRITE_MIN;
   if (!faqHits[0]?.confident && !lookups.length && worthRewriting && llm.getClient()) {
     rewritten = await llm.rewriteQuery(message, history);
     if (rewritten.length) {
-      vectors = vectors.concat(await search.embed(rewritten));
-      faqHits = search.searchFaq(vectors, { includeOfficials });
+      query.texts.push(...rewritten);
+      query.vectors.push(...(await search.embed(rewritten)));
+      faqHits = search.searchFaq(query, { includeOfficials });
     }
   }
-  const secAll = search.searchSections(vectors, { limit: MAX_SECTIONS });
+  const secAll = search.searchSections(query, { limit: MAX_SECTIONS });
   const secHits = secAll.filter((h) => h.score >= SECTION_MIN);
   const weakSecs = secHits.length ? [] : secAll.filter((h) => h.score >= WEAK_MIN).slice(0, 2);
   const confidentFaq = faqHits[0]?.confident ? faqHits[0] : null;
@@ -160,7 +203,7 @@ async function retrieve(message, history, includeOfficials, lang) {
   addLookups(registry, lookups, lang);
   let faqCandidates = confidentFaq ? [confidentFaq] : faqHits.filter((h) => h.score >= WEAK_MIN).slice(0, 2);
   if (!confidentFaq && EVOTING_TOPIC.test(`${message} ${rewritten.join(' ')}`)) {
-    const evoting = search.searchFaq(vectors, { includeOfficials, set: 'evoting', limit: 2 });
+    const evoting = search.searchFaq(query, { includeOfficials, set: 'evoting', limit: 2 });
     faqCandidates = faqCandidates.concat(evoting.filter((e) => !faqCandidates.some((c) => c.key === e.key)));
   }
   addFaqs(registry, faqCandidates);
@@ -177,7 +220,8 @@ async function retrieve(message, history, includeOfficials, lang) {
 }
 
 // ------------------------------------------------------------ main entry
-async function respond({ message, history = [], language = 'hi', context = {}, mode = 'static' }) {
+// withSources (tests only, never from the API): also return the full text of every source shown to the AI.
+async function respond({ message, history = [], language = 'hi', context = {}, mode = 'static', withSources = false }) {
   const started = performance.now();
   const lang = replyLanguage(message, language);
   const { registry, confidentFaq, route, debug } = await retrieve(message, history, context.audience === 'officials', lang);
@@ -191,9 +235,11 @@ async function respond({ message, history = [], language = 'hi', context = {}, m
       route: citations.length ? route : 'chat', // route = what the reply actually used
       search: { ...debug, retrieval_route: route },
       latency_ms: Math.round(performance.now() - started),
+      ...(withSources ? { source_texts: registry.map((r) => ({ id: r.id, cited: citationIds.includes(r.id), text: r.text })) } : {}),
     };
   };
-  const safeReply = () => (confidentFaq ? finish(officialFaqReply(confidentFaq, lang), ['F1'])
+  // A safe reply repeats the official FAQ only when the match is very strong; otherwise "I don't have that detail".
+  const safeReply = () => (confidentFaq && confidentFaq.score >= FAQ_SAFE ? finish(officialFaqReply(confidentFaq, lang), ['F1'])
     : finish({ reply: NO_DETAIL[lang], language: lang, intent: 'faq', confidence: 0.3, escalate: true, action: 'none', suggested_replies: [] }));
 
   if (!llm.getClient()) {
@@ -211,7 +257,7 @@ async function respond({ message, history = [], language = 'hi', context = {}, m
     let result = await ask();
     let problem = groundingProblem(result, allowedText);
     if (problem) {
-      console.warn(`[answer] ${problem.split(':')[0].split('.')[0]} - retrying`);
+      console.warn(`[answer] retrying: ${problem.split('. ')[0]}`);
       result = await ask(problem);
       problem = groundingProblem(result, allowedText);
       if (problem) {
@@ -220,7 +266,7 @@ async function respond({ message, history = [], language = 'hi', context = {}, m
       }
     }
     const { citationIds, ...rest } = result;
-    return finish(rest, citationIds);
+    return finish({ ...rest, language: scriptLanguage(rest.reply) }, citationIds);
   } catch (err) {
     if (!confidentFaq) throw err;
     console.warn(`[answer] AI failed (${err.message}) - official FAQ text`);

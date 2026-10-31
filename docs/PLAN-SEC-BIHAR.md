@@ -94,6 +94,26 @@ Removed: Form 6/8, appointment booking, REF status, Tamil, ECI logo and sample P
 - ~120 questions: 68 FAQ paraphrases (HI/EN/Hinglish) + ~50 Act questions with expected section.
 - `npm run test:kb` reports: FAQ hit rate, correct section cited, invented facts (target 0), language match.
 
+**Done.** As built:
+- Test set: 119 new hand-written questions (57 FAQ groups, 46 Act / case study, 16 out-of-scope & safety; 59 EN,
+  31 HI, 29 Hinglish), checked automatically against overlap with the Phase 2 set and the training data
+  (`scripts/kb/answer_tests.py` -> data/kb/eval/answer_tests.json). Never used for training.
+- `npm run test:kb` (scripts/test-kb.js): runs the real answer engine; checks source cited, language, and an
+  independent judge (gpt-5.5) matches every factual claim to a quoted source sentence (invented / meaning error,
+  major or minor). Report: docs/accuracy-report.html; raw: data/kb/eval/answer_results.json.
+- Fixes from the test: Hinglish detection + reply language set from the reply's script; officials FAQs need
+  score >= 0.70 outside the officials menu; number check understands number words ("पाँच सौ" = 500); safe reply
+  uses the FAQ text only at score >= 0.70; long uncited replies are retried; prompt keeps qualifiers.
+- Search model v2: continued fine-tune (1 epoch) with train_extra.json (section-title queries from the Acts +
+  hand-written Hinglish FAQ paraphrases) and BM25 fusion (w0.85). Node: FAQ test R@1 93.1% (Hinglish 69% -> 85%),
+  section R@5 100%, 0 out-of-scope accepted; Phase 5 Act questions: right section in top 4 74% -> 83%.
+  Matcher tau 0.515; score floors recalibrated (section 0.40, weak 0.36).
+- Answer model: gpt-4.1-mini -> gpt-5.4-mini (reasoning effort low, one retry for stalled calls).
+- Results (same strict judge): pass 76.5% -> 82.4%; meaning errors 27 -> 13; invented 8 -> 2; FAQ questions 94.7%;
+  language 97.5%; out-of-scope/safety 93.8%; median 1.4 s, p90 2.9 s.
+- Open: Act answers (63% pass) still lose legal qualifiers in ~1 in 4 answers; wrong section for ~15% of Act
+  questions. Recommended: show the exact section text with each Act answer, and get the client's Election Rules.
+
 ### Phase 6: Deploy
 - Same Dokploy compose (frontend + backend, same domains). Backend memory limit set to 1 GB in Phase 3. Model file (118 MB, git-ignored) fetched at build time.
 - Optional: password-protect the demo link (government branding on a public URL).

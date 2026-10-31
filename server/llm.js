@@ -2,9 +2,13 @@
 const OpenAI = require('openai');
 const { buildAnswerPrompt, REWRITE_PROMPT } = require('./prompt');
 
-const MODEL = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
+// gpt-5.4-mini: in the Phase 5 test it made a third of gpt-4.1-mini's meaning errors on Act answers.
+const MODEL = process.env.OPENAI_MODEL || 'gpt-5.4-mini';
+// GPT-5 / o-series are reasoning models: no temperature, max_completion_tokens, and a reasoning effort.
+const REASONING = /^(gpt-5|o\d)/.test(MODEL);
+const REASONING_EFFORT = process.env.OPENAI_REASONING_EFFORT || 'low';
 const TIMEOUT_MS = Number(process.env.LLM_TIMEOUT_MS) || 10000;
-const REWRITE_TIMEOUT_MS = 4000;
+const REWRITE_TIMEOUT_MS = 4000; // x3 for reasoning models
 const MAX_HISTORY = 30;
 
 const INTENTS = new Set(['faq', 'act', 'evoting', 'complaint', 'handover', 'out_of_scope', 'smalltalk']);
@@ -69,7 +73,12 @@ async function completeJson(messages, { maxTokens, temperature, timeoutMs }) {
   let text;
   try {
     const res = await getClient().chat.completions.create(
-      { model: MODEL, messages, max_tokens: maxTokens, temperature, response_format: { type: 'json_object' } },
+      {
+        model: MODEL, messages, response_format: { type: 'json_object' },
+        ...(REASONING
+          ? { max_completion_tokens: maxTokens * 4, reasoning_effort: REASONING_EFFORT } // room for reasoning tokens
+          : { max_tokens: maxTokens, temperature }),
+      },
       { signal: controller.signal },
     );
     text = res.choices[0]?.message?.content;
@@ -88,7 +97,7 @@ async function rewriteQuery(message, history) {
     const recent = cleanHistory(history).slice(-4).map((m) => `${m.role}: ${m.content.slice(0, 300)}`).join('\n');
     const user = `${recent ? `Earlier chat:\n${recent}\n\n` : ''}Last message: ${message}`;
     const out = await completeJson([{ role: 'system', content: REWRITE_PROMPT }, { role: 'user', content: user }],
-      { maxTokens: 160, temperature: 0, timeoutMs: REWRITE_TIMEOUT_MS });
+      { maxTokens: 160, temperature: 0, timeoutMs: REWRITE_TIMEOUT_MS * (REASONING ? 3 : 1) });
     return [out.hi, out.en].map((s) => String(s || '').trim().slice(0, 300)).filter(Boolean);
   } catch (err) {
     console.warn(`[rewrite] skipped: ${err.message}`);
@@ -129,7 +138,8 @@ async function answer({ message, history, language, context, mode, sources, vali
       return result;
     } catch (err) {
       lastError = err;
-      if (!/Unparseable|Empty/.test(err.message)) break; // retry only bad output, not timeouts
+      // retry bad output, and a timeout once: occasional API calls stall for 20 s+ while most take ~1.5 s
+      if (!/Unparseable|Empty|timeout/.test(err.message)) break;
     }
   }
   throw lastError;

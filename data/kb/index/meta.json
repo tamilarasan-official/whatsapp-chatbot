@@ -1,6 +1,6 @@
 {
- "model": "e5-small-ft",
- "source_model": "C:\\Users\\thami\\whatsapp-ai-demo\\kb-work\\models\\e5-small-secbihar",
+ "model": "e5-small-ft2",
+ "source_model": "C:\\Users\\thami\\whatsapp-ai-demo\\kb-work\\models\\e5-small-secbihar2",
  "onnx_file": "model/onnx/model_quantized.onnx",
  "query_prefix": "query: ",
  "passage_prefix": "passage: ",
@@ -9,7 +9,7 @@
  "normalize": true,
  "n_chunks": 2617,
  "n_faq_units": 297,
- "fusion": "dense:e5-small-ft",
+ "fusion": "w0.85:e5-small-ft2+bm25",
  "bm25": {
   "k1": 1.2,
   "b": 0.75
@@ -18,38 +18,38 @@
  "matcher": {
   "winner": "threshold",
   "threshold_rule": {
-   "tau": 0.5675,
+   "tau": 0.515,
    "delta": 0.0,
    "dev": {
-    "accepted": 146,
-    "precision": 0.952,
-    "recall": 0.88,
+    "accepted": 154,
+    "precision": 0.955,
+    "recall": 0.93,
     "oos_false_accept": 0.0,
     "act_case_accept": 0.156
    },
    "test": {
-    "accepted": 50,
-    "precision": 0.94,
+    "accepted": 51,
+    "precision": 0.922,
     "recall": 0.81,
     "oos_false_accept": 0.0,
     "act_case_accept": 0.2
    }
   },
   "logistic": {
-   "p": 0.4,
+   "p": 0.37,
    "dev": {
-    "accepted": 149,
-    "precision": 0.953,
-    "recall": 0.899,
+    "accepted": 154,
+    "precision": 0.955,
+    "recall": 0.93,
     "oos_false_accept": 0.0,
     "act_case_accept": 0.156
    },
    "test": {
-    "accepted": 53,
-    "precision": 0.887,
+    "accepted": 52,
+    "precision": 0.904,
     "recall": 0.81,
     "oos_false_accept": 0.0,
-    "act_case_accept": 0.333
+    "act_case_accept": 0.2
    },
    "features": [
     "cosine",
@@ -59,25 +59,25 @@
     "query_words"
    ],
    "coef": [
-    3.0304,
-    0.2822,
-    0.6102,
-    -0.0844,
-    -0.3815
+    3.1852,
+    0.3227,
+    0.0496,
+    -0.1275,
+    -0.287
    ],
-   "intercept": 1.235,
+   "intercept": 1.2089,
    "mean": [
-    0.62909,
-    0.13329,
-    1.93886,
-    0.34179,
+    0.61262,
+    0.14369,
+    2.01324,
+    0.34748,
     6.9292
    ],
    "std": [
-    0.15399,
-    0.1326,
-    1.01506,
-    0.22334,
+    0.17415,
+    0.14526,
+    0.9448,
+    0.21802,
     2.22503
    ]
   },

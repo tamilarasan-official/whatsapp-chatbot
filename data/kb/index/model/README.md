@@ -5,48 +5,48 @@ tags:
 - feature-extraction
 - dense
 - generated_from_trainer
-- dataset_size:680
+- dataset_size:3103
 - loss:MultipleNegativesRankingLoss
-base_model: intfloat/multilingual-e5-small
 widget:
-- source_sentence: 'query: what is e-voting'
-  sentences:
-  - 'passage: Who can use the e-Voting facility?'
-  - 'passage: What is e-Voting?'
-  - 'passage: Who can use the e-Voting facility?'
-- source_sentence: 'query: ई-वोटिंग क्या है?'
-  sentences:
-  - 'passage: ई-वोटिंग सुविधा का उपयोग कौन कर सकता है?'
-  - 'passage: What is e-Voting?'
-  - 'passage: Who can use the e-Voting facility?'
-- source_sentence: 'query: what is e-voting'
-  sentences:
-  - 'passage: ई-वोटिंग सुविधा का उपयोग कौन कर सकता है?'
-  - 'passage: ई-वोटिंग क्या है?'
-  - 'passage: Who can use the e-Voting facility?'
-- source_sentence: 'query: What is e-Voting?'
-  sentences:
-  - 'passage: ई-वोटिंग सुविधा का उपयोग कौन कर सकता है?'
-  - 'passage: ई-वोटिंग सुविधा का उपयोग कौन कर सकता है?'
-  - 'passage: ई-वोटिंग क्या है?'
 - source_sentence: 'query: e voting kaun kar sakta hai'
   sentences:
+  - 'passage: Who can use the e-Voting facility?'
+  - 'passage: What is e-Voting?'
+  - 'passage: Can a voter choose to skip voting for a particular post?'
+- source_sentence: 'query: e voting kaun kaun kar sakta hai'
+  sentences:
+  - 'passage: What is e-Voting?'
+  - 'passage: Is eVoting SECBHR a secure app, and is it mandatory to provide data
+    consent?'
+  - 'passage: Who can use the e-Voting facility?'
+- source_sentence: 'query: ई-वोटिंग सुविधा का लाभ कौन ले सकता है?'
+  sentences:
   - 'passage: What is e-Voting?'
   - 'passage: Who can use the e-Voting facility?'
+  - 'passage: What is the role of an Election Observer?'
+- source_sentence: 'query: e voting kaun kaun kar sakta hai'
+  sentences:
+  - 'passage: ई-वोटिंग क्या है?'
+  - 'passage: ई-वोटिंग सुविधा का उपयोग कौन कर सकता है?'
+  - 'passage: What is the role of an Election Observer?'
+- source_sentence: 'query: ई-वोटिंग सुविधा का उपयोग कौन कर सकता है?'
+  sentences:
+  - 'passage: What is e-Voting?'
+  - 'passage: What are counting, Tendered Ballot and Challenged Vote?'
   - 'passage: Who can use the e-Voting facility?'
 pipeline_tag: sentence-similarity
 library_name: sentence-transformers
 ---
 
-# SentenceTransformer based on intfloat/multilingual-e5-small
+# SentenceTransformer
 
-This is a [sentence-transformers](https://www.SBERT.net) model finetuned from [intfloat/multilingual-e5-small](https://huggingface.co/intfloat/multilingual-e5-small). It maps inputs to a 384-dimensional dense vector space and can be used for semantic textual similarity, semantic search, paraphrase mining, classification, clustering, and more.
+This is a [sentence-transformers](https://www.SBERT.net) model trained. It maps inputs to a 384-dimensional dense vector space and can be used for semantic textual similarity, semantic search, paraphrase mining, classification, clustering, and more.
 
 ## Model Details
 
 ### Model Description
 - **Model Type:** Sentence Transformer
-- **Base model:** [intfloat/multilingual-e5-small](https://huggingface.co/intfloat/multilingual-e5-small) <!-- at revision 614241f622f53c4eeff9890bdc4f31cfecc418b3 -->
+<!-- - **Base model:** [Unknown](https://huggingface.co/unknown) -->
 - **Maximum Sequence Length:** 256 tokens
 - **Output Dimensionality:** 384 dimensions
 - **Similarity Function:** Cosine Similarity
@@ -88,7 +88,7 @@ from sentence_transformers import SentenceTransformer
 model = SentenceTransformer("sentence_transformers_model_id")
 # Run inference
 sentences = [
-    'query: e voting kaun kar sakta hai',
+    'query: ई-वोटिंग सुविधा का उपयोग कौन कर सकता है?',
     'passage: Who can use the e-Voting facility?',
     'passage: What is e-Voting?',
 ]
@@ -99,9 +99,9 @@ print(embeddings.shape)
 # Get the similarity scores for the embeddings
 similarities = model.similarity(embeddings, embeddings)
 print(similarities)
-# tensor([[1.0000, 0.4754, 0.4439],
-#         [0.4754, 1.0000, 0.5851],
-#         [0.4439, 0.5851, 1.0000]])
+# tensor([[1.0000, 0.8287, 0.4984],
+#         [0.8287, 1.0000, 0.6639],
+#         [0.4984, 0.6639, 1.0000]])
 ```
 <!--
 ### Direct Usage (Transformers)
@@ -145,20 +145,20 @@ You can finetune this model on your own dataset.
 
 #### Unnamed Dataset
 
-* Size: 680 training samples
+* Size: 3,103 training samples
 * Columns: <code>anchor</code>, <code>positive</code>, and <code>negative</code>
 * Approximate statistics based on the first 100 samples:
-  |          | anchor                                                                             | positive                                                                            | negative                                                                            |
-  |:---------|:-----------------------------------------------------------------------------------|:------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------|
-  | type     | string                                                                             | string                                                                              | string                                                                              |
-  | modality | text                                                                               | text                                                                                | text                                                                                |
-  | details  | <ul><li>min: 10 tokens</li><li>mean: 17.27 tokens</li><li>max: 37 tokens</li></ul> | <ul><li>min: 11 tokens</li><li>mean: 53.47 tokens</li><li>max: 256 tokens</li></ul> | <ul><li>min: 11 tokens</li><li>mean: 54.43 tokens</li><li>max: 256 tokens</li></ul> |
+  |          | anchor                                                                            | positive                                                                            | negative                                                                             |
+  |:---------|:----------------------------------------------------------------------------------|:------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------|
+  | type     | string                                                                            | string                                                                              | string                                                                               |
+  | modality | text                                                                              | text                                                                                | text                                                                                 |
+  | details  | <ul><li>min: 8 tokens</li><li>mean: 17.41 tokens</li><li>max: 37 tokens</li></ul> | <ul><li>min: 15 tokens</li><li>mean: 135.6 tokens</li><li>max: 256 tokens</li></ul> | <ul><li>min: 11 tokens</li><li>mean: 146.59 tokens</li><li>max: 256 tokens</li></ul> |
 * Samples:
-  | anchor                                                      | positive                                                                                                                                                                                                                                                                                                                                                                                                   | negative                                                                                                                                                                                                  |
-  |:------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-  | <code>query: how to contact the election helpline</code>    | <code>passage: What is the Voter Helpline and how can I contact it?<br>• The Voter Helpline is an assistance service provided by the State Election Commission, Bihar, through which voters can obtain election-related information and seek resolution of their issues.<br>• For this purpose, the Commission provides a toll-free helpline number 18003457243, email and a Contact Form facility.</code> | <code>passage: What is the role of an Election Observer?<br>• An Election Observer monitors the election process to ensure that the election is conducted fairly and in accordance with the rules.</code> |
-  | <code>query: when does the code of conduct start</code>     | <code>passage: आदर्श आचार संहिता (MCC) क्या है और यह कब लागू होती है?</code>                                                                                                                                                                                                                                                                                                                               | <code>passage: eVoting SECBHR ऐप पर पंजीकरण करने के लिए मतदाता के पास क्या होना आवश्यक है?</code>                                                                                                         |
-  | <code>query: who is allowed inside the counting hall</code> | <code>passage: What are the rules regarding entry and prohibitions in the Counting Room?</code>                                                                                                                                                                                                                                                                                                            | <code>passage: How are results obtained from the EVM during counting?</code>                                                                                                                              |
+  | anchor                                                                         | positive                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | negative                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+  |:-------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+  | <code>query: prachar kab band hota hai panchayat election me</code>            | <code>passage: What are the rules regarding the voting process, EVMs and campaigning?<br>• M2 model EVMs are used for the election of Gram Panchayat Mukhiya, Members, Panchayat Samiti Members and Zila Parishad Members.<br>• Elections for Gram Kachahari Panch and Sarpanch posts are conducted using traditional ballot papers and ballot boxes.<br>• Loudspeakers may be used for election campaigning only from 6:00 AM to 10:00 PM and are completely prohibited during the 48 hours preceding the end of polling.<br>• If a voter does not have a Voter ID Card (EPIC), any one of 16 alternative documents, such as a driving licence or passport, may be presented.</code>                                                                                                          | <code>passage: What are the rules regarding the reservation limit and rotation in Panchayat elections?<br>• The total reservation for Scheduled Castes (SC), Scheduled Tribes (ST) and Backward Classes (BC) together can be up to a maximum of 50% of the total posts.<br>• After reservation for SC and ST, up to a maximum of 20% of the total posts may be reserved for Backward Classes from the remaining posts.<br>• In each category, as far as possible, 50% of the total seats, but not more than 50%, are reserved for women of the respective category.<br>• Population in descending order is used for allocating reservation among different categories.<br>• Under the 2009 amendment of the State Government, the principle of rotation in reservation is to be applied after two consecutive general elections.</code> |
+  | <code>query: financial assistance from state government kya hota hai</code>    | <code>passage: Bihar Municipal Act, 2007 › Section 72 › Financial assistance from State Government<br>(1) The State Government, may, from time to time,<br>give grants or financial assistance to the Municipality with or without direction to the manner in which such<br>grants or financial assistance shall be applied.<br>(2) The State Government may, for giving such grants or assistance, lay down a scheme which may<br>include the conditions of release of such grants or assistance and may provide for the division of<br>Municipalities into different classes for that purpose.<br>(3) The State Government may give grants to the Municipality for implementation, in full or in part, of.<br>any scheme included in the annual development plan of the Municipality.</code> | <code>passage: Bihar Panchayat Raj Act, 2006 › Section 28 › Financial Assistance to Gram  Panchayats<br>Subject<br>to<br>the<br>provisions of this section, every Panchayat shall, after an appropriation<br>made by law in this behalf, be entitled to receive grants in aid from the<br>Consolidated Fund of the State as recommended by the State Finance<br>Commission, constituted under the provisions of this Act, and as approved<br>and notified by the State Government.</code>                                                                                                                                                                                                                                                                                                                                               |
+  | <code>query: special provisions relating to trade effluent kya hota hai</code> | <code>passage: Bihar Municipal Act, 2007 › Section 202 › Special provisions relating to trade effluent<br>Subject to the provisions of this Act and the regulations<br>made thereunder and of any other law for the time being in force, the occupier of any trade premises may,<br>with the approval of the Municipality or, so far as may be permitted by this Act or the regulations made<br>thereunder or any other law for the time being in force, without such approval, discharge into the municipal<br>drain any trade effluent proceeding from such premises.</code>                                                                                                                                                                                                                 | <code>passage: Bihar Municipal Act, 2007 › Section 203 › Special provisions regarding drainage of trade effluent<br>(d) to alter, amend, repair or renovate any purification plant, existing drain, apparatus, plant-<br>fitting or article used in connection with any municipal or house-drain<br>Chapter XXIV<br>Other Provisions Relating to Water-supply, Drainage and Sewerage</code>                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 * Loss: [<code>MultipleNegativesRankingLoss</code>](https://sbert.net/docs/package_reference/sentence_transformer/losses.html#multiplenegativesrankingloss) with these parameters:
   ```json
   {
@@ -179,6 +179,7 @@ You can finetune this model on your own dataset.
 
 - `per_device_train_batch_size`: 16
 - `learning_rate`: 2e-05
+- `num_train_epochs`: 1
 - `warmup_ratio`: 0.1
 - `use_cpu`: True
 - `seed`: 13
@@ -203,7 +204,7 @@ You can finetune this model on your own dataset.
 - `adam_beta2`: 0.999
 - `adam_epsilon`: 1e-08
 - `max_grad_norm`: 1.0
-- `num_train_epochs`: 3
+- `num_train_epochs`: 1
 - `max_steps`: -1
 - `lr_scheduler_type`: linear
 - `lr_scheduler_kwargs`: None
@@ -311,16 +312,19 @@ You can finetune this model on your own dataset.
 ### Training Logs
 | Epoch  | Step | Training Loss |
 |:------:|:----:|:-------------:|
-| 0.4651 | 20   | 1.9687        |
-| 0.9302 | 40   | 0.91          |
-| 1.3953 | 60   | 0.7505        |
-| 1.8605 | 80   | 0.7419        |
-| 2.3256 | 100  | 0.4937        |
-| 2.7907 | 120  | 0.5628        |
+| 0.1031 | 20   | 0.2567        |
+| 0.2062 | 40   | 0.2361        |
+| 0.3093 | 60   | 0.1918        |
+| 0.4124 | 80   | 0.2117        |
+| 0.5155 | 100  | 0.2133        |
+| 0.6186 | 120  | 0.1767        |
+| 0.7216 | 140  | 0.2175        |
+| 0.8247 | 160  | 0.1603        |
+| 0.9278 | 180  | 0.1794        |
 
 
 ### Training Time
-- **Training**: 21.7 minutes
+- **Training**: 41.7 minutes
 
 ### Framework Versions
 - Python: 3.13.1

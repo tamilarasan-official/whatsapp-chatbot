@@ -155,8 +155,9 @@ MODELS = {
     'minilm': ('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2', '', ''),
 }
 for _base, (_name, _qp, _pp) in list(MODELS.items()):  # fine-tuned versions produced by finetune.py
-    if (WORK / 'models' / f'{_base}-secbihar').exists():
-        MODELS[f'{_base}-ft'] = (str(WORK / 'models' / f'{_base}-secbihar'), _qp, _pp)
+    for _v, _suffix in (('', ''), ('2', ' --extra')):      # -ft: Phase 2; -ft2: Phase 5 (+ train_extra.json)
+        if (WORK / 'models' / f'{_base}-secbihar{_v}').exists():
+            MODELS[f'{_base}-ft{_v}'] = (str(WORK / 'models' / f'{_base}-secbihar{_v}'), _qp, _pp)
 _loaded = {}
 
 

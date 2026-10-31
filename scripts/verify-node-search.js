@@ -15,8 +15,8 @@ function quantile(xs, p) { const s = [...xs].sort((a, b) => a - b); return s.len
   const t = performance.now();
   const rows = [];
   for (const q of qs) {
-    const [v] = await search.embed([q.text]);
-    rows.push({ q, faq: search.searchFaq([v], { includeOfficials: true, limit: 5 }), sec: search.searchSections([v], { limit: 5 }) });
+    const query = { texts: [q.text], vectors: await search.embed([q.text]) };
+    rows.push({ q, faq: search.searchFaq(query, { includeOfficials: true, limit: 5 }), sec: search.searchSections(query, { limit: 5 }) });
   }
   const ms = (performance.now() - t) / qs.length;
   const faqHit = (r) => r.q.gold_faq.includes(r.faq[0].key);

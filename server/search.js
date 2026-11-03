@@ -236,13 +236,37 @@ const SECTION_REF = /(?:\bsection|\bsec\.?|\bdhara|\bdhaara|\bdhra|धारा|
 const ACT_HINTS = [
   { family: 'amend2021', re: /amendment|sanshodhan|संशोधन|2021/i },
   { family: 'panchayat_act', re: /panchayat|panchayath|gram|mukhiya|sarpanch|zila parishad|samiti|पंचायत|ग्राम|मुखिया|सरपंच|जिला परिषद|समिति|பஞ்சாயத்து|கிராம/i },
-  { family: 'municipal_act', re: /municipal|nagar|nigam|ward|councillor|parshad|ulb|नगर|निगम|पार्षद|वार्ड|நகராட்சி|மாநகராட்சி|வார்டு/i },
+  { family: 'municipal_act', re: /municipal|nagarpalika|nagar|nigam|ward|councillor|parshad|ulb|नगरपालिका|नगर|निगम|पार्षद|वार्ड|நகராட்சி|மாநகராட்சி|வார்டு/i },
 ];
 
+// Names an Act ("act", "bill", "अधिनियम") and asks nothing more specific than what it is, where it applies or
+// for its PDF: every other word is one of these.
+const ACT_WORD = /\b(acts?|bills?|law|adhiniyam|kanoon|kanun)\b|अधिनियम|विधेयक|कानून|क़ानून/i;
+const ACT_LEVEL_WORDS = new Set(('what whats is are the a an of does do did where which get gets got apply applies applied '
+  + 'applicable application about tell me i want need give send show share pdf pdfs download copy document documents '
+  + 'doc link file full text act acts bill bills law bihar municipal municipality panchayat panchayati raj amendment '
+  + 'in to for please can you it its this that area areas extent commencement when come came into force effect '
+  + 'kya hai hain ka ki ke mujhe chahiye lagu hota hoti hote kahan kab se bhejo do de dijiye '
+  + 'क्या है हैं का की के बिहार नगरपालिका पंचायत राज अधिनियम संशोधन कहाँ कहां लागू होता होती विस्तार पीडीएफ '
+  + 'डाउनलोड मुझे चाहिए में यह इस बारे प्रति दें दीजिए भेजें भेजिए कब से कानून विधेयक बा का होला कहाँ').split(' '));
+
+function actLevel(message) {
+  if (!ACT_WORD.test(message) && !/\bpdfs?\b|पीडीएफ/i.test(message)) return false;
+  const words = toAscii(message).toLowerCase().match(/[a-z]+|[ऀ-ॿ]+/g) || [];
+  return words.every((w) => ACT_LEVEL_WORDS.has(w) || /^\d+$/.test(w));
+}
+
 // Returns [] (no reference), or the matching sections (more than one family = ask which Act).
+// A whole-Act question returns that Act's Section 1, marked `whole`.
 function lookupSection(message, history = []) {
   const m = toAscii(message).match(SECTION_REF);
-  if (!m) return [];
+  if (!m) {
+    if (!actLevel(message)) return [];
+    const families = ACT_HINTS.filter((h) => h.re.test(message)).map((h) => h.family).slice(0, 1);
+    return families
+      .map((f) => ({ key: `${f}:1`, sections: sectionsByKey.get(`${f}:1`) || [], whole: true }))
+      .filter((x) => x.sections.length);
+  }
   const num = m[1].toUpperCase();
   const recent = [message, ...history.slice(-4).map((h) => h.content || '')].join(' ');
   const hinted = ACT_HINTS.filter((h) => h.re.test(message)).map((h) => h.family);

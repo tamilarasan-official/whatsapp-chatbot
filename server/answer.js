@@ -94,12 +94,16 @@ function sectionCitation(id, key, lang) {
 }
 
 function addLookups(registry, lookups, lang) {
-  for (const { key, sections } of lookups) {
+  for (const { key, sections, whole } of lookups) {
     const id = nextId(registry, 'S');
+    const label = whole
+      ? '[THE ACT THE USER ASKED ABOUT: its Section 1 gives the name, where it applies and when it came into force; '
+        + 'the app attaches the PDF of this Act]'
+      : '[SECTION ASKED FOR BY THE USER]';
     const body = sections
       .map((s) => `[${s.lang}] ${s.act}, Section ${s.section}: ${s.title}${reliabilityNote(s.reliability)}\n${s.text.slice(0, LOOKUP_CHARS)}`)
       .join('\n\n');
-    registry.push({ id, text: `${id} [SECTION ASKED FOR BY THE USER]\n${body}`, citation: sectionCitation(id, key, lang) });
+    registry.push({ id, text: `${id} ${label}\n${body}`, citation: sectionCitation(id, key, lang) });
   }
 }
 
@@ -166,6 +170,8 @@ function groundingProblem(result, allowedText) {
     return `Your previous draft contained these numbers that are NOT in the SOURCES: ${bad.join(', ')}. `
       + 'Remove them, or use only numbers that appear in the SOURCES.';
   }
+  // Offering the PDF list states only which documents the app has (ABOUT THE COMMISSION), not facts from them.
+  if (result.action === 'documents') return null;
   // factual intent, or a long reply mislabelled as small talk
   const factual = FACT_INTENTS.has(result.intent)
     || (result.intent === 'smalltalk' && result.reply.split(/\s+/).length > 40);
@@ -287,6 +293,11 @@ async function respond({ message, history = [], language = 'hi', context = {}, m
       }
     }
     const { citationIds, ...rest } = result;
+    // Source ids belong in "citations"; drop any the AI also wrote into the text ("... [S1]",
+    // 'Citations: ["S1","S2"]').
+    rest.reply = rest.reply.replace(/\s*(?:citations?\s*:\s*)?\[(?:\s*"?[FS]\d+"?\s*,?)+\]/gi, '').trim();
+    // Follow-up buttons only on answers from sources: uncited ones ("Show me rules") lead nowhere.
+    if (!citationIds.length) rest.suggested_replies = [];
     return finish({ ...rest, language: scriptLanguage(rest.reply) }, citationIds);
   } catch (err) {
     if (!confidentFaq) throw err;

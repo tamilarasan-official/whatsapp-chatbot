@@ -1,9 +1,9 @@
 // Scripted flow engine. Buttons carry stable payload IDs; free text is matched
 // against a few deterministic rules and everything else goes to the live AI.
 
-import * as chat from './chat.js?v=sec3';
-import * as api from './api.js?v=sec3';
-import { t, faqText, pick, detectScript, LANGS } from './i18n.js?v=sec3';
+import * as chat from './chat.js?v=sec4';
+import * as api from './api.js?v=sec4';
+import { t, faqText, pick, detectScript, LANGS } from './i18n.js?v=sec4';
 
 const CMP_PATTERN = /\bCMP-\d{4}-\d{5}\b/i;
 const CMP_LOOSE = /\bCMP[\s-]*\d/i;
@@ -49,6 +49,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
       step: null,
       optedOut: false,
       handover: false,
+      handoverPending: [], // messages typed while an officer had the chat and not answered by them
       audience: null,
       lastComplaint: null,
       lastTicket: null,
@@ -345,6 +346,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
 
   function agentSay(text) {
     if (!state.handover) return;
+    state.handoverPending = [];
     chat.addBotMessage({ text, sender: L('officerName') });
     record('agent', text);
   }
@@ -355,6 +357,9 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     panels.closeAgent();
     note(L('handoverEndNote'), 'handover');
     say(L('handoverEnd'));
+    // A question the officer left unanswered goes to the bot now, instead of being lost.
+    const pending = state.handoverPending.splice(0);
+    if (pending.length) return void askAi(pending.join('\n'));
     askFeedback();
   }
 
@@ -425,6 +430,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
       case 'menu':
       case 'faq_list': return { list: mainMenuList() };
       case 'grievance': state.step = 'complaint'; return {};
+      case 'documents': return { list: documentsList() };
       default: return {};
     }
   }
@@ -472,8 +478,12 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     }
 
     const r = res.data;
-    // Follow the user if they switch script mid-chat (menus and buttons switch too).
-    if (LANGS.includes(r.language) && r.language !== state.lang && detectScript(query) === r.language) {
+    // Follow the user if they switch script mid-chat (menus and buttons switch too). An English sentence
+    // (three or more words, not Hinglish) also switches to English, so the scripted messages that follow
+    // (handover, feedback) are in English too.
+    const script = detectScript(query);
+    const english = !script && r.language === 'en' && (query.match(/[a-z]{2,}/gi) || []).length >= 3;
+    if (LANGS.includes(r.language) && r.language !== state.lang && (script === r.language || english)) {
       setLang(r.language, { announce: false });
     }
     const lang = LANGS.includes(r.language) ? r.language : state.lang;
@@ -484,8 +494,8 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     const offerOfficer = action !== 'handover' && (r.escalate || low || r.intent === 'out_of_scope');
     const citations = r.citations || [];
 
-    // In AI mode the reply stands on its own; only a handover can change the screen.
-    const ui = action === 'handover' || state.mode === 'ai' ? {} : actionUi(action);
+    // In AI mode the reply stands on its own; only a handover or the PDF list can change the screen.
+    const ui = action === 'handover' || (state.mode === 'ai' && action !== 'documents') ? {} : actionUi(action);
     // Suggestions are hidden when the next message is free text the app collects (complaint text).
     const collectsText = state.mode !== 'ai' && action === 'grievance';
     const suggestions = ui.list || collectsText ? [] : (r.suggested_replies || [])
@@ -604,7 +614,10 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     const script = detectScript(text);
     if (script) state.lastLang = script;
 
-    if (state.handover) return;
+    if (state.handover) {
+      state.handoverPending.push(text);
+      return;
+    }
 
     if (state.mode === 'ai') return askAi(text);
 

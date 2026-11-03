@@ -3,11 +3,17 @@
 const LANGUAGE_NAMES = { en: 'English', hi: 'Hindi', ta: 'Tamil', mixed: 'Hinglish', tanglish: 'Tanglish' };
 
 // Facts the assistant may state without a source. Kept short on purpose: everything else comes from SOURCES.
+const DOCUMENTS = require('../data/documents.json').map((d) => `${d.title} (PDF, ${d.pages} pages)`).join('; ');
+
 const ORG_FACTS = `- You serve the State Election Commission, Bihar (राज्य निर्वाचन आयोग, बिहार). It conducts
   Panchayat elections (Gram Panchayat, Panchayat Samiti, Zila Parishad, Gram Kachahari) and
   Municipal / urban local body elections (Nagar Panchayat, Nagar Parishad, Nagar Nigam) in Bihar.
 - Lok Sabha and Vidhan Sabha elections, and the voter ID card (EPIC), are handled by the Election
-  Commission of India, not by SEC Bihar: for those, point to voters.eci.gov.in or the Voter Helpline 1950.`;
+  Commission of India, not by SEC Bihar: for those, point to voters.eci.gov.in or the Voter Helpline 1950.
+- Official documents this chat can send (the app shows them as PDFs): ${DOCUMENTS}.
+  Your answers come from these Acts, the Commission's official FAQs and the eVoting case study.
+  "Bill" usually means one of these Acts. Other documents (e.g. other Acts) are not available here: say so
+  and name the ones that are.`;
 
 const ANSWER_TEMPLATE = `You are the WhatsApp help-desk assistant of the State Election Commission, Bihar.
 This is a demo. Chat like a warm, polite human help-desk executive: natural, short WhatsApp
@@ -85,7 +91,9 @@ Output ONLY a JSON object with exactly these keys:
   "escalate": boolean,
   "action": {{action_values}},
   "suggested_replies": up to 3 very short follow-up questions (max 25 chars each) the USER might
-            tap next, in the user's language, answerable from the sources ([] if none).
+            tap next, in the user's language. Each must be a specific question that the SOURCES above
+            answer (e.g. "नामांकन शुल्क कितना है?"), never vague ("Show me rules", "Which document?").
+            [] if you cited no source.
             Do not include "talk to an officer"; the app adds that itself.
 }
 
@@ -99,12 +107,15 @@ Set "action" to one of:
 - "faq_list": user wants to browse common questions.
 - "grievance": user wants to register a complaint. Empathise and ask them to describe it in one message.
 - "handover": user wants a human / officer, or is very upset. Say you are connecting them.
+- "documents": user asks for an Act / PDF / document, or which documents you have. Say in one sentence
+  that here are the official documents.
 When an action is set, keep your reply to ONE short sentence; the app shows the next step.`;
 
 const AI_ACTIONS = `CONVERSATION MODE
 Free-form conversation: your reply is the complete answer, there are no menus or buttons.
 Set "action" to "handover" ONLY when the user clearly wants a human officer or is very upset;
-otherwise "none".`;
+"documents" when the user asks for an Act / PDF / document or which documents you have (the app then
+shows the PDF list); otherwise "none".`;
 
 function formatContext(ctx = {}) {
   const lines = [];

@@ -13,7 +13,7 @@ const MAX_HISTORY = 30;
 
 const INTENTS = new Set(['faq', 'act', 'evoting', 'complaint', 'handover', 'out_of_scope', 'smalltalk']);
 const LANGUAGES = new Set(['en', 'hi', 'ta', 'mixed']);
-const ACTIONS = new Set(['none', 'menu', 'faq_list', 'grievance', 'handover']);
+const ACTIONS = new Set(['none', 'menu', 'faq_list', 'grievance', 'handover', 'documents']);
 
 class LlmError extends Error {
   constructor(message, status) {
@@ -134,7 +134,8 @@ async function answer({ message, history, language, context, mode, sources, vali
     try {
       const raw = await completeJson(messages, { maxTokens: 500, temperature: 0.3, timeoutMs: TIMEOUT_MS });
       const result = normalise(raw, language, validIds);
-      if (mode === 'ai' && result.action !== 'handover') result.action = 'none'; // AI mode has no built-in screens
+      // AI mode has no built-in screens, except a handover and the PDF list
+      if (mode === 'ai' && !['handover', 'documents'].includes(result.action)) result.action = 'none';
       return result;
     } catch (err) {
       lastError = err;

@@ -1,9 +1,9 @@
 // Scripted flow engine. Buttons carry stable payload IDs; free text is matched
 // against a few deterministic rules and everything else goes to the live AI.
 
-import * as chat from './chat.js?v=sec4';
-import * as api from './api.js?v=sec4';
-import { t, faqText, pick, detectScript, LANGS } from './i18n.js?v=sec4';
+import * as chat from './chat.js?v=sec5';
+import * as api from './api.js?v=sec5';
+import { t, faqText, pick, detectScript, LANGS } from './i18n.js?v=sec5';
 
 const CMP_PATTERN = /\bCMP-\d{4}-\d{5}\b/i;
 const CMP_LOOSE = /\bCMP[\s-]*\d/i;
@@ -50,6 +50,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
       optedOut: false,
       handover: false,
       handoverPending: [], // messages typed while an officer had the chat and not answered by them
+      lastSources: [], // FAQ ids / section keys behind the last answer, so follow-ups can use them
       audience: null,
       lastComplaint: null,
       lastTicket: null,
@@ -197,6 +198,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     // No official text in this language yet (Tamil before translation): the AI gives the official answer in it.
     if (!translated && !offline) return askAi(faq.q_en, { replyLanguage: state.lang });
     say(answer, { source: faqSource(faq), buttons: [menuBtn(), officerBtn()] });
+    state.lastSources = [id];
     if (route === 'offline') {
       panels.log({ route: 'offline', query, language: state.lang, intent: 'faq', confidence: 0.7, sources: [id], latency: null, label: 'Keyword match (offline)' });
     } else {
@@ -397,6 +399,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
       ticket: state.lastTicket || undefined,
       audience: state.audience || undefined,
       optedOut: state.optedOut,
+      prevSources: state.lastSources,
     };
   }
 
@@ -478,6 +481,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
     }
 
     const r = res.data;
+    state.lastSources = (r.citations || []).map((c) => c.faq_id || c.key).filter(Boolean).slice(0, 4);
     // Follow the user if they switch script mid-chat (menus and buttons switch too). An English sentence
     // (three or more words, not Hinglish) also switches to English, so the scripted messages that follow
     // (handover, feedback) are in English too.

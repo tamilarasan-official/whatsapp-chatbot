@@ -43,6 +43,10 @@ function sanitiseContext(ctx) {
     audience: ctx.audience === 'officials' ? 'officials' : undefined,
     replyLanguage: VALID_LANGS.has(ctx.replyLanguage) ? ctx.replyLanguage : undefined,
     optedOut: ctx.optedOut === true,
+    // ids of the previous answer's sources: FAQ ids ("municipal_09") or section keys ("municipal_act:14")
+    prevSources: Array.isArray(ctx.prevSources)
+      ? ctx.prevSources.filter((s) => typeof s === 'string' && /^[a-z0-9_]{1,40}(?::[\w-]{1,40})?$/i.test(s)).slice(0, 4)
+      : [],
   };
 }
 

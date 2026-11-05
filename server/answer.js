@@ -94,9 +94,10 @@ function sectionCitation(id, key, lang) {
 }
 
 function addLookups(registry, lookups, lang) {
-  for (const { key, sections, whole } of lookups) {
+  for (const { key, sections, whole, previous } of lookups) {
+    if (registry.some((r) => r.citation.key === key)) continue;
     const id = nextId(registry, 'S');
-    const label = whole
+    const label = previous ? '[SOURCE OF YOUR PREVIOUS ANSWER]' : whole
       ? '[THE ACT THE USER ASKED ABOUT: its Section 1 gives the name, where it applies and when it came into force; '
         + 'the app attaches the PDF of this Act]'
       : '[SECTION ASKED FOR BY THE USER]';
@@ -110,8 +111,10 @@ function addLookups(registry, lookups, lang) {
 function addFaqs(registry, faqHits) {
   for (const hit of faqHits) {
     const f = hit.faq;
+    if (registry.some((r) => r.citation.faq_id === f.id)) continue;
     const id = nextId(registry, 'F');
-    const label = hit.confident ? '[OFFICIAL FAQ MATCH]' : hit.score >= FAQ_MIN ? '(possibly related FAQ)' : '(weak match)';
+    const label = hit.previous ? '[SOURCE OF YOUR PREVIOUS ANSWER]' : hit.confident ? '[OFFICIAL FAQ MATCH]'
+      : hit.score >= FAQ_MIN ? '(possibly related FAQ)' : '(weak match)';
     registry.push({
       id,
       text: `${id} ${label} ${f.source}${f.audience === 'officials' ? ' — for election officials' : ''}\n`
@@ -203,9 +206,30 @@ const NO_DETAIL = {
 };
 
 // ------------------------------------------------------------ retrieval
-async function retrieve(message, history, includeOfficials, lang) {
+// Everyday words for posts that the Acts name differently, added as an extra search text.
+const POST_TERMS = [
+  [/\bdeputy\s+mayor\b|उप\s*(?:मेयर|महापौर)/i, 'Deputy Chief Councillor उप मुख्य पार्षद'],
+  [/\bmayor\b|मेयर|महापौर/i, 'Chief Councillor मुख्य पार्षद'],
+];
+function actWording(message) {
+  const extra = POST_TERMS.filter(([re]) => re.test(message)).map(([, words]) => words);
+  return extra.length ? `${message} (${extra.join(', ')})` : null;
+}
+
+// The sources of the previous AI answer (sent back by the app): a follow-up, such as a tapped suggestion,
+// is answered from the same sources it was suggested from.
+function previousSources(ids = []) {
+  const faqs = ids.map((id) => search.faqById.get(id)).filter(Boolean)
+    .map((faq) => ({ faq, key: faq.id, score: 0, previous: true }));
+  const sections = ids.filter((id) => search.sectionsByKey.has(id))
+    .map((key) => ({ key, sections: search.sectionsByKey.get(key), previous: true }));
+  return { faqs, sections };
+}
+
+async function retrieve(message, history, includeOfficials, lang, prevIds = []) {
   const lookups = search.lookupSection(message, history);
-  const query = { texts: [message], vectors: await search.embed([message]) };
+  const texts = [message, actWording(message)].filter(Boolean);
+  const query = { texts, vectors: await search.embed(texts) };
   let faqHits = search.searchFaq(query, { includeOfficials });
   let rewritten = [];
   const followUp = history.length > 0 && message.split(/\s+/).length <= 8;
@@ -233,7 +257,13 @@ async function retrieve(message, history, includeOfficials, lang) {
     faqCandidates = faqCandidates.concat(evoting.filter((e) => !faqCandidates.some((c) => c.key === e.key)));
   }
   addFaqs(registry, faqCandidates);
-  addSections(registry, confidentFaq ? secHits.slice(0, 2) : secHits.concat(weakSecs), lang);
+  // Act sections next to an FAQ match too, so a more specific question (e.g. the Mayor post) gets its detail.
+  addSections(registry, confidentFaq ? secHits.slice(0, 3) : secHits.concat(weakSecs), lang);
+  if (history.length && prevIds.length) {
+    const prev = previousSources(prevIds);
+    addFaqs(registry, prev.faqs);
+    addLookups(registry, prev.sections, lang);
+  }
   return {
     registry, confidentFaq,
     route: lookups.length ? 'lookup' : confidentFaq ? 'faq' : secHits.length ? 'act' : 'chat',
@@ -251,7 +281,8 @@ async function respond({ message, history = [], language = 'hi', context = {}, m
   // context.replyLanguage: set by the app when it sends an FAQ's English question for a Tamil user
   const started = performance.now();
   const lang = replyLanguage(message, language, context.replyLanguage);
-  const { registry, confidentFaq, route, debug } = await retrieve(message, history, context.audience === 'officials', lang);
+  const { registry, confidentFaq, route, debug } = await retrieve(message, history, context.audience === 'officials', lang,
+    context.prevSources);
 
   const finish = (result, citationIds = []) => {
     const citations = registry.filter((r) => citationIds.includes(r.id)).map((r) => r.citation);

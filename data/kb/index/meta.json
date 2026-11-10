@@ -7,7 +7,7 @@
  "dims": 384,
  "pooling": "mean",
  "normalize": true,
- "n_chunks": 2617,
+ "n_chunks": 2665,
  "n_faq_units": 297,
  "fusion": "w0.85:e5-small-ft2+bm25",
  "bm25": {

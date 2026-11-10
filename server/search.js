@@ -48,6 +48,7 @@ const FAMILY = {
   panchayat_act_en: 'panchayat_act', panchayat_act_hi: 'panchayat_act',
   municipal_act_en: 'municipal_act', municipal_act_hi: 'municipal_act',
   panchayat_amendment_2021_hi: 'amend2021', panchayat_amendment_2021_en_mt: 'amend2021',
+  municipal_amendment_2022_hi: 'amend2022', municipal_amendment_2022_en: 'amend2022',
 };
 const sectionKey = (s) => (s.doc === 'evoting_case_study_en' ? `case:${s.id.split(':')[1]}` : `${FAMILY[s.doc]}:${s.section}`);
 const sectionsByKey = new Map();
@@ -56,6 +57,8 @@ for (const s of sections) {
   if (!sectionsByKey.has(k)) sectionsByKey.set(k, []);
   sectionsByKey.get(k).push(s);
 }
+// Municipal Act sections changed by the 2022 amendment: 'municipal_act:23' -> 'amend2022:6'
+const amendedBy = new Map(sections.filter((s) => s.amends && s.lang === 'en').map((s) => [`municipal_act:${s.amends}`, sectionKey(s)]));
 
 // ------------------------------------------------------------ embedding model
 let extractorPromise = null;
@@ -234,6 +237,7 @@ const DEVANAGARI_DIGITS = /[०-९]/g;
 const toAscii = (s) => s.replace(DEVANAGARI_DIGITS, (d) => String(d.charCodeAt(0) - 0x0966));
 const SECTION_REF = /(?:\bsection|\bsec\.?|\bdhara|\bdhaara|\bdhra|धारा|பிரிவு)\s*(?:no\.?\s*)?(\d{1,3}[A-Za-z]?)\b/i;
 const ACT_HINTS = [
+  { family: 'amend2022', re: /2022|(?:municipal|nagarpalika|नगरपालिका)\W*(?:amendment|sanshodhan|संशोधन)/i },
   { family: 'amend2021', re: /amendment|sanshodhan|संशोधन|2021/i },
   { family: 'panchayat_act', re: /panchayat|panchayath|gram|mukhiya|sarpanch|zila parishad|samiti|पंचायत|ग्राम|मुखिया|सरपंच|जिला परिषद|समिति|பஞ்சாயத்து|கிராம/i },
   { family: 'municipal_act', re: /municipal|nagarpalika|nagar|nigam|ward|councillor|parshad|ulb|नगरपालिका|नगर|निगम|पार्षद|वार्ड|நகராட்சி|மாநகராட்சி|வார்டு/i },
@@ -278,5 +282,5 @@ function lookupSection(message, history = []) {
 }
 
 module.exports = {
-  meta, faqs, faqById, sectionsByKey, TAU, loadModel, embed, searchFaq, searchSections, lookupSection, toAscii,
+  meta, faqs, faqById, sectionsByKey, amendedBy, TAU, loadModel, embed, searchFaq, searchSections, lookupSection, toAscii,
 };

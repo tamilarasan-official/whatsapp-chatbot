@@ -129,10 +129,37 @@ function addSections(registry, secHits, lang) {
   for (const hit of secHits) {
     const sec = search.sectionsByKey.get(hit.key);
     if (seen.has(hit.key) || !sec) continue;
+    if (hit.key.startsWith('amend2022:')) {
+      addAmendment(registry, hit.key, lang);
+      continue;
+    }
     const id = nextId(registry, 'S');
     const head = hit.chunks[0].text.split('\n')[0] + (hit.score >= SECTION_MIN ? '' : ' (weak match)');
     const body = hit.chunks.map((c) => `[${c.lang}]${reliabilityNote(c.reliability)} ${stripHeader(c.text)}`).join('\n…\n');
     registry.push({ id, text: `${id} ${head}\n${body}`, citation: sectionCitation(id, hit.key, lang) });
+  }
+}
+
+// A section of the 2022 Municipal amendment, in full (its provisos decide the answer and are short).
+function addAmendment(registry, key, lang, changes) {
+  const want = lang === 'hi' || lang === 'mixed' ? 'hi' : 'en';
+  const versions = search.sectionsByKey.get(key);
+  const s = versions.find((v) => v.lang === want) || versions[0];
+  const id = nextId(registry, 'S');
+  const label = changes
+    ? `[AMENDMENT IN FORCE: changes ${changes}; where they differ, this is the current law]`
+    : '[AMENDMENT IN FORCE: where it differs from the 2007 Act, this is the current law]';
+  registry.push({
+    id, citation: sectionCitation(id, key, lang),
+    text: `${id} ${label}\n[${s.lang}] ${s.act}, Section ${s.section}: ${s.title}\n${s.text.slice(0, LOOKUP_CHARS)}`,
+  });
+}
+
+// A Municipal Act section changed by the 2022 amendment is followed by the amending section: the law in force.
+function addAmendments(registry, lang) {
+  for (const r of registry.slice()) {
+    const key = search.amendedBy.get(r.citation.key);
+    if (key && !registry.some((x) => x.citation.key === key)) addAmendment(registry, key, lang, r.id);
   }
 }
 
@@ -211,9 +238,18 @@ const POST_TERMS = [
   [/\bdeputy\s+mayor\b|उप\s*(?:मेयर|महापौर)/i, 'Deputy Chief Councillor उप मुख्य पार्षद'],
   [/\bmayor\b|मेयर|महापौर/i, 'Chief Councillor मुख्य पार्षद'],
 ];
+const MAYOR_POST = /\b(?:deputy\s+)?(?:mayor|chief\s+councill?or)\b|मेयर|महापौर|मुख्य\s*पार्षद/i;
+const REMOVAL = /\bno[\s-]*confidence\b|\bavishwas\b|अविश्वास|\bremov|हटा/i;
+// Extra search texts in the Acts' wording. A topic gets the section title on its own: added to the
+// question, it is diluted (e.g. "no confidence motion against the Mayor" did not find Section 25).
 function actWording(message) {
   const extra = POST_TERMS.filter(([re]) => re.test(message)).map(([, words]) => words);
-  return extra.length ? `${message} (${extra.join(', ')})` : null;
+  const texts = extra.length ? [`${message} (${extra.join(', ')})`] : [];
+  if (MAYOR_POST.test(message) && REMOVAL.test(message)) {
+    texts.push('Removal of Chief Councillor/Deputy Chief Councillor, no confidence motion, '
+      + 'मुख्य पार्षद/उप मुख्य पार्षद को हटाया जाना, अविश्वास प्रस्ताव');
+  }
+  return texts;
 }
 
 // The sources of the previous AI answer (sent back by the app): a follow-up, such as a tapped suggestion,
@@ -228,7 +264,7 @@ function previousSources(ids = []) {
 
 async function retrieve(message, history, includeOfficials, lang, prevIds = []) {
   const lookups = search.lookupSection(message, history);
-  const texts = [message, actWording(message)].filter(Boolean);
+  const texts = [message, ...actWording(message)];
   const query = { texts, vectors: await search.embed(texts) };
   let faqHits = search.searchFaq(query, { includeOfficials });
   let rewritten = [];
@@ -264,6 +300,7 @@ async function retrieve(message, history, includeOfficials, lang, prevIds = []) 
     addFaqs(registry, prev.faqs);
     addLookups(registry, prev.sections, lang);
   }
+  addAmendments(registry, lang);
   return {
     registry, confidentFaq,
     route: lookups.length ? 'lookup' : confidentFaq ? 'faq' : secHits.length ? 'act' : 'chat',
@@ -325,8 +362,10 @@ async function respond({ message, history = [], language = 'hi', context = {}, m
     }
     const { citationIds, ...rest } = result;
     // Source ids belong in "citations"; drop any the AI also wrote into the text ("... [S1]",
-    // 'Citations: ["S1","S2"]').
-    rest.reply = rest.reply.replace(/\s*(?:citations?\s*:\s*)?\[(?:\s*"?[FS]\d+"?\s*,?)+\]/gi, '').trim();
+    // 'Citations: ["S1","S2"]'), and source labels such as "[AMENDMENT IN FORCE]".
+    rest.reply = rest.reply.replace(/\s*(?:citations?\s*:\s*)?\[(?:\s*"?[FS]\d+"?\s*,?)+\]/gi, '')
+      .replace(/\s*\[(?:AMENDMENT IN FORCE|OFFICIAL FAQ MATCH|SOURCE OF YOUR PREVIOUS ANSWER|SECTION ASKED FOR BY THE USER)[^\]]*\]/g, '')
+      .trim();
     // Follow-up buttons only on answers from sources: uncited ones ("Show me rules") lead nowhere.
     if (!citationIds.length) rest.suggested_replies = [];
     return finish({ ...rest, language: scriptLanguage(rest.reply) }, citationIds);

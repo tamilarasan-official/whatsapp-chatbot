@@ -1,7 +1,7 @@
 // WhatsApp-style home screen (chat list). The State Election Commission, Bihar chat is pinned on top
 // and mirrors the live conversation (last message, typing…, unread count). Other chats are decoration.
 
-import { el } from './chat.js?v=sec5';
+import { el } from './chat.js?v=sec6';
 
 const OTHER_CHATS = [
   { name: 'Maa', color: '#e57373', msg: 'Khana kha liya? 🍛', time: '9:41 pm', unread: 2 },

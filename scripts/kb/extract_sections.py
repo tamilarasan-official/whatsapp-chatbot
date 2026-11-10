@@ -152,7 +152,7 @@ def main():
     path = OUT / 'sections.json'
     existing = json.loads(path.read_text(encoding='utf-8')) if path.exists() else []
     keep = [s for s in existing if s['doc'] not in only]
-    only = [k for k in only if DOCS[k]['method'] != 'chapters']  # chapters: extract_case_study.py
+    only = [k for k in only if DOCS[k]['method'] not in ('chapters', 'amendment')]  # own extract_*.py scripts
     keep = [s for s in existing if s['doc'] not in only]
     for key in only:
         meta = DOCS[key]

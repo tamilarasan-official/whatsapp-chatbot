@@ -53,5 +53,18 @@
     "size": "801 KB",
     "pages": 181,
     "title_ta": "பீகார் நகராட்சி சட்டம், 2007 (இந்தி)"
+  },
+  {
+    "id": "doc_municipal_amendment_2022",
+    "doc": "municipal_amendment_2022_en",
+    "also": [
+      "municipal_amendment_2022_hi"
+    ],
+    "title": "Bihar Municipal (Amendment) Act, 2022 (Hindi and English)",
+    "title_hi": "बिहार नगरपालिका (संशोधन) अधिनियम, 2022 (हिन्दी एवं अंग्रेज़ी)",
+    "description": "Bihar Gazette No. 176, 2 April 2022",
+    "file": "docs/bihar-municipal-amendment-2022.pdf",
+    "size": "215 KB",
+    "pages": 8
   }
 ]

@@ -1,9 +1,9 @@
 // Scripted flow engine. Buttons carry stable payload IDs; free text is matched
 // against a few deterministic rules and everything else goes to the live AI.
 
-import * as chat from './chat.js?v=sec5';
-import * as api from './api.js?v=sec5';
-import { t, faqText, pick, detectScript, LANGS } from './i18n.js?v=sec5';
+import * as chat from './chat.js?v=sec6';
+import * as api from './api.js?v=sec6';
+import { t, faqText, pick, detectScript, LANGS } from './i18n.js?v=sec6';
 
 const CMP_PATTERN = /\bCMP-\d{4}-\d{5}\b/i;
 const CMP_LOOSE = /\bCMP[\s-]*\d/i;
@@ -40,7 +40,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
   let complaintSeq = 431;
 
   const faqById = new Map(data.faqs.map((f) => [f.id, f]));
-  const docByKey = new Map(data.documents.map((d) => [d.doc, d]));
+  const docByKey = new Map(data.documents.flatMap((d) => [d.doc, ...(d.also || [])].map((k) => [k, d])));
 
   function freshState(lang = data.org.defaultLanguage, mode = 'static') {
     return {

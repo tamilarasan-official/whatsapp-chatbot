@@ -1,6 +1,6 @@
 // Behind the Scenes log, mini dashboard and Agent view. Text is set via textContent only.
 
-import { el } from './chat.js?v=sec5';
+import { el } from './chat.js?v=sec6';
 
 const LANG_LABELS = { en: 'English', hi: 'Hindi', mixed: 'Hinglish' };
 const ROUTE_LABELS = { ai: 'Live AI', scripted: 'Scripted flow', fallback: 'Fallback', offline: 'Offline match' };

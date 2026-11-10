@@ -28,6 +28,7 @@ Put the client's files in `kb-source/` (git-ignored). Names are mapped in `commo
 | Split all Acts into sections (applies `data/kb/corrections.json`) | `python extract_sections.py` | `data/kb/sections.json` |
 | eVoting case study: chapters + text from posters/screenshots | `python extract_case_study.py` | merged into `data/kb/sections.json` |
 | English twin of Hindi-only sections (IndicTrans2) | `python translate_hi_en.py --sections panchayat_amendment_2021_hi` | merged into `data/kb/sections.json` |
+| Bihar Municipal (Amendment) Act, 2022: `python devlys_convert.py municipal_amendment_2022_hi`, then split both languages (each section records the 2007 section it `amends`) | `python extract_amendment_2022.py` | merged into `data/kb/sections.json` |
 | Merge FAQ sheets | `python build_faqs.py` | `data/kb/faqs.json` |
 | Quality report | `python quality_report.py` | `kb-work/report/index.html` |
 
@@ -53,6 +54,7 @@ Reviewed fixes to source text (e.g. OCR digit errors) go in `data/kb/corrections
 | Tune the FAQ matcher | `python tune_matcher.py dense:e5-small-ft e5-small-ft` | `kb-work/phase2/matcher.json` |
 | Re-ranker check (held-out split) | `python rerank_eval.py dense:e5-small-ft e5-small-ft test` | `kb-work/phase2/rerank.json` |
 | Build the server index (int8 ONNX) | `python build_index.py e5-small-ft dense:e5-small-ft` | `data/kb/index/` |
+| Add new sections to the index with the shipped model (no re-export; the deployed model is checksum-pinned) | `python update_index.py` | `data/kb/index/` |
 | Verify the index as the server uses it | `python verify_index.py` | `data/kb/eval/index_verification.json` |
 | Report | `python phase2_report.py` | `kb-work/report/phase2.html` |
 

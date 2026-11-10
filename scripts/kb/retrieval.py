@@ -16,7 +16,8 @@ from common import OUT, WORK
 
 FAMILY = {'panchayat_act_en': 'panchayat_act', 'panchayat_act_hi': 'panchayat_act',
           'municipal_act_en': 'municipal_act', 'municipal_act_hi': 'municipal_act',
-          'panchayat_amendment_2021_hi': 'amend2021', 'panchayat_amendment_2021_en_mt': 'amend2021'}
+          'panchayat_amendment_2021_hi': 'amend2021', 'panchayat_amendment_2021_en_mt': 'amend2021',
+          'municipal_amendment_2022_hi': 'amend2022', 'municipal_amendment_2022_en': 'amend2022'}
 DEVANAGARI = re.compile(r'[ऀ-ॿ]')
 MAX_CHARS = {'en': 1200, 'hi': 900}   # ~300 tokens for the embedding models
 

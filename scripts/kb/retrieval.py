@@ -27,12 +27,16 @@ MAX_CHARS = {'en': 1200, 'hi': 900}   # ~300 tokens for the embedding models
 def section_key(s):
     if s['doc'] == 'evoting_case_study_en':
         return 'case:' + s['id'].split(':', 1)[1]
+    if s['doc'].startswith('web_'):  # website documents: one section per page
+        return f"web:{s['doc'][4:]}:{s['section']}"
     return f"{FAMILY[s['doc']]}:{s['section']}"
 
 
 def header(s):
     if s['doc'] == 'evoting_case_study_en':
         return f"eVoting Case Study (Bihar ULB elections 2025) › {s['title']}"
+    if s['doc'].startswith('web_'):
+        return f"{s['act']} (sec.bihar.gov.in) › page {s['section']}"
     return f"{s['act']} › Section {s['section']} › {s['title']}"
 
 

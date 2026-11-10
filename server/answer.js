@@ -163,6 +163,24 @@ function addAmendments(registry, lang) {
   }
 }
 
+// ------------------------------------------------------------ suggested follow-up questions
+// Letters and digits only, so the AI's copy matches the source despite spacing, quotes or punctuation.
+const lettersOnly = (text) => String(text).toLowerCase().normalize('NFC').replace(/[^\p{L}\p{M}\p{N}]+/gu, '');
+const EVIDENCE_MIN = 20; // letters: a few real words, not "yes"
+
+function answerableSuggestions(suggestions, registry) {
+  const kept = suggestions.filter((s) => {
+    const evidence = lettersOnly(s.evidence);
+    const source = registry.find((r) => r.id === s.source);
+    return source && evidence.length >= EVIDENCE_MIN && lettersOnly(source.text).includes(evidence);
+  });
+  if (kept.length < suggestions.length) {
+    console.log(`[suggest] dropped ${suggestions.length - kept.length}: `
+      + suggestions.filter((s) => !kept.includes(s)).map((s) => s.q).join(' | '));
+  }
+  return kept.map((s) => s.q);
+}
+
 // ------------------------------------------------------------ grounding checks
 const numbersIn = (text) => (search.toAscii(String(text)).replace(/(\d),(?=\d)/g, '$1').match(/\d+(?:\.\d+)?/g) || []);
 
@@ -366,8 +384,9 @@ async function respond({ message, history = [], language = 'hi', context = {}, m
     rest.reply = rest.reply.replace(/\s*(?:citations?\s*:\s*)?\[(?:\s*"?[FS]\d+"?\s*,?)+\]/gi, '')
       .replace(/\s*\[(?:AMENDMENT IN FORCE|OFFICIAL FAQ MATCH|SOURCE OF YOUR PREVIOUS ANSWER|SECTION ASKED FOR BY THE USER)[^\]]*\]/g, '')
       .trim();
-    // Follow-up buttons only on answers from sources: uncited ones ("Show me rules") lead nowhere.
-    if (!citationIds.length) rest.suggested_replies = [];
+    // Follow-up buttons only on answers from sources, and only those whose evidence is in their source:
+    // a suggestion the sources cannot answer ends in "I don't have the detail" when tapped.
+    rest.suggested_replies = citationIds.length ? answerableSuggestions(rest.suggested_replies, registry) : [];
     return finish({ ...rest, language: scriptLanguage(rest.reply) }, citationIds);
   } catch (err) {
     if (!confidentFaq) throw err;

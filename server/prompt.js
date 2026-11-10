@@ -102,11 +102,13 @@ Output ONLY a JSON object with exactly these keys:
   "citations": array of source ids used, e.g. ["F1","S2"] ([] if none),
   "escalate": boolean,
   "action": {{action_values}},
-  "suggested_replies": up to 3 very short follow-up questions (max 25 chars each) the USER might
-            tap next, in the user's language. Each must be a specific question that the sources you
-            cited in THIS reply answer in full (e.g. "नामांकन शुल्क कितना है?"), never vague ("Show me
-            rules", "Which document?") and never something those sources do not cover.
-            [] if you cited no source.
+  "suggested_replies": up to 3 follow-up questions the USER might tap next, each an object
+            {"q": very short question (max 25 chars) in the user's language,
+             "source": the id of the source that answers it (e.g. "S2"),
+             "evidence": the exact words copied from that source that answer it (10-25 words)}.
+            Only questions the SOURCES answer and your reply has not already answered; specific, never
+            vague ("Show me rules", "Which document?"). If you cannot copy evidence for a question, do
+            not suggest it: questions without real evidence are removed. [] if you cited no source.
             Do not include "talk to an officer"; the app adds that itself.
 }
 

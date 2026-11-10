@@ -118,8 +118,11 @@ function normalise(raw, fallbackLang, validIds) {
     citationIds: Array.isArray(raw.citations) ? [...new Set(raw.citations.map(String))].filter((id) => validIds.has(id)) : [],
     escalate: Boolean(raw.escalate),
     action: ACTIONS.has(raw.action) ? raw.action : 'none',
+    // {q, source, evidence}; answer.js keeps a question only when its evidence is really in that source
     suggested_replies: Array.isArray(raw.suggested_replies)
-      ? raw.suggested_replies.map((s) => String(s).trim()).filter((s) => s && s.length <= 30).slice(0, 3)
+      ? raw.suggested_replies.filter((s) => s && typeof s === 'object')
+        .map((s) => ({ q: String(s.q || '').trim(), source: String(s.source || ''), evidence: String(s.evidence || '') }))
+        .filter((s) => s.q && s.q.length <= 30 && validIds.has(s.source)).slice(0, 3)
       : [],
   };
 }
@@ -132,7 +135,7 @@ async function answer({ message, history, language, context, mode, sources, vali
   let lastError;
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const raw = await completeJson(messages, { maxTokens: 500, temperature: 0.3, timeoutMs: TIMEOUT_MS });
+      const raw = await completeJson(messages, { maxTokens: 700, temperature: 0.3, timeoutMs: TIMEOUT_MS });
       const result = normalise(raw, language, validIds);
       // AI mode has no built-in screens, except a handover and the PDF list
       if (mode === 'ai' && !['handover', 'documents'].includes(result.action)) result.action = 'none';

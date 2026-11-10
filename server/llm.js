@@ -97,8 +97,9 @@ async function rewriteQuery(message, history) {
     const recent = cleanHistory(history).slice(-4).map((m) => `${m.role}: ${m.content.slice(0, 300)}`).join('\n');
     const user = `${recent ? `Earlier chat:\n${recent}\n\n` : ''}Last message: ${message}`;
     const out = await completeJson([{ role: 'system', content: REWRITE_PROMPT }, { role: 'user', content: user }],
-      { maxTokens: 160, temperature: 0, timeoutMs: REWRITE_TIMEOUT_MS, effort: 'none' }); // simple task: no reasoning
-    return [out.hi, out.en].map((s) => String(s || '').trim().slice(0, 300)).filter(Boolean);
+      { maxTokens: 260, temperature: 0, timeoutMs: REWRITE_TIMEOUT_MS, effort: 'none' }); // simple task: no reasoning
+    const parts = Array.isArray(out.parts) ? out.parts.slice(0, 3) : [];
+    return [out.hi, out.en, ...parts].map((s) => String(s || '').trim().slice(0, 300)).filter(Boolean);
   } catch (err) {
     console.warn(`[rewrite] skipped: ${err.message}`);
     return [];
@@ -117,6 +118,7 @@ function normalise(raw, fallbackLang, validIds) {
     // citations the server did not provide are dropped
     citationIds: Array.isArray(raw.citations) ? [...new Set(raw.citations.map(String))].filter((id) => validIds.has(id)) : [],
     escalate: Boolean(raw.escalate),
+    coverage: ['full', 'partial', 'none'].includes(raw.coverage) ? raw.coverage : 'full',
     action: ACTIONS.has(raw.action) ? raw.action : 'none',
     // {q, source, evidence}; answer.js keeps a question only when its evidence is really in that source
     suggested_replies: Array.isArray(raw.suggested_replies)
@@ -149,4 +151,67 @@ async function answer({ message, history, language, context, mode, sources, vali
   throw lastError;
 }
 
-module.exports = { MODEL, LlmError, getClient, rewriteQuery, answer };
+// ------------------------------------------------------------ official-website search (fallback)
+// Used only when the knowledge base does not answer. OpenAI web search, restricted to these domains;
+// an answer counts only if it cites a page on one of them. Not eci.gov.in: the Election Commission of India's
+// rules (e.g. its model code of conduct) are for Lok Sabha / Vidhan Sabha, not Panchayat / Municipal elections.
+const WEB_DOMAINS = (process.env.WEB_SEARCH_DOMAINS || 'sec.bihar.gov.in,state.bihar.gov.in,egazette.bih.nic.in')
+  .split(',').map((d) => d.trim().toLowerCase()).filter(Boolean);
+const WEB_SEARCH = process.env.WEB_SEARCH !== 'off' && WEB_DOMAINS.length > 0;
+const WEB_TIMEOUT_MS = Number(process.env.WEB_TIMEOUT_MS) || 15000;
+const NOT_FOUND = 'NOT_FOUND';
+
+const webPrompt = (languageName) => `You are the WhatsApp help desk of the State Election Commission, Bihar.
+Search the official websites and answer the user's LAST message using ONLY what those pages say.
+- Reply in ${languageName}, in at most 80 words, plain text (*bold* allowed). Name the document or page.
+- Never guess or add rules, amounts, dates or forms that the pages do not state; keep conditions exact.
+- If it explains the law, add that this is general information, not legal advice.
+- Political neutrality: never discuss parties, candidates or results.
+- If the pages do not answer the question, reply with exactly: ${NOT_FOUND}`;
+
+const officialHost = (url) => {
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    return WEB_DOMAINS.some((d) => host === d || host.endsWith(`.${d}`)) ? host : null;
+  } catch {
+    return null;
+  }
+};
+const cleanUrl = (url) => url.replace(/[?&]utm_source=openai$/, '');
+
+// Returns { reply, pages: [{ url, title }] } or null (nothing official found, disabled, or failed).
+async function webAnswer({ message, history, languageName }) {
+  if (!WEB_SEARCH || !getClient()) return null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), WEB_TIMEOUT_MS);
+  try {
+    const input = cleanHistory([...history, { role: 'user', content: message }]).slice(-6);
+    const res = await getClient().responses.create({
+      model: MODEL, instructions: webPrompt(languageName), input,
+      tools: [{ type: 'web_search', filters: { allowed_domains: WEB_DOMAINS } }],
+      ...(REASONING ? { reasoning: { effort: 'low' } } : {}), max_output_tokens: 2000,
+    }, { signal: controller.signal });
+    const text = String(res.output_text || '').trim();
+    const pages = new Map();
+    for (const item of res.output || []) {
+      if (item.type !== 'message') continue;
+      for (const part of item.content || []) {
+        for (const a of part.annotations || []) {
+          if (a.type === 'url_citation' && officialHost(a.url)) pages.set(cleanUrl(a.url), a.title || officialHost(a.url));
+        }
+      }
+    }
+    if (!text || text.includes(NOT_FOUND) || !pages.size) return null;
+    // the inline "([site](url))" links are shown as source cards instead
+    const reply = text.replace(/\s*\(\[[^\]]*\]\([^)]*\)\)/g, '').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+      .replace(/\*\*([^*]+)\*\*/g, '*$1*').trim(); // WhatsApp bold is *one star*
+    return { reply, pages: [...pages].slice(0, 3).map(([url, title]) => ({ url, title })) };
+  } catch (err) {
+    console.warn(`[web] ${controller.signal.aborted ? 'timeout' : err.message}`);
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+module.exports = { MODEL, LlmError, getClient, rewriteQuery, answer, webAnswer, officialHost };

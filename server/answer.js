@@ -18,6 +18,7 @@ const FAQ_MIN = 0.45;
 const SECTION_MIN = 0.40;
 const WEAK_MIN = 0.36;
 const MAX_SECTIONS = 4;
+const WEB_PAGES = 2; // pages of the website documents added to every answer's sources
 const LOOKUP_CHARS = 2500;
 
 const DEVANAGARI = /[ऀ-ॿ]/;
@@ -45,6 +46,8 @@ const FACT_INTENTS = new Set(['faq', 'act', 'evoting', 'complaint']);
 // The model ranks generic "eVoting app" questions weakly; these words also pull in the eVoting FAQs.
 const EVOTING_TOPIC = /e-?voting|secbhr|\bapp\b|mobile se vote|ई-?वोटिंग|ऐप|एप/i;
 const REWRITE_MIN = 0.50;
+const MULTI_PART = /\?[^?]+\?|\b(?:and|also|aur|tatha|evam)\b|और|तथा|एवं|साथ ही/i;
+const SECTION_CHARS = 2500; // a matched section up to this length is shown whole, not only its best chunks
 const FAQ_SAFE = 0.70; // FAQ score above which the official text may stand in for a failed AI reply
 
 function romanScore(message, words) {
@@ -86,6 +89,12 @@ function sectionCitation(id, key, lang) {
   const want = lang === 'hi' || lang === 'mixed' ? 'hi' : 'en';
   const sec = versions.find((s) => s.lang === want && !s.doc.endsWith('_mt'))
     || versions.find((s) => !s.doc.endsWith('_mt')) || versions[0];
+  if (sec.url) { // a document from the Commission's website: link to its page there
+    return {
+      id, type: 'web_doc', key, act: sec.act, section: null, title: sec.title, doc: sec.doc, page: sec.page,
+      url: `${sec.url}#page=${sec.page}`, host: 'sec.bihar.gov.in', reliability: sec.reliability || 'high',
+    };
+  }
   return {
     id, type: isCase ? 'case_study' : 'act', key,
     act: sec.act, section: isCase ? null : sec.section, title: sec.title, doc: sec.doc, page: sec.page ?? null,
@@ -135,7 +144,13 @@ function addSections(registry, secHits, lang) {
     }
     const id = nextId(registry, 'S');
     const head = hit.chunks[0].text.split('\n')[0] + (hit.score >= SECTION_MIN ? '' : ' (weak match)');
-    const body = hit.chunks.map((c) => `[${c.lang}]${reliabilityNote(c.reliability)} ${stripHeader(c.text)}`).join('\n…\n');
+    // The whole section when it is short enough (a proviso in another chunk can decide the answer),
+    // in the reply language when that version exists; else its best-matching chunks.
+    const want = lang === 'hi' || lang === 'mixed' ? 'hi' : 'en';
+    const whole = sec.find((s) => s.lang === want && !s.doc.endsWith('_mt')) || sec.find((s) => s.lang === hit.chunks[0].lang) || sec[0];
+    const body = whole.text.length <= SECTION_CHARS
+      ? `[${whole.lang}]${reliabilityNote(whole.reliability)} ${whole.text}`
+      : hit.chunks.map((c) => `[${c.lang}]${reliabilityNote(c.reliability)} ${stripHeader(c.text)}`).join('\n…\n');
     registry.push({ id, text: `${id} ${head}\n${body}`, citation: sectionCitation(id, hit.key, lang) });
   }
 }
@@ -242,10 +257,11 @@ function officialFaqReply(hit, lang) {
   };
 }
 
+// When neither the documents nor the official websites answer: where the detail is published, and an officer.
 const NO_DETAIL = {
-  hi: 'क्षमा करें, इस बारे में मेरे पास सटीक जानकारी उपलब्ध नहीं है। कृपया अपने जिला निर्वाचन कार्यालय से संपर्क करें, या मैं आपको एक अधिकारी से जोड़ सकता हूँ।',
-  en: "Sorry, I don't have the exact detail on this. Please contact your District Election Office, or I can connect you to an officer.",
-  mixed: 'Sorry, iski exact jaankari mere paas nahi hai. Aap apne District Election Office se sampark karein, ya main aapko officer se jod sakta hoon.',
+  hi: 'यह जानकारी आयोग के दस्तावेज़ों में मुझे नहीं मिली। इसकी सटीक जानकारी आयोग की वेबसाइट *sec.bihar.gov.in*, आपके निर्वाची पदाधिकारी / जिला निर्वाचन कार्यालय या टोल-फ्री हेल्पलाइन *1800-345-7243* से मिल सकती है। चाहें तो मैं आपको अभी एक अधिकारी से जोड़ सकता हूँ।',
+  en: "This detail isn't in the Commission's documents I can search. You can get it on the Commission's website *sec.bihar.gov.in*, from your Returning Officer / District Election Office, or on the toll-free helpline *1800-345-7243*. I can also connect you to an officer now.",
+  mixed: 'Ye detail Commission ke documents me nahi mili. Aap iski sahi jaankari *sec.bihar.gov.in* website, apne Returning Officer / District Election Office, ya toll-free helpline *1800-345-7243* se le sakte hain. Chahein to main abhi aapko officer se jod sakta hoon.',
   ta: 'மன்னிக்கவும், இது குறித்த சரியான தகவல் என்னிடம் இல்லை. உங்கள் மாவட்ட தேர்தல் அலுவலகத்தைத் தொடர்பு கொள்ளவும், அல்லது உங்களை ஒரு அலுவலருடன் இணைக்கலாம்.',
   tanglish: 'Sorry, idhu pathi correct-aana thagaval ennidam illai. Unga District Election Office-a contact pannunga, illa naan ungala oru officer-oda connect panren.',
 };
@@ -290,7 +306,9 @@ async function retrieve(message, history, includeOfficials, lang, prevIds = []) 
   // Tamil / Tanglish are always rewritten: the search model was fine-tuned on Hindi and English.
   const tamil = TAMIL.test(message) || tanglishScore(message) >= 1;
   const worthRewriting = tamil || hinglishScore(message) >= 1 || followUp || (faqHits[0]?.score ?? 0) >= REWRITE_MIN;
-  if (!faqHits[0]?.confident && !lookups.length && worthRewriting && llm.getClient()) {
+  // A question with two parts ("fee and last date?") is split, even next to a confident FAQ for one part.
+  const multiPart = MULTI_PART.test(message) && message.split(/\s+/).length >= 6;
+  if ((multiPart || (!faqHits[0]?.confident && worthRewriting)) && !lookups.length && llm.getClient()) {
     rewritten = await llm.rewriteQuery(message, history);
     if (rewritten.length) {
       query.texts.push(...rewritten);
@@ -301,6 +319,8 @@ async function retrieve(message, history, includeOfficials, lang, prevIds = []) 
   const secAll = search.searchSections(query, { limit: MAX_SECTIONS });
   const secHits = secAll.filter((h) => h.score >= SECTION_MIN);
   const weakSecs = secHits.length ? [] : secAll.filter((h) => h.score >= WEAK_MIN).slice(0, 2);
+  const webHits = search.searchSections(query, { limit: WEB_PAGES, only: (k) => k.startsWith('web:') })
+    .filter((h) => h.score >= WEAK_MIN);
   const confidentFaq = faqHits[0]?.confident ? faqHits[0] : null;
 
   const registry = [];
@@ -313,6 +333,9 @@ async function retrieve(message, history, includeOfficials, lang, prevIds = []) 
   addFaqs(registry, faqCandidates);
   // Act sections next to an FAQ match too, so a more specific question (e.g. the Mayor post) gets its detail.
   addSections(registry, confidentFaq ? secHits.slice(0, 3) : secHits.concat(weakSecs), lang);
+  // The website documents (rules, handbooks, code of conduct) have their own slots: next to the Acts and
+  // FAQs they rank low (OCR text, many similar pages) although they hold the procedural detail.
+  if (!lookups.length) addSections(registry, webHits, lang);
   if (history.length && prevIds.length) {
     const prev = previousSources(prevIds);
     addFaqs(registry, prev.faqs);
@@ -320,7 +343,7 @@ async function retrieve(message, history, includeOfficials, lang, prevIds = []) 
   }
   addAmendments(registry, lang);
   return {
-    registry, confidentFaq,
+    registry, confidentFaq, wholeAct: lookups.some((l) => l.whole),
     route: lookups.length ? 'lookup' : confidentFaq ? 'faq' : secHits.length ? 'act' : 'chat',
     debug: {
       rewritten,
@@ -336,24 +359,37 @@ async function respond({ message, history = [], language = 'hi', context = {}, m
   // context.replyLanguage: set by the app when it sends an FAQ's English question for a Tamil user
   const started = performance.now();
   const lang = replyLanguage(message, language, context.replyLanguage);
-  const { registry, confidentFaq, route, debug } = await retrieve(message, history, context.audience === 'officials', lang,
+  const { registry, confidentFaq, wholeAct, route, debug } = await retrieve(message, history, context.audience === 'officials', lang,
     context.prevSources);
 
-  const finish = (result, citationIds = []) => {
-    const citations = registry.filter((r) => citationIds.includes(r.id)).map((r) => r.citation);
+  // webPages: official pages found by the website search, shown as sources after the documents'
+  const finish = (result, citationIds = [], webPages = []) => {
+    const citations = registry.filter((r) => citationIds.includes(r.id)).map((r) => r.citation)
+      .concat(webPages.map((p, i) => ({ id: `W${i + 1}`, type: 'web', title: p.title, url: p.url, host: llm.officialHost(p.url) })));
     return {
       ...result,
       sources: citations.filter((c) => c.type === 'faq').map((c) => c.faq_id),
       citations,
-      route: citations.length ? route : 'chat', // route = what the reply actually used
+      route: webPages.length ? 'web' : citations.length ? route : 'chat', // route = what the reply actually used
       search: { ...debug, retrieval_route: route },
       latency_ms: Math.round(performance.now() - started),
       ...(withSources ? { source_texts: registry.map((r) => ({ id: r.id, cited: citationIds.includes(r.id), text: r.text })) } : {}),
     };
   };
-  // A safe reply repeats the official FAQ only when the match is very strong; otherwise "I don't have that detail".
-  const safeReply = () => (confidentFaq && confidentFaq.score >= FAQ_SAFE ? finish(officialFaqReply(confidentFaq, lang), ['F1'])
-    : finish({ reply: NO_DETAIL[lang], language: lang, intent: 'faq', confidence: 0.3, escalate: true, action: 'none', suggested_replies: [] }));
+  // The official websites, when the documents do not answer (null if they do not either).
+  const fromWebsite = async () => {
+    const web = await llm.webAnswer({ message, history, languageName: LANGUAGE_NOTE[lang] });
+    if (!web) return null;
+    console.log(`[web] answered from ${web.pages.map((p) => p.url).join(' ')}`);
+    return finish({ reply: web.reply, language: scriptLanguage(web.reply), intent: 'faq', confidence: 0.7, escalate: false,
+      action: 'none', suggested_replies: [] }, [], web.pages);
+  };
+  // A safe reply repeats the official FAQ only when the match is very strong; otherwise the official websites,
+  // then where to find the detail.
+  const safeReply = async () => (confidentFaq && confidentFaq.score >= FAQ_SAFE ? finish(officialFaqReply(confidentFaq, lang), ['F1'])
+    : (await fromWebsite())
+      || finish({ reply: NO_DETAIL[lang], language: lang, intent: 'faq', confidence: 0.3, escalate: true, action: 'none', suggested_replies: [],
+        coverage: 'none' }));
 
   if (!llm.getClient()) {
     if (confidentFaq) return finish(officialFaqReply(confidentFaq, lang), ['F1']);
@@ -379,6 +415,8 @@ async function respond({ message, history = [], language = 'hi', context = {}, m
       }
     }
     const { citationIds, ...rest } = result;
+    // A request for a whole Act always shows the PDF list (the AI sometimes says "shared" without the action).
+    if (wholeAct && rest.action === 'none') rest.action = 'documents';
     // Source ids belong in "citations"; drop any the AI also wrote into the text ("... [S1]",
     // 'Citations: ["S1","S2"]'), and source labels such as "[AMENDMENT IN FORCE]".
     rest.reply = rest.reply.replace(/\s*(?:citations?\s*:\s*)?\[(?:\s*"?[FS]\d+"?\s*,?)+\]/gi, '')
@@ -388,6 +426,11 @@ async function respond({ message, history = [], language = 'hi', context = {}, m
     // Follow-up buttons only on answers from sources, and only those whose evidence is in their source:
     // a suggestion the sources cannot answer ends in "I don't have the detail" when tapped.
     rest.suggested_replies = citationIds.length ? answerableSuggestions(rest.suggested_replies, registry) : [];
+    // The documents do not fully answer a factual question: the official websites may.
+    if (FACT_INTENTS.has(rest.intent) && rest.coverage !== 'full') {
+      const web = await fromWebsite();
+      if (web) return web;
+    }
     return finish({ ...rest, language: scriptLanguage(rest.reply) }, citationIds);
   } catch (err) {
     if (!confidentFaq) throw err;

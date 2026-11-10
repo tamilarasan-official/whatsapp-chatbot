@@ -34,6 +34,8 @@ COPY data ./data
 COPY --from=model /model/model_quantized.onnx ./data/kb/index/model/onnx/model_quantized.onnx
 COPY scripts/test-ai.js ./scripts/test-ai.js
 
+# writable folder for GAP_LOG_FILE (mount a volume on /app/logs to keep the gap log across deploys)
+RUN mkdir -p /app/logs && chown node:node /app/logs
 USER node
 EXPOSE 3000
 

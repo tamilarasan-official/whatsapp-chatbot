@@ -1,9 +1,9 @@
 // Scripted flow engine. Buttons carry stable payload IDs; free text is matched
 // against a few deterministic rules and everything else goes to the live AI.
 
-import * as chat from './chat.js?v=sec6';
-import * as api from './api.js?v=sec6';
-import { t, faqText, pick, detectScript, LANGS } from './i18n.js?v=sec6';
+import * as chat from './chat.js?v=sec7';
+import * as api from './api.js?v=sec7';
+import { t, faqText, pick, detectScript, LANGS } from './i18n.js?v=sec7';
 
 const CMP_PATTERN = /\bCMP-\d{4}-\d{5}\b/i;
 const CMP_LOOSE = /\bCMP[\s-]*\d/i;
@@ -449,6 +449,9 @@ export function createFlows({ data, panels, offline, onLangChange }) {
       const title = faq ? faqText(lang, faq).question : c.title_en; // Tamil when translated, else English
       return { title: t(lang, 'sourceFaq'), description: `${lang === 'hi' ? c.title : title}${more}` };
     }
+    if (c.type === 'web' || c.type === 'web_doc') {
+      return { title: `${t(lang, 'sourceWeb')} · ${c.host}`, description: `${c.title}${more}${caution}`, url: c.url };
+    }
     if (c.type === 'case_study') {
       return { title: t(lang, 'caseStudy'), description: `${c.title}${more}` };
     }
@@ -464,6 +467,7 @@ export function createFlows({ data, panels, offline, onLangChange }) {
   function searchNote(r) {
     const s = r.search || {};
     if (r.route === 'lookup') return 'Direct section lookup';
+    if (r.route === 'web') return 'Not in our documents: answered from the official website search';
     if (r.route === 'faq' && s.top_faq) return `Our model: FAQ match ${s.top_faq.id} (score ${s.top_faq.score})`;
     if (s.top_section) return `Our model: best section ${s.top_section.key} (score ${s.top_section.score})`;
     return undefined;

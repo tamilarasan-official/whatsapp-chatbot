@@ -50,7 +50,9 @@ const FAMILY = {
   panchayat_amendment_2021_hi: 'amend2021', panchayat_amendment_2021_en_mt: 'amend2021',
   municipal_amendment_2022_hi: 'amend2022', municipal_amendment_2022_en: 'amend2022',
 };
-const sectionKey = (s) => (s.doc === 'evoting_case_study_en' ? `case:${s.id.split(':')[1]}` : `${FAMILY[s.doc]}:${s.section}`);
+const sectionKey = (s) => (s.doc === 'evoting_case_study_en' ? `case:${s.id.split(':')[1]}`
+  : s.doc.startsWith('web_') ? `web:${s.doc.slice(4)}:${s.section}` // website documents, one section per page
+    : `${FAMILY[s.doc]}:${s.section}`);
 const sectionsByKey = new Map();
 for (const s of sections) {
   const k = sectionKey(s);
@@ -221,9 +223,10 @@ function searchFaq(query, { includeOfficials = false, limit = 3, set = null } = 
 }
 
 // Sections, each with its best chunks by cosine (both languages kept, best first).
-function searchSections(query, { limit = 4, chunksPerKey = 2 } = {}) {
+// `only(key)` restricts the result (e.g. to the website documents).
+function searchSections(query, { limit = 4, chunksPerKey = 2, only = null } = {}) {
   const dense = denseScores(SEC, chunks, query.vectors, chunkWeight);
-  const ranked = rankKeys(chunks, dense, query.texts, secBm25).slice(0, limit);
+  const ranked = rankKeys(chunks, dense, query.texts, secBm25).filter((r) => !only || only(r.key)).slice(0, limit);
   const chunkScore = (i) => Math.max(...dense.map((s) => s[i]));
   return ranked.map((r) => {
     const best = chunks.map((c, i) => [c, i]).filter(([c]) => c.key === r.key)

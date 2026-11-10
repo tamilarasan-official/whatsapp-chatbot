@@ -9,6 +9,8 @@ const { MODEL } = require('./llm');
 const { respond } = require('./answer');
 const search = require('./search');
 const { fallbackReply } = require('./fallback');
+const gaps = require('./gaps');
+const crypto = require('crypto');
 
 const PORT = Number(process.env.PORT) || 3000;
 const MAX_MESSAGE_LENGTH = 500;
@@ -77,6 +79,7 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
     const context = sanitiseContext(req.body.context);
     const history = Array.isArray(req.body.history) ? req.body.history : [];
     const result = await respond({ message, history, language, context, mode });
+    gaps.record(message, result);
     console.log(`[chat] ${mode} ${result.route} ${result.intent}/${result.action} ${result.language} conf=${result.confidence} `
       + `cites=${result.citations.map((c) => c.faq_id || c.key).join('|') || '-'} ${result.latency_ms}ms`);
     res.json(result);
@@ -85,6 +88,16 @@ app.post('/api/chat', chatLimiter, async (req, res) => {
     console.warn(`[chat] failed (${status}): ${err.message}`);
     res.status(status).json({ error: 'llm_unavailable', ...fallbackReply(language, err.message) });
   }
+});
+
+// Knowledge-gap log for the weekly report: only with ADMIN_TOKEN set, and the same token in "x-admin-token".
+app.get('/api/admin/gaps', (req, res) => {
+  const token = process.env.ADMIN_TOKEN || '';
+  const given = String(req.get('x-admin-token') || '');
+  const ok = token.length >= 16 && given.length === token.length
+    && crypto.timingSafeEqual(Buffer.from(given), Buffer.from(token));
+  if (!ok) return res.status(404).json({ error: 'not_found' });
+  res.json({ gaps: gaps.readRecent(Number(req.query.limit) || 500) });
 });
 
 app.use('/api', (req, res) => res.status(404).json({ error: 'not_found' }));

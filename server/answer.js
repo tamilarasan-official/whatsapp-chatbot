@@ -422,6 +422,7 @@ async function respond({ message, history = [], language = 'hi', context = {}, m
     rest.reply = rest.reply.replace(/\s*(?:citations?\s*:\s*)?\[(?:\s*"?[FS]\d+"?\s*,?)+\]/gi, '')
       .replace(/\s*\[(?:AMENDMENT IN FORCE|OFFICIAL FAQ MATCH|SOURCE OF YOUR PREVIOUS ANSWER|SECTION ASKED FOR BY THE USER)[^\]]*\]/g, '')
       .replace(/\s*\[[^\]]*$/, '') // an unclosed "[" left at the end
+      .replace(/\*\*([^*]+)\*\*/g, '*$1*') // WhatsApp bold is one star
       .trim();
     // Follow-up buttons only on answers from sources, and only those whose evidence is in their source:
     // a suggestion the sources cannot answer ends in "I don't have the detail" when tapped.
